@@ -1,0 +1,26 @@
+﻿using System;
+using System.IO;
+using YA.TenantWorker.Constants;
+
+namespace YA.TenantWorker
+{
+    public static class Node
+    {
+        public static readonly string Id;
+
+        static Node()
+        {
+            string filePath = Path.Combine(Program.RootPath, General.AppDataFolderName, "nodeid");
+
+            if (!File.Exists(filePath))
+            {
+                Id = Guid.NewGuid().ToString("N");
+                File.WriteAllText(filePath, Id);
+            }
+            else
+            {
+                Id = File.ReadAllText(filePath).Trim();
+            }
+        }
+    }
+}

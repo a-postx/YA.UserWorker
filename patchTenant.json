@@ -1,0 +1,7 @@
+[
+  {
+    "value": "NewDefaultName",
+    "path": "/tenantName",
+    "op": "replace"
+  }
+]
