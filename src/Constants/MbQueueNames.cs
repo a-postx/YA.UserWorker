@@ -7,6 +7,8 @@ namespace YA.TenantWorker.Constants
 {
     public class MbQueueNames
     {
-        public const string PrivateServiceQueueName = "ya.tenantmanager";
+        public static string PrivateServiceQueueName = "ya.tenantworker." + Program.NodeId;
+
+        public const string MessageBusPublishQueuePrefix = "tenantworker";
     }
 }

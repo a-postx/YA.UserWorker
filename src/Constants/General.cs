@@ -6,7 +6,7 @@
         public const string DevelopmentKeyVault = "https://a7267048-82be-425-dev-kv.vault.azure.net";
         public const string AppDataFolderName = "AppData";
         public const string DefaultHttpUserAgent = "YA/1.0 (2412719@mail.ru)";
-        public const string AppHttpUserAgent = "YA.TenantManager/1.0 (2412719@mail.ru)";
+        public const string AppHttpUserAgent = "YA.TenantWorker/1.0 (2412719@mail.ru)";
         public const string DefaultSqlModelChangeDateTime = "GETUTCDATE()";
         public const int MessageBusServiceHealthPort = 5672;
         public const int MessageBusServiceHealthReconnectDelayMsec = 15000;

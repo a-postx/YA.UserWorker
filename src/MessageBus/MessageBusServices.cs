@@ -23,7 +23,7 @@ namespace YA.TenantWorker.MessageBus
     public class MessageBusServices : IMessageBusServices
     {
         public MessageBusServices(ILogger<MessageBusServices> logger,
-            ITenantManagerDbContext dbContext,
+            ITenantWorkerDbContext dbContext,
             IBus bus,
             IPublishEndpoint publishEndpoint)
         {
@@ -34,7 +34,7 @@ namespace YA.TenantWorker.MessageBus
         }
 
         private readonly ILogger<MessageBusServices> _log;
-        private readonly ITenantManagerDbContext _dbContext;
+        private readonly ITenantWorkerDbContext _dbContext;
         private readonly IBus _bus;
         private readonly IPublishEndpoint _publishEndpoint;
 

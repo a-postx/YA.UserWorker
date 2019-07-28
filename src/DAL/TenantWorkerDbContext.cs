@@ -12,9 +12,9 @@ using YA.TenantWorker.Models;
 
 namespace YA.TenantWorker.DAL
 {
-    public class TenantManagerDbContext : DbContext, ITenantManagerDbContext
+    public class TenantWorkerDbContext : DbContext, ITenantWorkerDbContext
     {
-        public TenantManagerDbContext(DbContextOptions options) : base (options)
+        public TenantWorkerDbContext(DbContextOptions options) : base (options)
         {
              
         }

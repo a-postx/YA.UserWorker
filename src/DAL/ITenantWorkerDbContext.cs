@@ -8,7 +8,7 @@ using YA.TenantWorker.Models;
 
 namespace YA.TenantWorker.DAL
 {
-    public interface ITenantManagerDbContext
+    public interface ITenantWorkerDbContext
     {
         Task CreateTenantAsync(Tenant tenant, CancellationToken cancellationToken);
         void DeleteTenant(Tenant tenant);

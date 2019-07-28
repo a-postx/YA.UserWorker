@@ -72,7 +72,7 @@ namespace YA.TenantWorker.Services
             }
             catch (Exception e)
             {
-                _log.LogError("Error getting geodata: {Error}", e.Message);
+                _log.LogError("Error getting geodata: {Error}", e);
             }
 
             return result;

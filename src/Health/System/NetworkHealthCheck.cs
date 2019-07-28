@@ -8,7 +8,7 @@ using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace YA.TenantWorker.Health
+namespace YA.TenantWorker.Health.System
 {
     /// <summary>
     /// Checks Internet connection of the application.
@@ -43,7 +43,7 @@ namespace YA.TenantWorker.Health
             }
             catch (Exception e)
             {
-                _log.LogError("Error checking health for Network: {Message}", e.Message);
+                _log.LogError("Error checking health for Network: {Message}", e);
             }
 
             discoverySW.Stop();

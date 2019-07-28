@@ -15,18 +15,18 @@ namespace YA.TenantWorker.Commands
     {
         public DeleteTenantCommand(ILogger<DeleteTenantCommand> logger,
             IActionContextAccessor actionContextAccessor,
-            ITenantManagerDbContext managerDbContext,
+            ITenantWorkerDbContext tenantWorkerDbContext,
             IMessageBusServices messageBus)
         {
             _log = logger ?? throw new ArgumentNullException(nameof(logger));
             _actionContextAccessor = actionContextAccessor ?? throw new ArgumentNullException(nameof(actionContextAccessor));
-            _managerDbContext = managerDbContext ?? throw new ArgumentNullException(nameof(managerDbContext));
+            _tenantWorkerDbContext = tenantWorkerDbContext ?? throw new ArgumentNullException(nameof(tenantWorkerDbContext));
             _messageBus = messageBus ?? throw new ArgumentNullException(nameof(messageBus));
         }
 
         private readonly ILogger<DeleteTenantCommand> _log;
         private readonly IActionContextAccessor _actionContextAccessor;
-        private readonly ITenantManagerDbContext _managerDbContext;
+        private readonly ITenantWorkerDbContext _tenantWorkerDbContext;
         private readonly IMessageBusServices _messageBus;
 
         public async Task<IActionResult> ExecuteAsync(Guid tenantId, CancellationToken cancellationToken = default)
@@ -40,7 +40,7 @@ namespace YA.TenantWorker.Commands
 
             using (_log.BeginScopeWith((Logs.TenantId, tenantId), (Logs.CorrelationId, correlationId)))
             {
-                Tenant tenant = await _managerDbContext.GetTenantAsync(tenantId, cancellationToken);
+                Tenant tenant = await _tenantWorkerDbContext.GetTenantAsync(tenantId, cancellationToken);
 
                 if (tenant == null)
                 {
@@ -49,8 +49,8 @@ namespace YA.TenantWorker.Commands
 
                 try
                 {
-                    _managerDbContext.DeleteTenant(tenant);
-                    await _managerDbContext.ApplyChangesAsync(cancellationToken);
+                    _tenantWorkerDbContext.DeleteTenant(tenant);
+                    await _tenantWorkerDbContext.ApplyChangesAsync(cancellationToken);
 
                     await _messageBus.DeleteTenantV1(tenant.TenantID, correlationId, cancellationToken);
                 }

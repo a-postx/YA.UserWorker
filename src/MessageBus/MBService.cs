@@ -25,8 +25,8 @@ namespace YA.TenantWorker.MessageBus
         {
             _log.LogInformation("Message Bus service is starting.");
 
-            _busControl.ConnectSendAuditObservers(_auditStore, c => c.Exclude(typeof(ITenantManagerTestRequestV1), typeof(ITenantManagerTestResponseV1)));
-            _busControl.ConnectConsumeAuditObserver(_auditStore, c => c.Exclude(typeof(ITenantManagerTestRequestV1), typeof(ITenantManagerTestResponseV1)));
+            _busControl.ConnectSendAuditObservers(_auditStore, c => c.Exclude(typeof(ITenantWorkerTestRequestV1), typeof(ITenantWorkerTestResponseV1)));
+            _busControl.ConnectConsumeAuditObserver(_auditStore, c => c.Exclude(typeof(ITenantWorkerTestRequestV1), typeof(ITenantWorkerTestResponseV1)));
 
             return _busControl.StartAsync(cancellationToken);
         }

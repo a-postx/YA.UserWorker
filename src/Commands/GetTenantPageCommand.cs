@@ -15,31 +15,31 @@ namespace YA.TenantWorker.Commands
 {
     public class GetTenantPageCommand : IGetTenantPageCommand
     {
-        public GetTenantPageCommand(ILogger<GetTenantPageCommand> logger, ITenantManagerDbContext managerDbContext, IMapper<Tenant, TenantVm> tenantVmMapper, IHttpContextAccessor httpContextAccessor, IPagingLinkHelper pagingLinkHelper)
+        public GetTenantPageCommand(ILogger<GetTenantPageCommand> logger, ITenantWorkerDbContext workerDbContext, IMapper<Tenant, TenantVm> tenantVmMapper, IHttpContextAccessor httpContextAccessor, IPagingLinkHelper pagingLinkHelper)
         {
             _log = logger ?? throw new ArgumentNullException(nameof(logger));
-            _managerDbContext = managerDbContext ?? throw new ArgumentNullException(nameof(managerDbContext));
+            _tenantWorkerDbContext = workerDbContext ?? throw new ArgumentNullException(nameof(workerDbContext));
             _tenantVmMapper = tenantVmMapper ?? throw new ArgumentNullException(nameof(tenantVmMapper));
             _httpContextAccessor = httpContextAccessor ?? throw new ArgumentNullException(nameof(httpContextAccessor));
             _pagingLinkHelper = pagingLinkHelper ?? throw new ArgumentNullException(nameof(pagingLinkHelper));
         }
 
         private readonly ILogger<GetTenantPageCommand> _log;
-        private readonly ITenantManagerDbContext _managerDbContext;
+        private readonly ITenantWorkerDbContext _tenantWorkerDbContext;
         private readonly IMapper<Tenant, TenantVm> _tenantVmMapper;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IPagingLinkHelper _pagingLinkHelper;
 
         public async Task<IActionResult> ExecuteAsync(PageOptions pageOptions, CancellationToken cancellationToken)
         {
-            ICollection<Tenant> tenants = await _managerDbContext.GetTenantsPagedAsync(pageOptions.Page.Value, pageOptions.Count.Value);
+            ICollection<Tenant> tenants = await _tenantWorkerDbContext.GetTenantsPagedAsync(pageOptions.Page.Value, pageOptions.Count.Value);
 
             if (tenants == null)
             {
                 return new NotFoundResult();
             }
 
-            var (totalCount, totalPages) = await _managerDbContext.GetTotalPagesAsync<Tenant>(pageOptions.Count.Value, cancellationToken);
+            var (totalCount, totalPages) = await _tenantWorkerDbContext.GetTotalPagesAsync<Tenant>(pageOptions.Count.Value, cancellationToken);
             List<TenantVm> tenantVms = _tenantVmMapper.MapList(tenants);
 
             PageResult<TenantVm> page = new PageResult<TenantVm>()

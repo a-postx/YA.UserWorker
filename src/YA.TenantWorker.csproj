@@ -60,4 +60,8 @@
     <WCFMetadata Include="Connected Services" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Health\Product\" />
+  </ItemGroup>
+
 </Project>

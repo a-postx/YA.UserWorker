@@ -6,7 +6,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using YA.TenantWorker.Constants;
 
-namespace YA.TenantWorker.Health
+namespace YA.TenantWorker.Health.Services
 {
     /// <summary>
     /// Startup check for availability of a Message Bus

@@ -2,7 +2,7 @@
 
 namespace YA.TenantWorker.MessageBus
 {
-    public interface ITenantManagerTestRequestV1
+    public interface ITenantWorkerTestRequestV1
     {
         DateTime Timestamp { get; }
     }

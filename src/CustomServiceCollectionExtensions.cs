@@ -24,6 +24,8 @@ using YA.TenantWorker.OperationFilters;
 using YA.TenantWorker.Options;
 using Swashbuckle.AspNetCore.Swagger;
 using YA.TenantWorker.Constants;
+using YA.TenantWorker.Health.Services;
+using YA.TenantWorker.Health.System;
 
 namespace YA.TenantWorker
 {

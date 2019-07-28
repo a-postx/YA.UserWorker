@@ -10,12 +10,12 @@ namespace YA.TenantWorker.ActionFilters
 {
     public class GetTenantRouteAttribute : IActionFilter
     {
-        public GetTenantRouteAttribute(TenantManagerDbContext dbContext)
+        public GetTenantRouteAttribute(TenantWorkerDbContext dbContext)
         {
             _dbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
         }
 
-        private readonly TenantManagerDbContext _dbContext;
+        private readonly TenantWorkerDbContext _dbContext;
 
         public void OnActionExecuting(ActionExecutingContext context)
         {

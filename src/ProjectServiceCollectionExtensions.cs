@@ -52,7 +52,7 @@ namespace YA.TenantWorker
         public static IServiceCollection AddProjectRepositories(this IServiceCollection services)
         {
             return services
-                .AddScoped<ITenantManagerDbContext, TenantManagerDbContext>();
+                .AddScoped<ITenantWorkerDbContext, TenantWorkerDbContext>();
         }
 
         /// <summary>

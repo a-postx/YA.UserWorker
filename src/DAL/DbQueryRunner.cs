@@ -6,12 +6,12 @@ namespace YA.TenantWorker.DAL
 {
     public class DbQueryRunner : IDbQueryRunner
     {
-        public DbQueryRunner(TenantManagerDbContext context)
+        public DbQueryRunner(TenantWorkerDbContext context)
         {
             Context = context ?? throw new ArgumentNullException(nameof(context));
         }
 
-        public TenantManagerDbContext Context { get; set; }
+        public TenantWorkerDbContext Context { get; set; }
 
         public Task RunQueryAsync(string query, params object[] parameters)
         {

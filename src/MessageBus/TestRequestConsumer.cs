@@ -4,16 +4,16 @@ using MassTransit;
 
 namespace YA.TenantWorker.MessageBus
 {
-    public class TestRequestConsumer : IConsumer<ITenantManagerTestRequestV1>
+    public class TestRequestConsumer : IConsumer<ITenantWorkerTestRequestV1>
     {
         public TestRequestConsumer()
         {
 
         }
 
-        public async Task Consume(ConsumeContext<ITenantManagerTestRequestV1> context)
+        public async Task Consume(ConsumeContext<ITenantWorkerTestRequestV1> context)
         {
-            await context.RespondAsync<ITenantManagerTestResponseV1>(new
+            await context.RespondAsync<ITenantWorkerTestResponseV1>(new
             {
                 GotIt = context.Message.Timestamp
             });

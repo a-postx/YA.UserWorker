@@ -17,17 +17,17 @@ namespace YA.TenantWorker.Commands
 {
     public class GetTenantCommand : IGetTenantCommand
     {
-        public GetTenantCommand(ILogger<GetTenantCommand> logger, IActionContextAccessor actionContextAccessor, ITenantManagerDbContext managerDbContext, IMapper<Tenant, TenantVm> tenantVmMapper)
+        public GetTenantCommand(ILogger<GetTenantCommand> logger, IActionContextAccessor actionContextAccessor, ITenantWorkerDbContext workerDbContext, IMapper<Tenant, TenantVm> tenantVmMapper)
         {
             _log = logger ?? throw new ArgumentNullException(nameof(logger));
             _actionContextAccessor = actionContextAccessor ?? throw new ArgumentNullException(nameof(actionContextAccessor));
-            _managerDbContext = managerDbContext ?? throw new ArgumentNullException(nameof(managerDbContext));
+            _tenantWorkerDbContext = workerDbContext ?? throw new ArgumentNullException(nameof(workerDbContext));
             _tenantVmMapper = tenantVmMapper ?? throw new ArgumentNullException(nameof(tenantVmMapper));
         }
 
         private readonly ILogger<GetTenantCommand> _log;
         private readonly IActionContextAccessor _actionContextAccessor;
-        private readonly ITenantManagerDbContext _managerDbContext;
+        private readonly ITenantWorkerDbContext _tenantWorkerDbContext;
         private readonly IMapper<Tenant, TenantVm> _tenantVmMapper;
 
         public async Task<IActionResult> ExecuteAsync(Guid tenantId, CancellationToken cancellationToken = default)
@@ -36,7 +36,7 @@ namespace YA.TenantWorker.Commands
 
             using (_log.BeginScopeWith((Logs.TenantId, tenantId), (Logs.CorrelationId, correlationId)))
             {
-                Tenant tenant = await _managerDbContext.GetTenantAsync(tenantId, cancellationToken);
+                Tenant tenant = await _tenantWorkerDbContext.GetTenantAsync(tenantId, cancellationToken);
 
                 if (tenant == null)
                 {

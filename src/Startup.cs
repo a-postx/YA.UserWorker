@@ -62,7 +62,7 @@ namespace YA.TenantWorker
         {
             KeyVaultSecrets secrets = _config.Get<KeyVaultSecrets>();
 
-            string connectionString = secrets.TenantManagerConnStr;
+            string connectionString = secrets.TenantWorkerConnStr;
 
             services
                 .AddApplicationInsightsTelemetry(_config)
@@ -108,7 +108,7 @@ namespace YA.TenantWorker
                     .AddProjectRepositories()
                     .AddProjectServices(secrets);
 
-            services.AddEntityFrameworkSqlServer().AddDbContext<TenantManagerDbContext>(options =>
+            services.AddEntityFrameworkSqlServer().AddDbContext<TenantWorkerDbContext>(options =>
                 options.UseSqlServer(connectionString, x => x.EnableRetryOnFailure())
                 .ConfigureWarnings(x => x.Throw(RelationalEventId.QueryClientEvaluationWarning))
                 .EnableSensitiveDataLogging(_hostingEnvironment.IsDevelopment()));
@@ -142,6 +142,8 @@ namespace YA.TenantWorker
                     {
                         e.PrefetchCount = 16;
                         e.UseMessageRetry(x => x.Interval(2, 500));
+                        e.AutoDelete = true;
+                        e.Durable = false;
 
                         e.Consumer<TestRequestConsumer>(provider);
                     });
@@ -152,7 +154,6 @@ namespace YA.TenantWorker
             services.AddSingleton<ISendEndpointProvider>(provider => provider.GetRequiredService<IBusControl>());
             services.AddSingleton<IBus>(provider => provider.GetRequiredService<IBusControl>());
 
-            //services.AddScoped(provider => provider.GetRequiredService<IBus>().CreateRequestClient<ICreateTenantV1>());
             //services.AddScoped(provider => provider.GetRequiredService<IBus>().CreatePublishRequestClient<ICreateTenantV1, ITenantCreatedV1>(TimeSpan.FromSeconds(5)));
 
             services.AddSingleton<IHostedService, MBService>();
@@ -219,7 +220,7 @@ namespace YA.TenantWorker
                 .UseSwagger()
                 .UseCustomSwaggerUI();
 
-            application.ApplicationServices.GetRequiredService<TenantManagerDbContext>().Database.EnsureCreated();
+            application.ApplicationServices.GetRequiredService<TenantWorkerDbContext>().Database.EnsureCreated();
         }
     }
 }

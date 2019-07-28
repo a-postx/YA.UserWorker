@@ -23,7 +23,7 @@ namespace YA.TenantWorker.Commands
             ILogger<PatchTenantCommand> logger,
             IActionContextAccessor actionContextAccessor,
             IObjectModelValidator objectModelValidator,
-            ITenantManagerDbContext managerDbContext,
+            ITenantWorkerDbContext workerDbContext,
             IMessageBusServices messageBus,
             IMapper<Tenant, TenantVm> tenantVmMapper,
             IMapper<Tenant, TenantSm> tenantSmMapper,
@@ -32,7 +32,7 @@ namespace YA.TenantWorker.Commands
             _log = logger ?? throw new ArgumentNullException(nameof(logger));
             _actionContextAccessor = actionContextAccessor ?? throw new ArgumentNullException(nameof(actionContextAccessor));
             _objectModelValidator = objectModelValidator ?? throw new ArgumentNullException(nameof(objectModelValidator));
-            _managerDbContext = managerDbContext ?? throw new ArgumentNullException(nameof(managerDbContext));
+            _tenantWorkerDbContext = workerDbContext ?? throw new ArgumentNullException(nameof(workerDbContext));
             _messageBus = messageBus ?? throw new ArgumentNullException(nameof(messageBus));
             _tenantVmMapper = tenantVmMapper ?? throw new ArgumentNullException(nameof(tenantVmMapper));
             _tenantSmMapper = tenantSmMapper ?? throw new ArgumentNullException(nameof(tenantSmMapper));
@@ -41,7 +41,7 @@ namespace YA.TenantWorker.Commands
 
         private readonly ILogger<PatchTenantCommand> _log;
         private readonly IActionContextAccessor _actionContextAccessor;
-        private readonly ITenantManagerDbContext _managerDbContext;
+        private readonly ITenantWorkerDbContext _tenantWorkerDbContext;
         private readonly IMessageBusServices _messageBus;
         private readonly IObjectModelValidator _objectModelValidator;
 
@@ -60,7 +60,7 @@ namespace YA.TenantWorker.Commands
 
             using (_log.BeginScopeWith((Logs.TenantId, tenantId), (Logs.CorrelationId, correlationId)))
             {
-                Tenant tenant = await _managerDbContext.GetTenantAsync(tenantId, cancellationToken);
+                Tenant tenant = await _tenantWorkerDbContext.GetTenantAsync(tenantId, cancellationToken);
 
                 if (tenant == null)
                 {
@@ -85,8 +85,8 @@ namespace YA.TenantWorker.Commands
 
                 try
                 {
-                    _managerDbContext.UpdateTenant(tenant);
-                    await _managerDbContext.ApplyChangesAsync(cancellationToken);
+                    _tenantWorkerDbContext.UpdateTenant(tenant);
+                    await _tenantWorkerDbContext.ApplyChangesAsync(cancellationToken);
 
                     await _messageBus.UpdateTenantV1(tenantSm, correlationId, cancellationToken);
                 }

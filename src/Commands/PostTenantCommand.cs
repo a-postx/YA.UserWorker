@@ -18,14 +18,14 @@ namespace YA.TenantWorker.Commands
     {
         public PostTenantCommand(ILogger<PostTenantCommand> logger,
             IActionContextAccessor actionContextAccessor,
-            ITenantManagerDbContext managerDbContext,
+            ITenantWorkerDbContext workerDbContext,
             IMessageBusServices messageBus,
             IMapper<Tenant, TenantVm> tenantVmMapper,
             IMapper<TenantSm, Tenant> tenantSmMapper)
         {
             _log = logger ?? throw new ArgumentNullException(nameof(logger));
             _actionContextAccessor = actionContextAccessor ?? throw new ArgumentNullException(nameof(actionContextAccessor));
-            _managerDbContext = managerDbContext ?? throw new ArgumentNullException(nameof(managerDbContext));
+            _tenantWorkerDbContext = workerDbContext ?? throw new ArgumentNullException(nameof(workerDbContext));
             _messageBus = messageBus ?? throw new ArgumentNullException(nameof(messageBus));
             _tenantVmMapper = tenantVmMapper ?? throw new ArgumentNullException(nameof(tenantVmMapper));
             _tenantSmMapper = tenantSmMapper ?? throw new ArgumentNullException(nameof(tenantSmMapper));
@@ -33,7 +33,7 @@ namespace YA.TenantWorker.Commands
 
         private readonly ILogger<PostTenantCommand> _log;
         private readonly IActionContextAccessor _actionContextAccessor;
-        private readonly ITenantManagerDbContext _managerDbContext;
+        private readonly ITenantWorkerDbContext _tenantWorkerDbContext;
         private readonly IMessageBusServices _messageBus;
 
         private readonly IMapper<Tenant, TenantVm> _tenantVmMapper;
@@ -56,8 +56,8 @@ namespace YA.TenantWorker.Commands
 
                 try
                 {
-                    await _managerDbContext.CreateTenantAsync(tenant, cancellationToken);
-                    await _managerDbContext.ApplyChangesAsync(cancellationToken);
+                    await _tenantWorkerDbContext.CreateTenantAsync(tenant, cancellationToken);
+                    await _tenantWorkerDbContext.ApplyChangesAsync(cancellationToken);
 
                     await _messageBus.CreateTenantV1(tenantSm, correlationId, cancellationToken);
                 }
