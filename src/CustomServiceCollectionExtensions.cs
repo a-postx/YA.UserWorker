@@ -117,7 +117,6 @@ namespace YA.TenantWorker
         {
             // https://github.com/Xabaril/AspNetCore.Diagnostics.HealthChecks
             services
-                .AddHostedService<MessageBusService>()
                 .AddSingleton<MessageBusServiceHealthCheck>()
                 .AddHealthChecks()
                     .AddGeneralHealthCheck<UptimeHealthCheck>("uptime")

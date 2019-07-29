@@ -17,7 +17,7 @@ using Microsoft.Extensions.Hosting;
 using Delobytes.AspNetCore;
 using YA.TenantWorker.Constants;
 using YA.TenantWorker.Health;
-using YA.TenantWorker.MessageBus;
+using YA.TenantWorker.Messaging;
 using YA.TenantWorker.DAL;
 using Serilog;
 using IHostingEnvironment = Microsoft.AspNetCore.Hosting.IHostingEnvironment;
@@ -116,7 +116,7 @@ namespace YA.TenantWorker
                 //// we don't need query tracking if dbcontext is disposed on every request
                 //.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking));
 
-            services.AddScoped<IMessageBusServices, MessageBusServices>();
+            services.AddScoped<IMessageBus, MessageBus>();
 
             services.AddScoped<TestRequestConsumer>();
             
@@ -155,8 +155,7 @@ namespace YA.TenantWorker
             services.AddSingleton<IBus>(provider => provider.GetRequiredService<IBusControl>());
 
             //services.AddScoped(provider => provider.GetRequiredService<IBus>().CreatePublishRequestClient<ICreateTenantV1, ITenantCreatedV1>(TimeSpan.FromSeconds(5)));
-
-            services.AddSingleton<IHostedService, MBService>();
+            
             services.AddSingleton<IMessageAuditStore, MessageAuditStore>();
 
 

@@ -10,7 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using YA.TenantWorker.Constants;
 using YA.TenantWorker.DAL;
-using YA.TenantWorker.MessageBus;
+using YA.TenantWorker.Messaging;
 using YA.TenantWorker.Models;
 using YA.TenantWorker.SaveModels;
 using YA.TenantWorker.ViewModels;
@@ -24,7 +24,7 @@ namespace YA.TenantWorker.Commands
             IActionContextAccessor actionContextAccessor,
             IObjectModelValidator objectModelValidator,
             ITenantWorkerDbContext workerDbContext,
-            IMessageBusServices messageBus,
+            IMessageBus messageBus,
             IMapper<Tenant, TenantVm> tenantVmMapper,
             IMapper<Tenant, TenantSm> tenantSmMapper,
             IMapper<TenantSm, Tenant> tenantMapper)
@@ -42,7 +42,7 @@ namespace YA.TenantWorker.Commands
         private readonly ILogger<PatchTenantCommand> _log;
         private readonly IActionContextAccessor _actionContextAccessor;
         private readonly ITenantWorkerDbContext _tenantWorkerDbContext;
-        private readonly IMessageBusServices _messageBus;
+        private readonly IMessageBus _messageBus;
         private readonly IObjectModelValidator _objectModelValidator;
 
         private readonly IMapper<Tenant, TenantVm> _tenantVmMapper;

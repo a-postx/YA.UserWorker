@@ -62,7 +62,8 @@ namespace YA.TenantWorker
         {
             return services
                 .AddSingleton<IClockService, Clock>()
-                .AddSingleton<IGeoDataService, IpApiGeoData>();
+                .AddSingleton<IGeoDataService, IpApiGeoData>()
+                .AddHostedService<MessageBusService>();
         }
     }
 }

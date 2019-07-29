@@ -13,5 +13,6 @@
         public const string MessageBusServiceHealthCheckName = "message_bus_service";
         public const string MessageBusServiceStartupHealthCheckName = "message_bus_service_startup";
         public const string CorrelationIdHeader = "X-Correlation-ID";
+        public const int StartupServiceCheckRetryIntervalMs = 10000;
     }
 }

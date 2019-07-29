@@ -9,7 +9,7 @@ using YA.TenantWorker.SaveModels;
 using YA.TenantWorker.Models;
 using YA.TenantWorker.DAL;
 using System;
-using YA.TenantWorker.MessageBus;
+using YA.TenantWorker.Messaging;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 
 namespace YA.TenantWorker.Commands
@@ -19,7 +19,7 @@ namespace YA.TenantWorker.Commands
         public PostTenantCommand(ILogger<PostTenantCommand> logger,
             IActionContextAccessor actionContextAccessor,
             ITenantWorkerDbContext workerDbContext,
-            IMessageBusServices messageBus,
+            IMessageBus messageBus,
             IMapper<Tenant, TenantVm> tenantVmMapper,
             IMapper<TenantSm, Tenant> tenantSmMapper)
         {
@@ -34,7 +34,7 @@ namespace YA.TenantWorker.Commands
         private readonly ILogger<PostTenantCommand> _log;
         private readonly IActionContextAccessor _actionContextAccessor;
         private readonly ITenantWorkerDbContext _tenantWorkerDbContext;
-        private readonly IMessageBusServices _messageBus;
+        private readonly IMessageBus _messageBus;
 
         private readonly IMapper<Tenant, TenantVm> _tenantVmMapper;
         private readonly IMapper<TenantSm, Tenant> _tenantSmMapper;

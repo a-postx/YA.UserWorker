@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace YA.TenantWorker.MessageBus
+namespace YA.TenantWorker.Messaging
 {
     public interface ITenantWorkerTestRequestV1
     {

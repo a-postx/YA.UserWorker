@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using MassTransit.Audit;
 using Microsoft.Extensions.Logging;
 
-namespace YA.TenantWorker.MessageBus
+namespace YA.TenantWorker.Messaging
 {
     public class MessageAuditStore : IMessageAuditStore
     {

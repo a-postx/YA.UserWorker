@@ -1,13 +1,12 @@
-﻿using MbEvents;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using YA.TenantWorker.SaveModels;
 
-namespace YA.TenantWorker.MessageBus
+namespace YA.TenantWorker.Messaging
 {
-    public interface IMessageBusServices
+    public interface IMessageBus
     {
         Task CreateTenantV1(TenantSm tenantSm, Guid correlationId, CancellationToken cancellationToken);
         Task DeleteTenantV1(Guid tenantId, Guid correlationId, CancellationToken cancellationToken);

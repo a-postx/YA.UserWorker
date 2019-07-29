@@ -7,7 +7,7 @@ using MassTransit;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 using YA.TenantWorker.Constants;
-using YA.TenantWorker.MessageBus;
+using YA.TenantWorker.Messaging;
 
 namespace YA.TenantWorker.Health.Services
 {

@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.Logging;
 using YA.TenantWorker.Constants;
 using YA.TenantWorker.DAL;
-using YA.TenantWorker.MessageBus;
+using YA.TenantWorker.Messaging;
 using YA.TenantWorker.Models;
 
 namespace YA.TenantWorker.Commands
@@ -16,7 +16,7 @@ namespace YA.TenantWorker.Commands
         public DeleteTenantCommand(ILogger<DeleteTenantCommand> logger,
             IActionContextAccessor actionContextAccessor,
             ITenantWorkerDbContext tenantWorkerDbContext,
-            IMessageBusServices messageBus)
+            IMessageBus messageBus)
         {
             _log = logger ?? throw new ArgumentNullException(nameof(logger));
             _actionContextAccessor = actionContextAccessor ?? throw new ArgumentNullException(nameof(actionContextAccessor));
@@ -27,7 +27,7 @@ namespace YA.TenantWorker.Commands
         private readonly ILogger<DeleteTenantCommand> _log;
         private readonly IActionContextAccessor _actionContextAccessor;
         private readonly ITenantWorkerDbContext _tenantWorkerDbContext;
-        private readonly IMessageBusServices _messageBus;
+        private readonly IMessageBus _messageBus;
 
         public async Task<IActionResult> ExecuteAsync(Guid tenantId, CancellationToken cancellationToken = default)
         {

@@ -12,7 +12,7 @@ using YA.TenantWorker.Models;
 using YA.TenantWorker.SaveModels;
 using YA.TenantWorker.Services;
 
-namespace YA.TenantWorker.MessageBus
+namespace YA.TenantWorker.Messaging
 {
     public enum MbOperationStatuses
     {
@@ -20,9 +20,9 @@ namespace YA.TenantWorker.MessageBus
         Error = 2
     }
 
-    public class MessageBusServices : IMessageBusServices
+    public class MessageBus : IMessageBus
     {
-        public MessageBusServices(ILogger<MessageBusServices> logger,
+        public MessageBus(ILogger<MessageBus> logger,
             ITenantWorkerDbContext dbContext,
             IBus bus,
             IPublishEndpoint publishEndpoint)
@@ -33,7 +33,7 @@ namespace YA.TenantWorker.MessageBus
             _publishEndpoint = publishEndpoint ?? throw new ArgumentNullException(nameof(publishEndpoint));
         }
 
-        private readonly ILogger<MessageBusServices> _log;
+        private readonly ILogger<MessageBus> _log;
         private readonly ITenantWorkerDbContext _dbContext;
         private readonly IBus _bus;
         private readonly IPublishEndpoint _publishEndpoint;
