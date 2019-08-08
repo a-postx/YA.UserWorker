@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Routing;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -24,6 +25,7 @@ using IHostingEnvironment = Microsoft.AspNetCore.Hosting.IHostingEnvironment;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using YA.TenantWorker.ActionFilters;
 using YA.TenantWorker.ViewModels;
+using YA.TenantWorker.Messaging.Test;
 
 namespace YA.TenantWorker
 {
@@ -72,15 +74,13 @@ namespace YA.TenantWorker
                 .AddCustomCaching()
                 .AddCustomOptions(_config)
                 .AddCustomRouting()
-                .AddResponseCaching() 
+                .AddResponseCaching()
                 .AddCustomResponseCompression()
                 .AddCustomHealthChecks()
                 .AddCustomSwagger()
                 .AddHttpContextAccessor()
 
-                // Add useful interface for accessing the ActionContext outside a controller.
                 .AddSingleton<IActionContextAccessor, ActionContextAccessor>()
-                // Add useful interface for accessing the IUrlHelper outside a controller.
                 .AddScoped(x => x
                     .GetRequiredService<IUrlHelperFactory>()
                     .GetUrlHelper(x.GetRequiredService<IActionContextAccessor>().ActionContext))
@@ -158,7 +158,6 @@ namespace YA.TenantWorker
             
             services.AddSingleton<IMessageAuditStore, MessageAuditStore>();
 
-
             services.AddScoped<GetTenantRouteAttribute>();
 
             return services.BuildServiceProvider();
@@ -187,9 +186,9 @@ namespace YA.TenantWorker
                 
                 .UseCors(CorsPolicyName.AllowAny)
                 
-                ////.UseIf(
-                ////    !_hostingEnvironment.IsDevelopment(),
-                ////    x => x.UseHsts())
+                //.UseIf(
+                //    !_hostingEnvironment.IsDevelopment(),
+                //    x => x.UseHsts())
 
                 .UseIf(
                     _hostingEnvironment.IsDevelopment(),
@@ -215,6 +214,7 @@ namespace YA.TenantWorker
                 })
 
                 .UseStaticFilesWithCacheControl()
+                
                 .UseMvc()
                 .UseSwagger()
                 .UseCustomSwaggerUI();

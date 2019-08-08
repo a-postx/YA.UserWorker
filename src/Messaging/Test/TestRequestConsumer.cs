@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using MassTransit;
 
-namespace YA.TenantWorker.Messaging
+namespace YA.TenantWorker.Messaging.Test
 {
     public class TestRequestConsumer : IConsumer<ITenantWorkerTestRequestV1>
     {

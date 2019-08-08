@@ -49,7 +49,7 @@ namespace YA.TenantWorker.Health
             return builder;
         }
 
-        public static IHealthChecksBuilder AddGeneralHealthCheck<T>(
+        public static IHealthChecksBuilder AddGenericHealthCheck<T>(
             this IHealthChecksBuilder builder,
             string name,
             HealthStatus? failureStatus = null,

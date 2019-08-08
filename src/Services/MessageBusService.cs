@@ -8,7 +8,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using YA.TenantWorker.Constants;
 using YA.TenantWorker.Health.Services;
-using YA.TenantWorker.Messaging;
+using YA.TenantWorker.Messaging.Test;
 
 namespace YA.TenantWorker.Services
 {

@@ -62,6 +62,7 @@
 
   <ItemGroup>
     <Folder Include="Health\Product\" />
+    <Folder Include="Core\" />
   </ItemGroup>
 
 </Project>

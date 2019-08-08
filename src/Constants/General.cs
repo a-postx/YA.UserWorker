@@ -2,6 +2,7 @@
 {
     public static class General
     {
+        public const int SystemShutdownTimeoutSec = 3600;
         public const string ProductionKeyVault = "https://c934749a-91be-256-prd-kv.vault.azure.net";
         public const string DevelopmentKeyVault = "https://a7267048-82be-425-dev-kv.vault.azure.net";
         public const string AppDataFolderName = "AppData";

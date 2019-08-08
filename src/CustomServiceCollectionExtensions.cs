@@ -119,8 +119,8 @@ namespace YA.TenantWorker
             services
                 .AddSingleton<MessageBusServiceHealthCheck>()
                 .AddHealthChecks()
-                    .AddGeneralHealthCheck<UptimeHealthCheck>("uptime")
-                    .AddGeneralHealthCheck<MessageBusServiceHealthCheck>(General.MessageBusServiceHealthCheckName, HealthStatus.Degraded, new[] { "ready" })
+                    .AddGenericHealthCheck<UptimeHealthCheck>("uptime")
+                    .AddGenericHealthCheck<MessageBusServiceHealthCheck>(General.MessageBusServiceHealthCheckName, HealthStatus.Degraded, new[] { "ready" })
                     .AddMemoryHealthCheck("memory");
                     // Ping is not available on Azure Web Apps
                     //.AddNetworkHealthCheck("network");

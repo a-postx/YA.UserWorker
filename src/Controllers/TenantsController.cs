@@ -57,7 +57,9 @@ namespace YA.TenantWorker.Controllers
                 HttpMethods.Delete,
                 HttpMethods.Get,
                 HttpMethods.Head,
-                HttpMethods.Options);
+                HttpMethods.Options,
+                HttpMethods.Patch,
+                HttpMethods.Post);
             return Ok();
         }
 

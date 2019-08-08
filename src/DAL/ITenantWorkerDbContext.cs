@@ -15,7 +15,7 @@ namespace YA.TenantWorker.DAL
         void UpdateTenant(Tenant tenant);
         Task<Tenant> GetTenantAsync(Guid tenantId, CancellationToken cancellationToken);
         Task<Tenant> GetTenantAsync(Guid? correlationId, CancellationToken cancellationToken);
-        Task<ICollection<Tenant>> GetTenantsPagedAsync(int page, int count);
+        Task<ICollection<Tenant>> GetTenantsPagedAsync(int page, int count, CancellationToken cancellationToken);
 
         Task CreateUserAsync(User user, CancellationToken cancellationToken);
         Task<User> GetUserAsync(Tenant tenant, string userName, CancellationToken cancellationToken);
@@ -25,7 +25,7 @@ namespace YA.TenantWorker.DAL
             Expression<Func<T, bool>> wherePredicate,            
             int page, int count) where T : class;
 
-        Task<ICollection<T>> GetItemsPaged<T>(Tenant tenant, int page, int count) where T : class, ITenantEntity;
+        Task<ICollection<T>> GetItemsPagedAsync<T>(Tenant tenant, int page, int count, CancellationToken cancellationToken) where T : class, ITenantEntity;
 
         Task<(int totalCount, int totalPages)> GetTotalPagesAsync<T>(int count, CancellationToken cancellationToken) where T : class;
         

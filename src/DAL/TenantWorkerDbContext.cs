@@ -85,17 +85,17 @@ namespace YA.TenantWorker.DAL
             return Task.FromResult((ICollection<T>)items);
         }
 
-        public Task<ICollection<T>> GetItemsPaged<T>(Tenant tenant, int page, int count) where T : class, ITenantEntity
+        public async Task<ICollection<T>> GetItemsPagedAsync<T>(Tenant tenant, int page, int count, CancellationToken cancellationToken) where T : class, ITenantEntity
         {
-            List<T> items = Set<T>().OrderBy(t => t.tstamp).Where(t => t.Tenant == tenant)
-                .Skip(count * (page - 1)).Take(count).ToList();
+            List<T> items = await Set<T>().OrderBy(t => t.tstamp).Where(t => t.Tenant == tenant)
+                .Skip(count * (page - 1)).Take(count).ToListAsync(cancellationToken);
 
             if (items.Count == 0)
             {
                 items = null;
             }
 
-            return Task.FromResult((ICollection<T>)items);
+            return items;
         }
 
         public async Task<(int totalCount, int totalPages)> GetTotalPagesAsync<T>(int count, CancellationToken cancellationToken) where T : class
@@ -131,9 +131,10 @@ namespace YA.TenantWorker.DAL
             return await Tenants.SingleOrDefaultAsync(c => c.CorrelationId == correlationId, cancellationToken);
         }
 
-        public async Task<ICollection<Tenant>> GetTenantsPagedAsync(int page, int count)
+        public async Task<ICollection<Tenant>> GetTenantsPagedAsync(int page, int count, CancellationToken cancellationToken)
         {
-            List<Tenant> pagedTenants = await Tenants.OrderBy(c => c.TenantID).Skip(count * (page - 1)).Take(count).ToListAsync();
+            List<Tenant> pagedTenants = await Tenants.OrderBy(c => c.TenantID).Skip(count * (page - 1))
+                .Take(count).ToListAsync(cancellationToken);
 
             if (pagedTenants.Count == 0)
             {
