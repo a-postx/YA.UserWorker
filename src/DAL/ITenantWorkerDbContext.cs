@@ -10,22 +10,15 @@ namespace YA.TenantWorker.DAL
 {
     public interface ITenantWorkerDbContext
     {
-        Task CreateTenantAsync(Tenant tenant, CancellationToken cancellationToken);
         void DeleteTenant(Tenant tenant);
         void UpdateTenant(Tenant tenant);
-        Task<Tenant> GetTenantAsync(Guid tenantId, CancellationToken cancellationToken);
-        Task<Tenant> GetTenantAsync(Guid? correlationId, CancellationToken cancellationToken);
-        Task<ICollection<Tenant>> GetTenantsPagedAsync(int page, int count, CancellationToken cancellationToken);
 
-        Task CreateUserAsync(User user, CancellationToken cancellationToken);
-        Task<User> GetUserAsync(Tenant tenant, string userName, CancellationToken cancellationToken);
-
-        Task<ICollection<T>> GetItemsPaged<T>(
-            Expression<Func<T, byte[]>> orderPredicate,
-            Expression<Func<T, bool>> wherePredicate,            
-            int page, int count) where T : class;
-
-        Task<ICollection<T>> GetItemsPagedAsync<T>(Tenant tenant, int page, int count, CancellationToken cancellationToken) where T : class, ITenantEntity;
+        Task CreateEntityAsync<T>(T item, CancellationToken cancellationToken) where T : class;
+        Task CreateEntitiesAsync<T>(List<T> newItems, CancellationToken cancellationToken) where T : class;
+        Task<T> GetEntityAsync<T>(Expression<Func<T, bool>> predicate, CancellationToken cancellationToken) where T : class;
+        Task<ICollection<T>> GetEntitiesPagedAsync<T>(Tenant tenant, int page, int count, CancellationToken cancellationToken) where T : class, ITenantEntity;
+        Task<ICollection<T>> GetEntitiesOrderedAndPagedAsync<T>(Expression<Func<T, Guid>> orderPredicate, int page, int count, CancellationToken cancellationToken) where T : class;
+        Task<ICollection<T>> GetEntitiesOrderedAndFilteredAndPagedAsync<T>(Expression<Func<T, byte[]>> orderPredicate, Expression<Func<T, bool>> wherePredicate, int page, int count, CancellationToken cancellationToken) where T : class;
 
         Task<(int totalCount, int totalPages)> GetTotalPagesAsync<T>(int count, CancellationToken cancellationToken) where T : class;
         

@@ -56,7 +56,7 @@ namespace YA.TenantWorker.Commands
 
                 try
                 {
-                    await _tenantWorkerDbContext.CreateTenantAsync(tenant, cancellationToken);
+                    await _tenantWorkerDbContext.CreateEntityAsync(tenant, cancellationToken);
                     await _tenantWorkerDbContext.ApplyChangesAsync(cancellationToken);
 
                     await _messageBus.CreateTenantV1(tenantSm, correlationId, cancellationToken);

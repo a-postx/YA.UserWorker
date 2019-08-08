@@ -32,7 +32,8 @@ namespace YA.TenantWorker.Commands
 
         public async Task<IActionResult> ExecuteAsync(PageOptions pageOptions, CancellationToken cancellationToken)
         {
-            ICollection<Tenant> tenants = await _tenantWorkerDbContext.GetTenantsPagedAsync(pageOptions.Page.Value, pageOptions.Count.Value, cancellationToken);
+            ICollection<Tenant> tenants = await _tenantWorkerDbContext
+                .GetEntitiesOrderedAndPagedAsync<Tenant>(e => e.TenantID, pageOptions.Page.Value, pageOptions.Count.Value, cancellationToken);
 
             if (tenants == null)
             {

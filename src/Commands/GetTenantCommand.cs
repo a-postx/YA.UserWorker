@@ -36,7 +36,7 @@ namespace YA.TenantWorker.Commands
 
             using (_log.BeginScopeWith((Logs.TenantId, tenantId), (Logs.CorrelationId, correlationId)))
             {
-                Tenant tenant = await _tenantWorkerDbContext.GetTenantAsync(tenantId, cancellationToken);
+                Tenant tenant = await _tenantWorkerDbContext.GetEntityAsync<Tenant>(e => e.TenantID == tenantId, cancellationToken);
 
                 if (tenant == null)
                 {

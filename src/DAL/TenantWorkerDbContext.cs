@@ -37,11 +37,6 @@ namespace YA.TenantWorker.DAL
             modelBuilder.Seed();
         }
 
-        private async Task CreateItemAsync<T>(T item, CancellationToken cancellationToken) where T : class
-        {
-            await Set<T>().AddAsync(item, cancellationToken);
-        }
-
         private void DeleteItem<T>(T item) where T : class
         {
             Set<T>().Remove(item);
@@ -52,42 +47,53 @@ namespace YA.TenantWorker.DAL
             Set<T>().Update(item);
         }
 
-        private async Task CreateItemsAsync<T>(List<T> newItems, CancellationToken cancellationToken) where T : class
+        public async Task CreateEntityAsync<T>(T item, CancellationToken cancellationToken) where T : class
+        {
+            await Set<T>().AddAsync(item, cancellationToken);
+        }
+
+        public async Task CreateEntitiesAsync<T>(List<T> newItems, CancellationToken cancellationToken) where T : class
         {
             await Set<T>().AddRangeAsync(newItems, cancellationToken);
         }
 
-        private List<T> GetEntities<T>(Expression<Func<T, bool>> wherePredicate = null) where T : class
+        public async Task<T> GetEntityAsync<T>(Expression<Func<T, bool>> predicate, CancellationToken cancellationToken) where T : class
         {
-            IQueryable<T> data = Set<T>();
-
-            if (wherePredicate != null)
-            {
-                data = data.Where(wherePredicate);
-            }
-
-            return data.ToList();
+            return await Set<T>().SingleOrDefaultAsync(predicate, cancellationToken);
         }
 
-        public Task<ICollection<T>> GetItemsPaged<T>(
-            Expression<Func<T, byte[]>> orderPredicate,
-            Expression<Func<T, bool>> wherePredicate,
-            int page, int count) where T : class
+        public async Task<ICollection<T>> GetEntitiesPagedAsync<T>(Tenant tenant, int page, int count, CancellationToken cancellationToken) where T : class, ITenantEntity
         {
-            List<T> items = Set<T>().OrderBy(orderPredicate).Where(wherePredicate)
-                .Skip(count * (page - 1)).Take(count).ToList();
+            List<T> items = await Set<T>().OrderBy(t => t.tstamp).Where(t => t.Tenant == tenant)
+                .Skip(count * (page - 1)).Take(count).ToListAsync(cancellationToken);
 
             if (items.Count == 0)
             {
                 items = null;
             }
 
-            return Task.FromResult((ICollection<T>)items);
+            return items;
         }
 
-        public async Task<ICollection<T>> GetItemsPagedAsync<T>(Tenant tenant, int page, int count, CancellationToken cancellationToken) where T : class, ITenantEntity
+        public async Task<ICollection<T>> GetEntitiesOrderedAndPagedAsync<T>(Expression<Func<T, Guid>> orderPredicate,
+            int page, int count, CancellationToken cancellationToken) where T : class
         {
-            List<T> items = await Set<T>().OrderBy(t => t.tstamp).Where(t => t.Tenant == tenant)
+            List<T> items = await Set<T>().OrderBy(orderPredicate)
+                .Skip(count * (page - 1)).Take(count).ToListAsync(cancellationToken);
+
+            if (items.Count == 0)
+            {
+                items = null;
+            }
+
+            return items;
+        }
+
+        public async Task<ICollection<T>> GetEntitiesOrderedAndFilteredAndPagedAsync<T>(Expression<Func<T, byte[]>> orderPredicate,
+            Expression<Func<T, bool>> wherePredicate,
+            int page, int count, CancellationToken cancellationToken) where T : class
+        {
+            List<T> items = await Set<T>().OrderBy(orderPredicate).Where(wherePredicate)
                 .Skip(count * (page - 1)).Take(count).ToListAsync(cancellationToken);
 
             if (items.Count == 0)
@@ -106,11 +112,6 @@ namespace YA.TenantWorker.DAL
         }
 
         #region Tenants
-        public async Task CreateTenantAsync(Tenant tenant, CancellationToken cancellationToken)
-        {
-            await CreateItemAsync(tenant, cancellationToken);
-        }
-
         public void DeleteTenant(Tenant tenant)
         {
             DeleteItem(tenant);
@@ -119,46 +120,6 @@ namespace YA.TenantWorker.DAL
         public void UpdateTenant(Tenant tenant)
         {
             UpdateItem(tenant);
-        }
-
-        public async Task<Tenant> GetTenantAsync(Guid tenantId, CancellationToken cancellationToken)
-        {
-            return await Tenants.SingleOrDefaultAsync(c => c.TenantID == tenantId, cancellationToken);
-        }
-
-        public async Task<Tenant> GetTenantAsync(Guid? correlationId, CancellationToken cancellationToken)
-        {
-            return await Tenants.SingleOrDefaultAsync(c => c.CorrelationId == correlationId, cancellationToken);
-        }
-
-        public async Task<ICollection<Tenant>> GetTenantsPagedAsync(int page, int count, CancellationToken cancellationToken)
-        {
-            List<Tenant> pagedTenants = await Tenants.OrderBy(c => c.TenantID).Skip(count * (page - 1))
-                .Take(count).ToListAsync(cancellationToken);
-
-            if (pagedTenants.Count == 0)
-            {
-                pagedTenants = null;
-            }
-
-            return pagedTenants;
-        }
-        #endregion
-
-        #region Users
-        public async Task CreateUserAsync(User user, CancellationToken cancellationToken)
-        {
-            await CreateItemAsync(user, cancellationToken);
-        }
-
-        public async Task<User> GetUserAsync(Tenant tenant, string userName, CancellationToken cancellationToken)
-        {
-            return await Users.SingleOrDefaultAsync(u => u.Tenant == tenant && u.Username == userName, cancellationToken);
-        }
-
-        public async Task<User> GetUserAsync(Guid? correlationId, CancellationToken cancellationToken)
-        {
-            return await Users.SingleOrDefaultAsync(m => m.CorrelationId == correlationId, cancellationToken);
         }
         #endregion
 
