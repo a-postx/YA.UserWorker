@@ -16,7 +16,8 @@ namespace YA.TenantWorker.Messaging
 
         public Task StoreMessage<T>(T message, MessageAuditMetadata metadata) where T : class
         {
-            _log.LogInformation("{ContextType}{CorrelationId}{Message}", metadata.ContextType, metadata.CorrelationId, message.ToJson());
+            _log.LogInformation("{ContextType}{DestinationAddress}{SourceAddress}{CorrelationId}{Message}",
+                metadata.ContextType, metadata.DestinationAddress, metadata.SourceAddress, metadata.CorrelationId, message.ToJson());
             return Task.CompletedTask;
         }
     }

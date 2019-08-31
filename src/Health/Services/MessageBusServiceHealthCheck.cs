@@ -48,7 +48,7 @@ namespace YA.TenantWorker.Health.Services
             }
             catch (Exception e)
             {
-                _log.LogError("Error checking health for Message Bus: {Message}", e);
+                _log.LogError("Error checking health for Message Bus: {Exception}", e);
                 healthData.Add("Exception", e.Message);
             }
 

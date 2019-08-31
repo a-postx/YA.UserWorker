@@ -43,7 +43,7 @@ namespace YA.TenantWorker.Health.System
             }
             catch (Exception e)
             {
-                _log.LogError("Error checking health for Network: {Message}", e);
+                _log.LogError("Error checking health for Network: {Exception}", e);
             }
 
             discoverySW.Stop();
