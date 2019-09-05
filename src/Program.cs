@@ -14,10 +14,10 @@ using Microsoft.Extensions.DependencyInjection;
 using Delobytes.AspNetCore;
 using YA.TenantWorker.Constants;
 using YA.TenantWorker.Options;
-using YA.TenantWorker.Services;
 using Serilog;
 using Serilog.Core;
 using Serilog.Events;
+using YA.TenantWorker.Application.Interfaces;
 
 namespace YA.TenantWorker
 {

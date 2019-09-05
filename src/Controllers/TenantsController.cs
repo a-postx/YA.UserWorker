@@ -7,11 +7,11 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Net.Http.Headers;
-using YA.TenantWorker.ActionFilters;
-using YA.TenantWorker.Commands;
+using YA.TenantWorker.Application.ActionFilters;
+using YA.TenantWorker.Application.Commands;
 using YA.TenantWorker.Constants;
-using YA.TenantWorker.ViewModels;
-using YA.TenantWorker.SaveModels;
+using YA.TenantWorker.Application.Dto.ViewModels;
+using YA.TenantWorker.Application.Dto.SaveModels;
 using Swashbuckle.AspNetCore.Annotations;
 
 namespace YA.TenantWorker.Controllers

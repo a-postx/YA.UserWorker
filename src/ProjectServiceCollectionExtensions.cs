@@ -1,14 +1,15 @@
 using Microsoft.Extensions.DependencyInjection;
-using YA.TenantWorker.Commands;
-using YA.TenantWorker.Mappers;
-using YA.TenantWorker.Models;
-using YA.TenantWorker.DAL;
-using YA.TenantWorker.Services;
-using YA.TenantWorker.ViewModels;
-using YA.TenantWorker.SaveModels;
+using YA.TenantWorker.Application.Commands;
+using YA.TenantWorker.Application.Mappers;
+using YA.TenantWorker.Core.Entities;
+using YA.TenantWorker.Application.Interfaces;
+using YA.TenantWorker.Infrastructure.Services;
+using YA.TenantWorker.Application.Dto.ViewModels;
+using YA.TenantWorker.Application.Dto.SaveModels;
 using Delobytes.Mapper;
 using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Hosting;
+using YA.TenantWorker.Infrastructure.Data;
 
 namespace YA.TenantWorker
 {

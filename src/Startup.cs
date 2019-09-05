@@ -18,14 +18,15 @@ using Microsoft.Extensions.Hosting;
 using Delobytes.AspNetCore;
 using YA.TenantWorker.Constants;
 using YA.TenantWorker.Health;
-using YA.TenantWorker.Messaging;
-using YA.TenantWorker.DAL;
+using YA.TenantWorker.Infrastructure.Messaging;
+using YA.TenantWorker.Infrastructure.Data;
 using Serilog;
 using IHostingEnvironment = Microsoft.AspNetCore.Hosting.IHostingEnvironment;
 using Microsoft.EntityFrameworkCore.Diagnostics;
-using YA.TenantWorker.ActionFilters;
-using YA.TenantWorker.ViewModels;
-using YA.TenantWorker.Messaging.Test;
+using YA.TenantWorker.Application.ActionFilters;
+using YA.TenantWorker.Application.Dto.ViewModels;
+using YA.TenantWorker.Infrastructure.Messaging.Test;
+using YA.TenantWorker.Application.Interfaces;
 
 namespace YA.TenantWorker
 {
