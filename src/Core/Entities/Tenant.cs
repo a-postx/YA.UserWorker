@@ -8,7 +8,7 @@ namespace YA.TenantWorker.Core.Entities
         System = 0,
         Custom = 1
     }
-    public class Tenant
+    public class Tenant : IAuditedEntityBase
     {
         public Guid TenantID { get; set; }
         public Guid? CorrelationId { get; set; }

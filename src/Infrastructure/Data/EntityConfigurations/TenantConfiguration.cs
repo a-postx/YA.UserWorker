@@ -12,7 +12,7 @@ namespace YA.TenantWorker.Infrastructure.Data.EntityConfigurations
         {
             modelBuilder.HasKey(k => k.TenantID);
 
-            modelBuilder.Property(p => p.LastModifiedDateTime).HasDefaultValueSql(General.DefaultSqlModelChangeDateTime).ValueGeneratedOnAddOrUpdate();
+            modelBuilder.Property(p => p.LastModifiedDateTime).HasDefaultValueSql(General.DefaultSqlModelChangeDateTime).ValueGeneratedOnAdd();
             modelBuilder.Property(p => p.tstamp).IsRowVersion();
             modelBuilder.Property(p => p.TenantName)
                 .IsUnicode()

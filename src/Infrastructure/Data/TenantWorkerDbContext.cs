@@ -10,6 +10,8 @@ using Microsoft.EntityFrameworkCore.Storage;
 using YA.TenantWorker.Infrastructure.Data.EntityConfigurations;
 using YA.TenantWorker.Core.Entities;
 using YA.TenantWorker.Application.Interfaces;
+using System.Reflection;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 
 namespace YA.TenantWorker.Infrastructure.Data
 {
@@ -124,13 +126,31 @@ namespace YA.TenantWorker.Infrastructure.Data
         }
         #endregion
 
+        private void ApplyAuditedValues()
+        {
+            DateTime currentDateTime = DateTime.Now;
+            List<EntityEntry> entries = ChangeTracker.Entries().ToList();
+
+            List<EntityEntry> updatedEntries = entries.Where(e => e.Entity is IAuditedEntityBase)
+                    .Where(e => e.State == EntityState.Modified).ToList();
+
+            updatedEntries.ForEach(e =>
+            {
+                ((IAuditedEntityBase)e.Entity).LastModifiedDateTime = currentDateTime;
+            });
+        }
+
         public int ApplyChanges()
         {
+            ApplyAuditedValues();
+
             return base.SaveChanges();
         }
 
         public async Task<int> ApplyChangesAsync(CancellationToken cancellationToken)
         {
+            ApplyAuditedValues();
+
             int result = 0;
 
             bool saved = false;

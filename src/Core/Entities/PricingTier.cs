@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace YA.TenantWorker.Core.Entities
 {
-    public class PricingTier
+    public class PricingTier : IAuditedEntityBase
     {
         public Guid PricingTierID { get; set; }
         public Guid? CorrelationId { get; set; }

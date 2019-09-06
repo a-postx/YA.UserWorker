@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace YA.TenantWorker.Core.Entities
 {
-    public class User : ITenantEntity
+    public class User : ITenantEntity, IAuditedEntityBase
     {
         public Guid UserID { get; set; }
         public virtual Tenant Tenant { get; set; }

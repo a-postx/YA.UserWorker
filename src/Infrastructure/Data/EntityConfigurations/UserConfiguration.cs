@@ -14,7 +14,7 @@ namespace YA.TenantWorker.Infrastructure.Data.EntityConfigurations
             modelBuilder.HasQueryFilter(f => !f.IsDeleted);
 
             modelBuilder.Property(p => p.CreatedDateTime).HasDefaultValueSql(General.DefaultSqlModelChangeDateTime).ValueGeneratedOnAdd();
-            modelBuilder.Property(p => p.LastModifiedDateTime).HasDefaultValueSql(General.DefaultSqlModelChangeDateTime).ValueGeneratedOnUpdate();
+            modelBuilder.Property(p => p.LastModifiedDateTime).HasDefaultValueSql(General.DefaultSqlModelChangeDateTime).ValueGeneratedOnAdd();
             modelBuilder.Property(p => p.tstamp).IsRowVersion();
             modelBuilder.Property(p => p.Username)
                 .HasMaxLength(64)

@@ -15,7 +15,7 @@ namespace YA.TenantWorker.Infrastructure.Data.EntityConfigurations
         {
             modelBuilder.HasKey(k => new { k.PricingTierID });
 
-            modelBuilder.Property(p => p.LastModifiedDateTime).HasDefaultValueSql(General.DefaultSqlModelChangeDateTime).ValueGeneratedOnAddOrUpdate();
+            modelBuilder.Property(p => p.LastModifiedDateTime).HasDefaultValueSql(General.DefaultSqlModelChangeDateTime).ValueGeneratedOnAdd();
             modelBuilder.Property(p => p.tstamp).IsRowVersion();
             modelBuilder.Property(p => p.Name)
                 .IsUnicode()
