@@ -18,6 +18,7 @@ using Serilog;
 using Serilog.Core;
 using Serilog.Events;
 using YA.TenantWorker.Application.Interfaces;
+using Microsoft.IdentityModel.Clients.ActiveDirectory;
 
 namespace YA.TenantWorker
 {
@@ -117,6 +118,8 @@ namespace YA.TenantWorker
 
                     // <##Azure Key Vault
                     string keyVaultEndpoint = null;
+                    string clientId = Environment.GetEnvironmentVariable("KeyVaultAppClientId");
+                    string clientSecret = Environment.GetEnvironmentVariable("KeyVaultAppClientSecret");
 
                     if (hostingContext.HostingEnvironment.IsDevelopment())
                     {
@@ -129,9 +132,25 @@ namespace YA.TenantWorker
 
                     if (!string.IsNullOrEmpty(keyVaultEndpoint))
                     {
-                        AzureServiceTokenProvider azureServiceTokenProvider = new AzureServiceTokenProvider();
-                        KeyVaultClient keyVaultClient = new KeyVaultClient(
-                            new KeyVaultClient.AuthenticationCallback(azureServiceTokenProvider.KeyVaultTokenCallback));
+                        KeyVaultClient keyVaultClient;
+
+                        if (!string.IsNullOrEmpty(clientId) && !string.IsNullOrEmpty(clientSecret)) // connect via App Registration
+                        {
+                            keyVaultClient = new KeyVaultClient(async (authority, resource, scope) =>
+                            {
+                                var adCredential = new ClientCredential(clientId, clientSecret);
+                                var authenticationContext = new AuthenticationContext(authority, null);
+                                var authResult = await authenticationContext.AcquireTokenAsync(resource, adCredential);
+                                return authResult.AccessToken;
+                            });
+                        }
+                        else // connect via Azure Token Provider
+                        {
+                            AzureServiceTokenProvider azureServiceTokenProvider = new AzureServiceTokenProvider();
+                            keyVaultClient = new KeyVaultClient(
+                                    new KeyVaultClient.AuthenticationCallback(azureServiceTokenProvider.KeyVaultTokenCallback));
+                        }
+
                         config.AddAzureKeyVault(keyVaultEndpoint, keyVaultClient, new DefaultKeyVaultSecretManager());
                     }
                     // Azure Key Vault##>

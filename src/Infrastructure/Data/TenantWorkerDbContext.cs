@@ -128,7 +128,7 @@ namespace YA.TenantWorker.Infrastructure.Data
 
         private void ApplyAuditedValues()
         {
-            DateTime currentDateTime = DateTime.Now;
+            DateTime currentDateTime = DateTime.UtcNow;
             List<EntityEntry> entries = ChangeTracker.Entries().ToList();
 
             List<EntityEntry> updatedEntries = entries.Where(e => e.Entity is IAuditedEntityBase)

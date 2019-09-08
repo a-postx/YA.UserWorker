@@ -16,7 +16,7 @@ namespace YA.TenantWorker.Health.System
 
         public Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken = new CancellationToken())
         {
-            TimeSpan runtime = DateTime.Now - Process.GetCurrentProcess().StartTime;
+            TimeSpan runtime = DateTime.UtcNow - Process.GetCurrentProcess().StartTime.ToUniversalTime();
             int upTimeValue = (runtime.Days * 3600) + (runtime.Minutes * 60) + runtime.Seconds;
 
             Dictionary<string, object> data = new Dictionary<string, object>
