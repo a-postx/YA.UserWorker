@@ -24,7 +24,7 @@ using Serilog;
 using IHostingEnvironment = Microsoft.AspNetCore.Hosting.IHostingEnvironment;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using YA.TenantWorker.Application.ActionFilters;
-using YA.TenantWorker.Application.Dto.ViewModels;
+using YA.TenantWorker.Application.Models.ViewModels;
 using YA.TenantWorker.Infrastructure.Messaging.Test;
 using YA.TenantWorker.Application.Interfaces;
 
@@ -77,7 +77,7 @@ namespace YA.TenantWorker
                 .AddCustomRouting()
                 .AddResponseCaching()
                 .AddCustomResponseCompression()
-                .AddCustomHealthChecks()
+                .AddCustomHealthChecks(_config)
                 .AddCustomSwagger()
                 .AddHttpContextAccessor()
 
@@ -123,8 +123,8 @@ namespace YA.TenantWorker
             
             services.AddMassTransit(options =>
             {
-                // add the consumer to the DI container
-                options.AddConsumer<TestRequestConsumer>();
+                // add all consumers to the container
+                options.AddConsumers(GetType().Assembly);
             });
 
             services.AddSingleton(provider =>
@@ -145,6 +145,10 @@ namespace YA.TenantWorker
                         e.UseMessageRetry(x => x.Interval(2, 500));
                         e.AutoDelete = true;
                         e.Durable = false;
+                        e.ExchangeType = "fanout";
+                        e.Exclusive = true;
+                        e.ExclusiveConsumer = true;
+                        ////e.SetExchangeArgument("x-delayed-type", "direct");
 
                         e.Consumer<TestRequestConsumer>(provider);
                     });

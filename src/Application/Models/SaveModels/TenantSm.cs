@@ -3,9 +3,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using YA.TenantWorker.Application.Dto.ViewModelSchemaFilters;
+using YA.TenantWorker.Application.Models.ViewModelSchemaFilters;
 
-namespace YA.TenantWorker.Application.Dto.SaveModels
+namespace YA.TenantWorker.Application.Models.SaveModels
 {
     /// <summary>
     /// Tenant model from external API call.

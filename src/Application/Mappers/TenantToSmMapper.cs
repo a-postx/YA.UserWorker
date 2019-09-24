@@ -1,7 +1,7 @@
 using System;
 using Delobytes.Mapper;
 using YA.TenantWorker.Core.Entities;
-using YA.TenantWorker.Application.Dto.SaveModels;
+using YA.TenantWorker.Application.Models.SaveModels;
 
 namespace YA.TenantWorker.Application.Mappers
 {

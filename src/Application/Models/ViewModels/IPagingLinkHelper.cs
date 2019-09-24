@@ -1,4 +1,4 @@
-﻿namespace YA.TenantWorker.Application.Dto.ViewModels
+﻿namespace YA.TenantWorker.Application.Models.ViewModels
 {
     public interface IPagingLinkHelper
     {

@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace YA.TenantWorker.Application.Dto.ViewModels
+namespace YA.TenantWorker.Application.Models.ViewModels
 {
     /// <summary>
     /// Paged result for elements listing.

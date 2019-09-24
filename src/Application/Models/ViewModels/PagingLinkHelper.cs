@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc;
 using Delobytes.AspNetCore;
 
-namespace YA.TenantWorker.Application.Dto.ViewModels
+namespace YA.TenantWorker.Application.Models.ViewModels
 {
     public class PagingLinkHelper : IPagingLinkHelper
     {

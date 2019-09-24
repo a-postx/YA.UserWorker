@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace YA.TenantWorker.Application.Dto.ViewModels
+namespace YA.TenantWorker.Application.Models.ViewModels
 {
     /// <summary>
     /// Page options for listing elements

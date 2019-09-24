@@ -10,8 +10,8 @@ using Microsoft.Net.Http.Headers;
 using YA.TenantWorker.Application.ActionFilters;
 using YA.TenantWorker.Application.Commands;
 using YA.TenantWorker.Constants;
-using YA.TenantWorker.Application.Dto.ViewModels;
-using YA.TenantWorker.Application.Dto.SaveModels;
+using YA.TenantWorker.Application.Models.ViewModels;
+using YA.TenantWorker.Application.Models.SaveModels;
 using Swashbuckle.AspNetCore.Annotations;
 
 namespace YA.TenantWorker.Controllers

@@ -1,9 +1,9 @@
 ﻿using System;
-using YA.TenantWorker.Application.Dto.ViewModels;
+using YA.TenantWorker.Application.Models.ViewModels;
 using Swashbuckle.AspNetCore.Swagger;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
-namespace YA.TenantWorker.Application.Dto.ViewModelSchemaFilters
+namespace YA.TenantWorker.Application.Models.ViewModelSchemaFilters
 {
     public class TenantVmSchemaFilter : ISchemaFilter
     {

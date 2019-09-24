@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Delobytes.AspNetCore;
 using YA.TenantWorker.Constants;
 using YA.TenantWorker.Core.Entities;
-using YA.TenantWorker.Application.Dto.ViewModels;
+using YA.TenantWorker.Application.Models.ViewModels;
 using Delobytes.Mapper;
 using Microsoft.Extensions.Logging;
 

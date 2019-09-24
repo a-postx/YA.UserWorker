@@ -9,7 +9,7 @@ using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 using YA.TenantWorker.Application.Interfaces;
 using YA.TenantWorker.Core.Entities;
-using YA.TenantWorker.Application.Dto.ViewModels;
+using YA.TenantWorker.Application.Models.ViewModels;
 using Delobytes.Mapper;
 using YA.TenantWorker.Constants;
 

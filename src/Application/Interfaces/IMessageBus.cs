@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using YA.TenantWorker.Application.Dto.SaveModels;
+using YA.TenantWorker.Application.Models.SaveModels;
 
 namespace YA.TenantWorker.Application.Interfaces
 {

@@ -1,6 +1,6 @@
 ﻿using System;
 using MassTransit;
-using YA.TenantWorker.Application.Dto.SaveModels;
+using YA.TenantWorker.Application.Models.SaveModels;
 
 namespace MbEvents
 {

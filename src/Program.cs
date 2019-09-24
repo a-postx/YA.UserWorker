@@ -19,6 +19,7 @@ using Serilog.Core;
 using Serilog.Events;
 using YA.TenantWorker.Application.Interfaces;
 using Microsoft.IdentityModel.Clients.ActiveDirectory;
+using System.Runtime;
 
 namespace YA.TenantWorker
 {
@@ -44,6 +45,7 @@ namespace YA.TenantWorker
         internal static Countries Country { get; private set; }
         
         internal static OsPlatforms OsPlatform { get; private set; }
+        internal static string DotNetVersion { get; private set; }
 
         public static async Task<int> Main(string[] args)
         {
@@ -138,9 +140,15 @@ namespace YA.TenantWorker
                         {
                             keyVaultClient = new KeyVaultClient(async (authority, resource, scope) =>
                             {
-                                var adCredential = new ClientCredential(clientId, clientSecret);
-                                var authenticationContext = new AuthenticationContext(authority, null);
-                                var authResult = await authenticationContext.AcquireTokenAsync(resource, adCredential);
+                                ClientCredential adCredential = new ClientCredential(clientId, clientSecret);
+                                AuthenticationContext authenticationContext = new AuthenticationContext(authority, null);
+                                AuthenticationResult authResult = await authenticationContext.AcquireTokenAsync(resource, adCredential);
+
+                                if (authResult == null)
+                                {
+                                    throw new Exception("Failed to obtain Azure Key Vault JWT token");
+                                }
+
                                 return authResult.AccessToken;
                             });
                         }
@@ -288,6 +296,19 @@ namespace YA.TenantWorker
             {
                 OsPlatform = OsPlatforms.OSX;
             }
+
+            DotNetVersion = GetNetCoreVersion();
+        }
+
+        // See: https://github.com/dotnet/BenchmarkDotNet/issues/448#issuecomment-308424100
+        private static string GetNetCoreVersion()
+        {
+            var assembly = typeof(GCSettings).Assembly;
+            var assemblyPath = assembly.CodeBase.Split(new[] { '/', '\\' }, StringSplitOptions.RemoveEmptyEntries);
+            var netCoreAppIndex = Array.IndexOf(assemblyPath, "Microsoft.NETCore.App");
+            return netCoreAppIndex > 0 && netCoreAppIndex < assemblyPath.Length - 2
+                ? assemblyPath[netCoreAppIndex + 1]
+                : null;
         }
     }
 }

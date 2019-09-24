@@ -50,24 +50,26 @@ namespace YA.TenantWorker.Infrastructure.Services
                 using (HttpClient client = Utils.GetHttpClient(General.AppHttpUserAgent))
                 {
                     client.BaseAddress = new Uri(ProviderUrl);
-                    HttpResponseMessage response = await client.GetAsync("/json");
 
-                    if (response.StatusCode == HttpStatusCode.OK)
+                    using (HttpResponseMessage response = await client.GetAsync("/json"))
                     {
-                        GeoData data = await response.Content.ReadAsJsonAsync<GeoData>();
-
-                        if (data != null)
+                        if (response.StatusCode == HttpStatusCode.OK)
                         {
-                            result = data;
+                            GeoData data = await response.Content.ReadAsJsonAsync<GeoData>();
+
+                            if (data != null)
+                            {
+                                result = data;
+                            }
+                            else
+                            {
+                                _log.LogWarning("No geodata available.");
+                            }
                         }
                         else
                         {
-                            _log.LogWarning("No geodata available.");
+                            _log.LogWarning("No geodata available, response status code is {Code}.", response.StatusCode);
                         }
-                    }
-                    else
-                    {
-                        _log.LogWarning("No geodata available, response status code is {Code}.", response.StatusCode);
                     }
                 }
             }

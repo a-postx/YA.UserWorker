@@ -46,8 +46,7 @@ namespace YA.TenantWorker.Health.System
                 : HealthStatus.Unhealthy;
 
             return Task.FromResult(new HealthCheckResult(status,
-                description: "Reports degraded status if managed memory size " +
-                             $">= {opts.ProcessMaxMemoryThreshold} megabytes.", exception: null, data: data));
+                $"Reports degraded status if managed memory size >= {opts.ProcessMaxMemoryThreshold} megabytes.", null, data));
         }
     }
 }

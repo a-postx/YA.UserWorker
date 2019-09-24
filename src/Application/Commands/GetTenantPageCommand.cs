@@ -9,7 +9,7 @@ using Delobytes.Mapper;
 using YA.TenantWorker.Constants;
 using YA.TenantWorker.Application.Interfaces;
 using YA.TenantWorker.Core.Entities;
-using YA.TenantWorker.Application.Dto.ViewModels;
+using YA.TenantWorker.Application.Models.ViewModels;
 
 namespace YA.TenantWorker.Application.Commands
 {

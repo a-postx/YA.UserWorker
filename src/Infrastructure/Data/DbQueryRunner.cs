@@ -9,19 +9,44 @@ namespace YA.TenantWorker.Infrastructure.Data
     {
         public DbQueryRunner(TenantWorkerDbContext context)
         {
-            Context = context ?? throw new ArgumentNullException(nameof(context));
+            _context = context ?? throw new ArgumentNullException(nameof(context));
         }
 
-        public TenantWorkerDbContext Context { get; set; }
+        private bool _disposed;
+        private readonly TenantWorkerDbContext _context;
 
         public Task RunQueryAsync(string query, params object[] parameters)
         {
-            return Context.Database.ExecuteSqlCommandAsync(query, parameters);
+            return _context.Database.ExecuteSqlCommandAsync(query, parameters);
         }
 
         public void Dispose()
         {
-            Context?.Dispose();
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        ~DbQueryRunner()
+        {
+            Dispose(false);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (_disposed)
+                return;
+
+            if (disposing)
+            {
+                // free other managed objects that implement
+                // IDisposable only
+            }
+
+            _context?.Dispose();
+            // release any unmanaged objects
+            // set thick object references to null
+
+            _disposed = true;
         }
     }
 }

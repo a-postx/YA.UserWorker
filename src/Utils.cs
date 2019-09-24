@@ -22,9 +22,12 @@ namespace YA.TenantWorker
     {
         public static IEnumerable<List<T>> SplitList<T>(this List<T> list, int batchSize)
         {
-            for (int i = 0; i < list.Count; i += batchSize)
+            if (batchSize > 0)
             {
-                yield return list.GetRange(i, Math.Min(batchSize, list.Count - i));
+                for (int i = 0; i < list.Count; i += batchSize)
+                {
+                    yield return list.GetRange(i, Math.Min(batchSize, list.Count - i));
+                }
             }
         }
 
@@ -39,7 +42,7 @@ namespace YA.TenantWorker
         public static double ToUnixTimestamp(this DateTime dateTime)
         {
             return (TimeZoneInfo.ConvertTimeToUtc(dateTime) -
-                    new DateTime(1970, 1, 1, 0, 0, 0, 0, System.DateTimeKind.Utc)).TotalSeconds;
+                    new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)).TotalSeconds;
         }
 
         public static string ListToString(this IList list)
@@ -77,8 +80,12 @@ namespace YA.TenantWorker
 
             try
             {
-                Ping ping = new Ping();
-                PingReply reply = await ping.SendPingAsync(ip, timeoutMs).ConfigureAwait(false);
+                PingReply reply;
+
+                using (Ping ping = new Ping())
+                {
+                    reply = await ping.SendPingAsync(ip, timeoutMs).ConfigureAwait(false);
+                }
 
                 if (reply.Status == IPStatus.Success)
                 {

@@ -113,21 +113,27 @@ namespace YA.TenantWorker
                 });
         }
 
-        public static IServiceCollection AddCustomHealthChecks(this IServiceCollection services)
+        public static IServiceCollection AddCustomHealthChecks(this IServiceCollection services, IConfiguration configuration)
         {
             // https://github.com/Xabaril/AspNetCore.Diagnostics.HealthChecks
             services
                 .AddSingleton<MessageBusServiceHealthCheck>()
                 .AddHealthChecks()
+                    //general system status
                     .AddGenericHealthCheck<UptimeHealthCheck>("uptime")
-                    .AddGenericHealthCheck<MessageBusServiceHealthCheck>(General.MessageBusServiceHealthCheckName, HealthStatus.Degraded, new[] { "ready" })
-                    .AddMemoryHealthCheck("memory");
+                    .AddMemoryHealthCheck("memory")
+                    //system components regular checks
+                    .AddSqlServer(configuration.GetValue<string>(nameof(KeyVaultSecrets.TenantWorkerConnStr)),
+                        "SELECT 1;", General.SqlDatabaseHealthCheckName, HealthStatus.Unhealthy, new string[] { "ready" })
+                    .AddGenericHealthCheck<MessageBusServiceHealthCheck>(General.MessageBusServiceHealthCheckName, HealthStatus.Degraded, new[] { "ready" });
                     // Ping is not available on Azure Web Apps
                     //.AddNetworkHealthCheck("network");
 
             services.Configure<HealthCheckPublisherOptions>(options =>
             {
-                options.Delay = TimeSpan.FromSeconds(5);
+                options.Period = TimeSpan.FromSeconds(60);
+                options.Timeout = TimeSpan.FromSeconds(60);
+                options.Delay = TimeSpan.FromSeconds(15);
                 options.Predicate = (check) => check.Tags.Contains("ready");
             });
 

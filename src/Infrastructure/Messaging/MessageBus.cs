@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using MassTransit;
 using MbEvents;
 using Microsoft.Extensions.Logging;
-using YA.TenantWorker.Application.Dto.SaveModels;
+using YA.TenantWorker.Application.Models.SaveModels;
 using YA.TenantWorker.Application.Interfaces;
 
 namespace YA.TenantWorker.Infrastructure.Messaging

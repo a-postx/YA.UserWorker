@@ -1,8 +1,8 @@
 ﻿using System;
-using YA.TenantWorker.Application.Dto.ViewModelSchemaFilters;
+using YA.TenantWorker.Application.Models.ViewModelSchemaFilters;
 using Swashbuckle.AspNetCore.Annotations;
 
-namespace YA.TenantWorker.Application.Dto.ViewModels
+namespace YA.TenantWorker.Application.Models.ViewModels
 {
     /// <summary>
     /// Tenant view model.
