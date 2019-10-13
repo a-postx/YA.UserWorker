@@ -1,15 +1,15 @@
-﻿using System;
+﻿using Delobytes.Mapper;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
+using Microsoft.Extensions.Logging;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
-using Delobytes.Mapper;
-using YA.TenantWorker.Constants;
-using YA.TenantWorker.Application.Models.ViewModels;
-using YA.TenantWorker.Application.Models.SaveModels;
-using YA.TenantWorker.Core.Entities;
 using YA.TenantWorker.Application.Interfaces;
-using Microsoft.AspNetCore.Mvc.Infrastructure;
+using YA.TenantWorker.Application.Models.SaveModels;
+using YA.TenantWorker.Application.Models.ViewModels;
+using YA.TenantWorker.Constants;
+using YA.TenantWorker.Core.Entities;
 
 namespace YA.TenantWorker.Application.Commands
 {
@@ -24,7 +24,7 @@ namespace YA.TenantWorker.Application.Commands
         {
             _log = logger ?? throw new ArgumentNullException(nameof(logger));
             _actionContextAccessor = actionContextAccessor ?? throw new ArgumentNullException(nameof(actionContextAccessor));
-            _tenantWorkerDbContext = workerDbContext ?? throw new ArgumentNullException(nameof(workerDbContext));
+            _dbContext = workerDbContext ?? throw new ArgumentNullException(nameof(workerDbContext));
             _messageBus = messageBus ?? throw new ArgumentNullException(nameof(messageBus));
             _tenantVmMapper = tenantVmMapper ?? throw new ArgumentNullException(nameof(tenantVmMapper));
             _tenantSmMapper = tenantSmMapper ?? throw new ArgumentNullException(nameof(tenantSmMapper));
@@ -32,7 +32,7 @@ namespace YA.TenantWorker.Application.Commands
 
         private readonly ILogger<PostTenantCommand> _log;
         private readonly IActionContextAccessor _actionContextAccessor;
-        private readonly ITenantWorkerDbContext _tenantWorkerDbContext;
+        private readonly ITenantWorkerDbContext _dbContext;
         private readonly IMessageBus _messageBus;
 
         private readonly IMapper<Tenant, TenantVm> _tenantVmMapper;
@@ -40,34 +40,32 @@ namespace YA.TenantWorker.Application.Commands
 
         public async Task<IActionResult> ExecuteAsync(TenantSm tenantSm, CancellationToken cancellationToken)
         {
-            if (tenantSm.TenantName == string.Empty)
+            Guid correlationId = _actionContextAccessor.GetCorrelationIdFromActionContext();
+            
+            if (correlationId == Guid.Empty || tenantSm.TenantId == Guid.Empty || string.IsNullOrEmpty(tenantSm.TenantName))
             {
                 return new BadRequestResult();
             }
             
-            Guid correlationId = _actionContextAccessor.GetCorrelationIdFromContext();
-
             using (_log.BeginScopeWith((Logs.TenantId, tenantSm.TenantId), (Logs.CorrelationId, correlationId)))
             {
-                Tenant tenant = _tenantSmMapper.Map(tenantSm);
-                tenant.CorrelationId = correlationId;
-                tenant.TenantType = TenantTypes.Custom;
-
                 try
                 {
-                    await _tenantWorkerDbContext.CreateEntityAsync(tenant, cancellationToken);
-                    await _tenantWorkerDbContext.ApplyChangesAsync(cancellationToken);
+                    Tenant tenant = _tenantSmMapper.Map(tenantSm);
+                    tenant.TenantType = TenantTypes.Custom;
+                    TenantVm tenantVm = _tenantVmMapper.Map(tenant);
+
+                    await _dbContext.CreateAndReturnEntityAsync(tenant, cancellationToken);
+                    await _dbContext.ApplyChangesAsync(cancellationToken);
 
                     await _messageBus.CreateTenantV1(tenantSm, correlationId, cancellationToken);
+
+                    return new CreatedAtRouteResult(RouteNames.GetTenant, new { TenantId = tenantVm.TenantId, TenantName = tenantVm.TenantName }, tenantVm);
                 }
                 catch (Exception e) when (_log.LogException(e))
                 {
                     throw;
                 }
-
-                TenantVm tenantVm = _tenantVmMapper.Map(tenant);
-
-                return new CreatedAtRouteResult(RouteNames.GetTenant, new { TenantId = tenantVm.TenantId, TenantName = tenantVm.TenantName }, tenantVm);
             }
         }
     }

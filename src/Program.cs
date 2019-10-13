@@ -17,6 +17,9 @@ using YA.TenantWorker.Options;
 using Serilog;
 using Serilog.Core;
 using Serilog.Events;
+using Serilog.Exceptions;
+using Serilog.Exceptions.Core;
+using Serilog.Exceptions.SqlServer.Destructurers;
 using YA.TenantWorker.Application.Interfaces;
 using Microsoft.IdentityModel.Clients.ActiveDirectory;
 using System.Runtime;
@@ -80,7 +83,7 @@ namespace YA.TenantWorker
             }
             catch (Exception e)
             {
-                Console.WriteLine($"Error building logger: {e.Message}.\nRemote logs is disabled.");
+                Console.WriteLine($"Error building logger: {e.Message}.");
             }
 
             Log.Information("{AppName} v{Version}", AppName, Version);
@@ -125,10 +128,12 @@ namespace YA.TenantWorker
 
                     if (hostingContext.HostingEnvironment.IsDevelopment())
                     {
+                        Console.WriteLine("Hosting environment is Development");
                         keyVaultEndpoint = General.DevelopmentKeyVault;
                     }
                     else if (hostingContext.HostingEnvironment.IsProduction())
                     {
+                        Console.WriteLine("Hosting environment is Production");
                         keyVaultEndpoint = General.ProductionKeyVault;
                     }
 
@@ -223,7 +228,11 @@ namespace YA.TenantWorker
                 .Enrich.WithProperty("ProcessName", ProcessName)
                 .Enrich.WithProperty("MachineName", MachineName)
                 .Enrich.WithProperty("EnvironmentUserName", UserName)
-                .Enrich.WithProperty("OSPlatform", OsPlatform.ToString());
+                .Enrich.WithProperty("OSPlatform", OsPlatform.ToString())
+                .Enrich.WithExceptionDetails(new DestructuringOptionsBuilder()
+                    .WithDefaultDestructurers()
+                    //speed up EF Core exception destructuring
+                    .WithDestructurers(new[] { new DbUpdateExceptionDestructurer() }));
 
             if (!string.IsNullOrEmpty(secrets.AppInsightsInstrumentationKey))
             {

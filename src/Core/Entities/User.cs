@@ -7,7 +7,6 @@ namespace YA.TenantWorker.Core.Entities
     {
         public Guid UserID { get; set; }
         public virtual Tenant Tenant { get; set; }
-        public Guid? CorrelationId { get; set; }
         public string Username { get; set; }
         public string FirstName { get; set; }
         public string LastName { get; set; }

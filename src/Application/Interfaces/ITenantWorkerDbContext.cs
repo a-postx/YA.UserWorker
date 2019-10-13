@@ -14,6 +14,7 @@ namespace YA.TenantWorker.Application.Interfaces
         void UpdateTenant(Tenant tenant);
 
         Task CreateEntityAsync<T>(T item, CancellationToken cancellationToken) where T : class;
+        Task<T> CreateAndReturnEntityAsync<T>(T item, CancellationToken cancellationToken) where T : class;
         Task CreateEntitiesAsync<T>(List<T> newItems, CancellationToken cancellationToken) where T : class;
         Task<T> GetEntityAsync<T>(Expression<Func<T, bool>> predicate, CancellationToken cancellationToken) where T : class;
         Task<ICollection<T>> GetEntitiesPagedAsync<T>(Tenant tenant, int page, int count, CancellationToken cancellationToken) where T : class, ITenantEntity;
@@ -23,6 +24,6 @@ namespace YA.TenantWorker.Application.Interfaces
         Task<(int totalCount, int totalPages)> GetTotalPagesAsync<T>(int count, CancellationToken cancellationToken) where T : class;
         
         int ApplyChanges();
-        Task<int> ApplyChangesAsync(CancellationToken cancellationToken);
+        Task<int> ApplyChangesAsync(CancellationToken cancellationToken = default);
     }
 }

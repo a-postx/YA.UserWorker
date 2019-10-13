@@ -17,46 +17,61 @@ namespace YA.TenantWorker.Application.Commands
 {
     public class GetTenantCommand : IGetTenantCommand
     {
-        public GetTenantCommand(ILogger<GetTenantCommand> logger, IActionContextAccessor actionContextAccessor, ITenantWorkerDbContext workerDbContext, IMapper<Tenant, TenantVm> tenantVmMapper)
+        public GetTenantCommand(ILogger<GetTenantCommand> logger,
+            IActionContextAccessor actionContextAccessor,
+            ITenantWorkerDbContext workerDbContext,
+            IMapper<Tenant, TenantVm> tenantVmMapper)
         {
             _log = logger ?? throw new ArgumentNullException(nameof(logger));
             _actionContextAccessor = actionContextAccessor ?? throw new ArgumentNullException(nameof(actionContextAccessor));
-            _tenantWorkerDbContext = workerDbContext ?? throw new ArgumentNullException(nameof(workerDbContext));
+            _dbContext = workerDbContext ?? throw new ArgumentNullException(nameof(workerDbContext));
             _tenantVmMapper = tenantVmMapper ?? throw new ArgumentNullException(nameof(tenantVmMapper));
         }
 
         private readonly ILogger<GetTenantCommand> _log;
         private readonly IActionContextAccessor _actionContextAccessor;
-        private readonly ITenantWorkerDbContext _tenantWorkerDbContext;
+        private readonly ITenantWorkerDbContext _dbContext;
         private readonly IMapper<Tenant, TenantVm> _tenantVmMapper;
 
         public async Task<IActionResult> ExecuteAsync(Guid tenantId, CancellationToken cancellationToken = default)
         {
-            Guid correlationId = _actionContextAccessor.GetCorrelationIdFromContext();
+            Guid correlationId = _actionContextAccessor.GetCorrelationIdFromActionContext();
+
+            if (correlationId == Guid.Empty || tenantId == Guid.Empty)
+            {
+                return new BadRequestResult();
+            }
 
             using (_log.BeginScopeWith((Logs.TenantId, tenantId), (Logs.CorrelationId, correlationId)))
             {
-                Tenant tenant = await _tenantWorkerDbContext.GetEntityAsync<Tenant>(e => e.TenantID == tenantId, cancellationToken);
-
-                if (tenant == null)
+                try
                 {
-                    return new NotFoundResult();
-                }
+                    Tenant tenant = await _dbContext.GetEntityAsync<Tenant>(e => e.TenantID == tenantId, cancellationToken);
 
-                HttpContext httpContext = _actionContextAccessor.ActionContext.HttpContext;
-
-                if (httpContext.Request.Headers.TryGetValue(HeaderNames.IfModifiedSince, out StringValues stringValues))
-                {
-                    if (DateTimeOffset.TryParse(stringValues, out DateTimeOffset modifiedSince) && (modifiedSince >= tenant.LastModifiedDateTime))
+                    if (tenant == null)
                     {
-                        return new StatusCodeResult(StatusCodes.Status304NotModified);
+                        return new NotFoundResult();
                     }
+
+                    HttpContext httpContext = _actionContextAccessor.ActionContext.HttpContext;
+
+                    if (httpContext.Request.Headers.TryGetValue(HeaderNames.IfModifiedSince, out StringValues stringValues))
+                    {
+                        if (DateTimeOffset.TryParse(stringValues, out DateTimeOffset modifiedSince) && (modifiedSince >= tenant.LastModifiedDateTime))
+                        {
+                            return new StatusCodeResult(StatusCodes.Status304NotModified);
+                        }
+                    }
+
+                    TenantVm tenantViewModel = _tenantVmMapper.Map(tenant);
+                    httpContext.Response.Headers.Add(HeaderNames.LastModified, tenant.LastModifiedDateTime.ToString("R"));
+                    
+                    return new OkObjectResult(tenantViewModel);
                 }
-
-                TenantVm tenantViewModel = _tenantVmMapper.Map(tenant);
-                httpContext.Response.Headers.Add(HeaderNames.LastModified, tenant.LastModifiedDateTime.ToString("R"));
-
-                return new OkObjectResult(tenantViewModel);
+                catch (Exception e) when (_log.LogException(e))
+                {
+                    throw;
+                }
             }
         }
     }

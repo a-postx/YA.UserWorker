@@ -7,10 +7,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
-using YA.TenantWorker.Infrastructure.Data.EntityConfigurations;
+using YA.TenantWorker.Infrastructure.Data.Configurations;
 using YA.TenantWorker.Core.Entities;
 using YA.TenantWorker.Application.Interfaces;
-using System.Reflection;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 
 namespace YA.TenantWorker.Infrastructure.Data
@@ -22,6 +21,7 @@ namespace YA.TenantWorker.Infrastructure.Data
              
         }
 
+        public DbSet<ApiRequest> ApiRequests { get; set; }
         public DbSet<Tenant> Tenants { get; set; }
         public DbSet<PricingTier> PricingTiers { get; set; }
         public DbSet<User> Users { get; set; }
@@ -33,6 +33,7 @@ namespace YA.TenantWorker.Infrastructure.Data
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.ApplyConfiguration(new ApiRequestConfiguration());
             modelBuilder.ApplyConfiguration(new TenantConfiguration());
             modelBuilder.ApplyConfiguration(new UserConfiguration());
             modelBuilder.ApplyConfiguration(new PricingTierConfiguration());
@@ -53,6 +54,12 @@ namespace YA.TenantWorker.Infrastructure.Data
         public async Task CreateEntityAsync<T>(T item, CancellationToken cancellationToken) where T : class
         {
             await Set<T>().AddAsync(item, cancellationToken);
+        }
+
+        public async Task<T> CreateAndReturnEntityAsync<T>(T item, CancellationToken cancellationToken) where T : class
+        {
+            EntityEntry<T> entityEntry = await Set<T>().AddAsync(item, cancellationToken);
+            return entityEntry.Entity;
         }
 
         public async Task CreateEntitiesAsync<T>(List<T> newItems, CancellationToken cancellationToken) where T : class
@@ -131,8 +138,7 @@ namespace YA.TenantWorker.Infrastructure.Data
             DateTime currentDateTime = DateTime.UtcNow;
             List<EntityEntry> entries = ChangeTracker.Entries().ToList();
 
-            List<EntityEntry> updatedEntries = entries.Where(e => e.Entity is IAuditedEntityBase)
-                    .Where(e => e.State == EntityState.Modified).ToList();
+            List<EntityEntry> updatedEntries = entries.Where(e => e.Entity is IAuditedEntityBase && e.State == EntityState.Modified).ToList();
 
             updatedEntries.ForEach(e =>
             {

@@ -9,6 +9,7 @@ using Newtonsoft.Json.Converters;
 using Delobytes.AspNetCore;
 using YA.TenantWorker.Constants;
 using YA.TenantWorker.Options;
+using YA.TenantWorker.Application.ActionFilters;
 
 namespace YA.TenantWorker
 {
@@ -59,6 +60,8 @@ namespace YA.TenantWorker
         {
             return builder.AddMvcOptions(options =>
                 {
+                    ////options.Filters.Add(typeof(GetTenantRouteAttribute));
+                    
                     // Controls how controller actions cache content from the appsettings.json file.
                     CacheProfileOptions cacheProfileOptions = builder
                         .Services

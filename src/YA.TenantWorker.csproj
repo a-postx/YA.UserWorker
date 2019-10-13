@@ -21,12 +21,31 @@
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Compile Remove="Migrations\20190927114012_initial.cs" />
+    <Compile Remove="Migrations\20190927114012_initial.Designer.cs" />
+    <Compile Remove="Migrations\20190929035757_initial.cs" />
+    <Compile Remove="Migrations\20190929035757_initial.Designer.cs" />
+    <Compile Remove="Migrations\20190929142122_initial.cs" />
+    <Compile Remove="Migrations\20190929142122_initial.Designer.cs" />
+    <Compile Remove="Migrations\20190930045801_initial.cs" />
+    <Compile Remove="Migrations\20190930045801_initial.Designer.cs" />
+    <Compile Remove="Migrations\20191003111421_initial.cs" />
+    <Compile Remove="Migrations\20191003111421_initial.Designer.cs" />
+    <Compile Remove="Migrations\20191003112809_штшешфд.cs" />
+    <Compile Remove="Migrations\20191003112809_штшешфд.Designer.cs" />
+    <Compile Remove="Migrations\20191003123616_initial.cs" />
+    <Compile Remove="Migrations\20191003123616_initial.Designer.cs" />
+    <Compile Remove="Migrations\20191005092819_initial.cs" />
+    <Compile Remove="Migrations\20191005092819_initial.Designer.cs" />
+  </ItemGroup>
+
   <ItemGroup Label="Package References">
     <PackageReference Include="AspNetCore.HealthChecks.SqlServer" Version="2.2.1" />
     <PackageReference Include="CorrelationId" Version="2.1.0" />
     <PackageReference Include="Delobytes.AspNetCore" Version="1.0.1" />
     <PackageReference Include="Delobytes.AspNetCore.Swagger" Version="1.0.1" />
-    <PackageReference Include="Delobytes.Mapper" Version="1.0.0" />
+    <PackageReference Include="Delobytes.Mapper" Version="1.1.0" />
     <PackageReference Include="MassTransit.Extensions.DependencyInjection" Version="5.5.5" />
     <PackageReference Include="MassTransit.RabbitMQ" Version="5.5.5" />
     <PackageReference Include="MassTransit.SerilogIntegration" Version="5.5.5" />
@@ -47,7 +66,8 @@
     <PackageReference Include="Newtonsoft.Json" Version="12.0.2" />
     <PackageReference Include="Serilog.AspNetCore" Version="2.1.1" />
     <PackageReference Include="Serilog.Enrichers.Thread" Version="3.1.0" />
-    <PackageReference Include="Serilog.Exceptions" Version="5.0.0" />
+    <PackageReference Include="Serilog.Exceptions" Version="5.3.1" />
+    <PackageReference Include="Serilog.Exceptions.EntityFrameworkCore" Version="5.3.1" />
     <PackageReference Include="Serilog.Settings.Configuration" Version="3.1.0" />
     <PackageReference Include="Serilog.Sinks.ApplicationInsights" Version="2.5.2" />
     <PackageReference Include="Serilog.Sinks.Console" Version="3.1.1" />

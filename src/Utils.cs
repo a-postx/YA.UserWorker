@@ -127,9 +127,9 @@ namespace YA.TenantWorker
             return result;
         }
 
-        public static string ToJson(this object sourceObject)
+        public static T FromJson<T>(this string sourceString) where T : class
         {
-            return JToken.Parse(JsonConvert.SerializeObject(sourceObject)).ToString(Formatting.Indented);
+            return JsonConvert.DeserializeObject<T>(sourceString);
         }
 
         public static IDisposable BeginScopeWith(this ILogger logger, params (string key, object value)[] keys)
@@ -143,11 +143,24 @@ namespace YA.TenantWorker
             return true;
         }
 
-        public static Guid GetCorrelationIdFromContext(this IActionContextAccessor context)
+        public static Guid GetCorrelationIdFromActionContext(this IActionContextAccessor context)
         {
             HttpContext httpContext = context.ActionContext.HttpContext;
 
             if (httpContext.Request.Headers.TryGetValue(General.CorrelationIdHeader, out StringValues stringValues))
+            {
+                if (Guid.TryParse(stringValues[0], out Guid corrId))
+                {
+                    return corrId;
+                }
+            }
+
+            return Guid.Empty;
+        }
+
+        public static Guid GetCorrelationIdFromHttpContext(HttpContext context)
+        {
+            if (context.Request.Headers.TryGetValue(General.CorrelationIdHeader, out StringValues stringValues))
             {
                 if (Guid.TryParse(stringValues[0], out Guid corrId))
                 {

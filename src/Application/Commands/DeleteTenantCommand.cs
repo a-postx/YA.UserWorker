@@ -1,11 +1,11 @@
-﻿using System;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.Logging;
-using YA.TenantWorker.Constants;
+using System;
+using System.Threading;
+using System.Threading.Tasks;
 using YA.TenantWorker.Application.Interfaces;
+using YA.TenantWorker.Constants;
 using YA.TenantWorker.Core.Entities;
 
 namespace YA.TenantWorker.Application.Commands
@@ -14,51 +14,51 @@ namespace YA.TenantWorker.Application.Commands
     {
         public DeleteTenantCommand(ILogger<DeleteTenantCommand> logger,
             IActionContextAccessor actionContextAccessor,
-            ITenantWorkerDbContext tenantWorkerDbContext,
+            ITenantWorkerDbContext workerDbContext,
             IMessageBus messageBus)
         {
             _log = logger ?? throw new ArgumentNullException(nameof(logger));
             _actionContextAccessor = actionContextAccessor ?? throw new ArgumentNullException(nameof(actionContextAccessor));
-            _tenantWorkerDbContext = tenantWorkerDbContext ?? throw new ArgumentNullException(nameof(tenantWorkerDbContext));
+            _dbContext = workerDbContext ?? throw new ArgumentNullException(nameof(workerDbContext));
             _messageBus = messageBus ?? throw new ArgumentNullException(nameof(messageBus));
         }
 
         private readonly ILogger<DeleteTenantCommand> _log;
         private readonly IActionContextAccessor _actionContextAccessor;
-        private readonly ITenantWorkerDbContext _tenantWorkerDbContext;
+        private readonly ITenantWorkerDbContext _dbContext;
         private readonly IMessageBus _messageBus;
 
         public async Task<IActionResult> ExecuteAsync(Guid tenantId, CancellationToken cancellationToken = default)
         {
-            if (tenantId == Guid.Empty)
-            {
-                return new NotFoundResult();
-            }
+            Guid correlationId = _actionContextAccessor.GetCorrelationIdFromActionContext();
 
-            Guid correlationId = _actionContextAccessor.GetCorrelationIdFromContext();
+            if (correlationId == Guid.Empty || tenantId == Guid.Empty)
+            {
+                return new BadRequestResult();
+            }
 
             using (_log.BeginScopeWith((Logs.TenantId, tenantId), (Logs.CorrelationId, correlationId)))
             {
-                Tenant tenant = await _tenantWorkerDbContext.GetEntityAsync<Tenant>(e => e.TenantID == tenantId, cancellationToken);
-
-                if (tenant == null)
-                {
-                    return new NotFoundResult();
-                }
-
                 try
                 {
-                    _tenantWorkerDbContext.DeleteTenant(tenant);
-                    await _tenantWorkerDbContext.ApplyChangesAsync(cancellationToken);
+                    Tenant tenant = await _dbContext.GetEntityAsync<Tenant>(e => e.TenantID == tenantId, cancellationToken);
+
+                    if (tenant == null)
+                    {
+                        return new NotFoundResult();
+                    }
+
+                    _dbContext.DeleteTenant(tenant);
+                    await _dbContext.ApplyChangesAsync(cancellationToken);
 
                     await _messageBus.DeleteTenantV1(tenant.TenantID, correlationId, cancellationToken);
+
+                    return new NoContentResult();
                 }
                 catch (Exception e) when (_log.LogException(e))
                 {
                     throw;
                 }
-
-                return new NoContentResult();
             }
         }
     }

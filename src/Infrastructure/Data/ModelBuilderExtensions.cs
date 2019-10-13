@@ -17,7 +17,7 @@ namespace YA.TenantWorker.Infrastructure.Data
                 new PricingTier
                 {
                     PricingTierID = seedPricingTierId,
-                    Name = "Бесплатный",
+                    Title = "Бесплатный",
                     Description = "Бесплатно для всех."
                 }
             );

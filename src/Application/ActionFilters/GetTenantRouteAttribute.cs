@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace YA.TenantWorker.Application.ActionFilters
 {
-    public class GetTenantRouteAttribute : ActionFilterAttribute
+    public sealed class GetTenantRouteAttribute : ActionFilterAttribute
     {
         public GetTenantRouteAttribute(ITenantWorkerDbContext dbContext)
         {
@@ -66,9 +66,9 @@ namespace YA.TenantWorker.Application.ActionFilters
             await next.Invoke();
         }
 
-        public override Task OnResultExecutionAsync(ResultExecutingContext context, ResultExecutionDelegate next)
+        public override async Task OnResultExecutionAsync(ResultExecutingContext context, ResultExecutionDelegate next)
         {
-            return Task.CompletedTask;
+            await next.Invoke();
         }
     }
 }

@@ -27,6 +27,9 @@ using YA.TenantWorker.Application.ActionFilters;
 using YA.TenantWorker.Application.Models.ViewModels;
 using YA.TenantWorker.Infrastructure.Messaging.Test;
 using YA.TenantWorker.Application.Interfaces;
+using YA.TenantWorker.Application;
+using YA.TenantWorker.Core.Entities;
+using YA.TenantWorker.Application.Caching;
 
 namespace YA.TenantWorker
 {
@@ -82,7 +85,7 @@ namespace YA.TenantWorker
                 .AddHttpContextAccessor()
 
                 .AddSingleton<IActionContextAccessor, ActionContextAccessor>()
-                .AddScoped(x => x
+                .AddTransient(x => x
                     .GetRequiredService<IUrlHelperFactory>()
                     .GetUrlHelper(x.GetRequiredService<IActionContextAccessor>().ActionContext))
                 .AddScoped<IPagingLinkHelper, PagingLinkHelper>()
@@ -93,29 +96,31 @@ namespace YA.TenantWorker
                         x.GroupNameFormat = "'v'VVV"; // Version format: 'v'major[.minor][-status]
                     })
                 .AddMvcCore()
-                .SetCompatibilityVersion(CompatibilityVersion.Version_2_2)
-                .AddApiExplorer()
-                .AddAuthorization()
-                .AddDataAnnotations()
-                .AddJsonFormatters()
-                .AddCustomJsonOptions(_hostingEnvironment)
+                    .SetCompatibilityVersion(CompatibilityVersion.Version_2_2)
+                    .AddApiExplorer()
+                    .AddAuthorization()
+                    .AddDataAnnotations()
+                    .AddJsonFormatters()
+                    .AddCustomJsonOptions(_hostingEnvironment)
                 
-                .AddCustomCors()
+                    .AddCustomCors()
 
-                .AddCustomMvcOptions(_hostingEnvironment)
-                    .Services
-                    .AddProjectCommands()
-                    .AddProjectMappers()
-                    .AddProjectRepositories()
-                    .AddProjectServices(secrets);
+                    .AddCustomMvcOptions(_hostingEnvironment);
+            services
+                .AddProjectCommands()
+                .AddProjectMappers()
+                .AddProjectRepositories()
+                .AddProjectServices(secrets);
 
-            services.AddEntityFrameworkSqlServer().AddDbContext<TenantWorkerDbContext>(options =>
-                options.UseSqlServer(connectionString, x => x.EnableRetryOnFailure())
-                .ConfigureWarnings(x => x.Throw(RelationalEventId.QueryClientEvaluationWarning))
-                .EnableSensitiveDataLogging(_hostingEnvironment.IsDevelopment()));
-                //// useful for API-related projects that only read data
-                //// we don't need query tracking if dbcontext is disposed on every request
-                //.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking));
+            services
+                .AddEntityFrameworkSqlServer()
+                .AddDbContext<TenantWorkerDbContext>(options =>
+                    options.UseSqlServer(connectionString, x => x.EnableRetryOnFailure())
+                    .ConfigureWarnings(x => x.Throw(RelationalEventId.QueryClientEvaluationWarning))
+                    .EnableSensitiveDataLogging(_hostingEnvironment.IsDevelopment()));
+                    //// useful for API-related projects that only read data
+                    //// we don't need query tracking if dbcontext is disposed on every request
+                    //.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking));
 
             services.AddScoped<IMessageBus, MessageBus>();
 
@@ -155,6 +160,11 @@ namespace YA.TenantWorker
                 });
             });
 
+            services.Configure<ApiBehaviorOptions>(options =>
+            {
+                options.ClientErrorMapping.Add(444, new ClientErrorData { Title = "mytitle", Link = "https://httpstatuses.com/404" });
+            });
+
             services.AddSingleton<IPublishEndpoint>(provider => provider.GetRequiredService<IBusControl>());
             services.AddSingleton<ISendEndpointProvider>(provider => provider.GetRequiredService<IBusControl>());
             services.AddSingleton<IBus>(provider => provider.GetRequiredService<IBusControl>());
@@ -164,6 +174,10 @@ namespace YA.TenantWorker
             services.AddSingleton<IMessageAuditStore, MessageAuditStore>();
 
             services.AddScoped<GetTenantRouteAttribute>();
+            services.AddScoped<GetApiRequestAttribute>();
+
+            services.AddTransient<IApiRequestManager, ApiRequestManager>();
+            services.AddSingleton<ApiRequestMemoryCache>();
 
             return services.BuildServiceProvider();
         }
@@ -175,11 +189,16 @@ namespace YA.TenantWorker
         public void Configure(IApplicationBuilder application)
         {
             application
-                
-                // Pass a GUID in a X-Correlation-ID HTTP header to set the HttpContext.TraceIdentifier.
-                // UpdateTraceIdentifier must be false due to a bug. See https://github.com/aspnet/AspNetCore/issues/5144
-                .UseCorrelationId(new CorrelationIdOptions { UpdateTraceIdentifier = false })
 
+                // Pass a GUID in X-Correlation-ID HTTP header to set the HttpContext.TraceIdentifier.
+                // UpdateTraceIdentifier must be false due to a bug. See https://github.com/aspnet/AspNetCore/issues/5144
+                .UseCorrelationId(new CorrelationIdOptions {
+                    Header = General.CorrelationIdHeader,
+                    IncludeInResponse = false,
+                    UpdateTraceIdentifier = false,
+                    UseGuidForCorrelationId = false
+                    })
+                
                 //!experimental!
                 ////.UseHttpException()
 
@@ -187,17 +206,17 @@ namespace YA.TenantWorker
                 .UseResponseCaching()
                 .UseResponseCompression()
                 
-                .UseMiddleware<SerilogHttpRequestLogger>()
+                .UseMiddleware<HttpRequestLogger>()
                 
                 .UseCors(CorsPolicyName.AllowAny)
-                
-                //.UseIf(
-                //    !_hostingEnvironment.IsDevelopment(),
-                //    x => x.UseHsts())
 
-                .UseIf(
-                    _hostingEnvironment.IsDevelopment(),
-                    x => x.UseDeveloperErrorPages())
+                ////.UseIf(
+                ////    !_hostingEnvironment.IsDevelopment(),
+                ////    x => x.UseHsts())
+
+                ////.UseIf(
+                ////    _hostingEnvironment.IsDevelopment(),
+                ////    x => x.UseDeveloperErrorPages())
 
                 .UseHealthChecks("/status", new HealthCheckOptions()
                 {
@@ -224,7 +243,16 @@ namespace YA.TenantWorker
                 .UseSwagger()
                 .UseCustomSwaggerUI();
 
-            application.ApplicationServices.GetRequiredService<TenantWorkerDbContext>().Database.EnsureCreated();
+            //automigration - dangerous, use SQL scripts instead
+            using (IServiceScope scope = application.ApplicationServices.GetRequiredService<IServiceScopeFactory>().CreateScope())
+            {
+                TenantWorkerDbContext dbContext = scope.ServiceProvider.GetService<TenantWorkerDbContext>();
+
+                if (dbContext.Database.GetPendingMigrations().GetEnumerator().MoveNext())
+                {
+                    dbContext.Database.Migrate();
+                }
+            }
         }
     }
 }
