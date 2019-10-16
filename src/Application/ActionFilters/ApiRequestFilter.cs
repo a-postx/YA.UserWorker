@@ -9,14 +9,14 @@ using System.Threading.Tasks;
 using YA.TenantWorker.Application.Enums;
 using YA.TenantWorker.Application.Interfaces;
 using YA.TenantWorker.Application.Models.Dto;
-using YA.TenantWorker.Application.ValueObjects;
+using YA.TenantWorker.Application.Models.ValueObjects;
 using YA.TenantWorker.Core.Entities;
 
 namespace YA.TenantWorker.Application.ActionFilters
 {
-    public sealed class GetApiRequestAttribute : ActionFilterAttribute
+    public sealed class ApiRequestFilter : ActionFilterAttribute
     {
-        public GetApiRequestAttribute(IApiRequestManager apiRequestManager)
+        public ApiRequestFilter(IApiRequestManager apiRequestManager)
         {
             _apiRequestManager = apiRequestManager ?? throw new ArgumentNullException(nameof(apiRequestManager));
         }
@@ -24,10 +24,16 @@ namespace YA.TenantWorker.Application.ActionFilters
         private readonly IApiRequestManager _apiRequestManager;
 
         public override async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
-         {
+        {
             using (CancellationTokenSource cts = new CancellationTokenSource())
             {
                 (bool requestCreated, ApiRequest request) = await GetRequestAsync(context.HttpContext, cts.Token);
+
+                if (request == null)
+                {
+                    context.Result = new BadRequestResult();
+                    return;
+                }
 
                 if (!requestCreated)
                 {

@@ -52,49 +52,42 @@ namespace YA.TenantWorker.Application.Commands
         {
             Guid correlationId = _actionContextAccessor.GetCorrelationIdFromActionContext();
 
-            if (correlationId == Guid.Empty || tenantId == Guid.Empty || patch == null)
+            if (tenantId == Guid.Empty || patch == null)
             {
                 return new BadRequestResult();
             }
 
-            using (_log.BeginScopeWith((Logs.TenantId, tenantId), (Logs.CorrelationId, correlationId)))
+            using (_log.BeginScopeWith((Logs.TenantId, tenantId)))
             {
-                try
+                Tenant tenant = await _dbContext.GetEntityAsync<Tenant>(e => e.TenantID == tenantId, cancellationToken);
+
+                if (tenant == null)
                 {
-                    Tenant tenant = await _dbContext.GetEntityAsync<Tenant>(e => e.TenantID == tenantId, cancellationToken);
-
-                    if (tenant == null)
-                    {
-                        return new NotFoundResult();
-                    }
-
-                    TenantSm tenantSm = _tenantSmMapper.Map(tenant);
-
-                    ModelStateDictionary modelState = _actionContextAccessor.ActionContext.ModelState;
-                    patch.ApplyTo(tenantSm, modelState);
-
-                    _objectModelValidator.Validate(_actionContextAccessor.ActionContext, null, null, tenantSm);
-
-                    if (!modelState.IsValid)
-                    {
-                        return new BadRequestObjectResult(modelState);
-                    }
-
-                    _tenantMapper.Map(tenantSm, tenant);
-
-                    _dbContext.UpdateTenant(tenant);
-                    await _dbContext.ApplyChangesAsync(cancellationToken);
-
-                    await _messageBus.UpdateTenantV1(tenantSm, correlationId, cancellationToken);
-
-                    TenantVm tenantVm = _tenantVmMapper.Map(tenant);
-
-                    return new OkObjectResult(tenantVm);
+                    return new NotFoundResult();
                 }
-                catch (Exception e) when (_log.LogException(e))
+
+                TenantSm tenantSm = _tenantSmMapper.Map(tenant);
+
+                ModelStateDictionary modelState = _actionContextAccessor.ActionContext.ModelState;
+                patch.ApplyTo(tenantSm, modelState);
+
+                _objectModelValidator.Validate(_actionContextAccessor.ActionContext, null, null, tenantSm);
+
+                if (!modelState.IsValid)
                 {
-                    throw;
+                    return new BadRequestObjectResult(modelState);
                 }
+
+                _tenantMapper.Map(tenantSm, tenant);
+
+                _dbContext.UpdateTenant(tenant);
+                await _dbContext.ApplyChangesAsync(cancellationToken);
+
+                await _messageBus.UpdateTenantV1(tenantSm, correlationId, cancellationToken);
+
+                TenantVm tenantVm = _tenantVmMapper.Map(tenant);
+
+                return new OkObjectResult(tenantVm);
             }
         }
     }

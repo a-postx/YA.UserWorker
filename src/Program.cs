@@ -84,6 +84,7 @@ namespace YA.TenantWorker
             catch (Exception e)
             {
                 Console.WriteLine($"Error building logger: {e.Message}.");
+                return 1;
             }
 
             Log.Information("{AppName} v{Version}", AppName, Version);

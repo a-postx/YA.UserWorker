@@ -32,33 +32,26 @@ namespace YA.TenantWorker.Application.Commands
         {
             Guid correlationId = _actionContextAccessor.GetCorrelationIdFromActionContext();
 
-            if (correlationId == Guid.Empty || tenantId == Guid.Empty)
+            if (tenantId == Guid.Empty)
             {
                 return new BadRequestResult();
             }
 
-            using (_log.BeginScopeWith((Logs.TenantId, tenantId), (Logs.CorrelationId, correlationId)))
+            using (_log.BeginScopeWith((Logs.TenantId, tenantId)))
             {
-                try
+                Tenant tenant = await _dbContext.GetEntityAsync<Tenant>(e => e.TenantID == tenantId, cancellationToken);
+
+                if (tenant == null)
                 {
-                    Tenant tenant = await _dbContext.GetEntityAsync<Tenant>(e => e.TenantID == tenantId, cancellationToken);
-
-                    if (tenant == null)
-                    {
-                        return new NotFoundResult();
-                    }
-
-                    _dbContext.DeleteTenant(tenant);
-                    await _dbContext.ApplyChangesAsync(cancellationToken);
-
-                    await _messageBus.DeleteTenantV1(tenant.TenantID, correlationId, cancellationToken);
-
-                    return new NoContentResult();
+                    return new NotFoundResult();
                 }
-                catch (Exception e) when (_log.LogException(e))
-                {
-                    throw;
-                }
+
+                _dbContext.DeleteTenant(tenant);
+                await _dbContext.ApplyChangesAsync(cancellationToken);
+
+                await _messageBus.DeleteTenantV1(tenant.TenantID, correlationId, cancellationToken);
+
+                return new NoContentResult();
             }
         }
     }

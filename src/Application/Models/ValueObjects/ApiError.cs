@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using YA.TenantWorker.Application.Enums;
 
-namespace YA.TenantWorker.Application.ValueObjects
+namespace YA.TenantWorker.Application.Models.ValueObjects
 {
     /// <summary>
     /// HTTP API error message for UI

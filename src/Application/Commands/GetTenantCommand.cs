@@ -37,41 +37,34 @@ namespace YA.TenantWorker.Application.Commands
         {
             Guid correlationId = _actionContextAccessor.GetCorrelationIdFromActionContext();
 
-            if (correlationId == Guid.Empty || tenantId == Guid.Empty)
+            if (tenantId == Guid.Empty)
             {
                 return new BadRequestResult();
             }
 
-            using (_log.BeginScopeWith((Logs.TenantId, tenantId), (Logs.CorrelationId, correlationId)))
+            using (_log.BeginScopeWith((Logs.TenantId, tenantId)))
             {
-                try
+                Tenant tenant = await _dbContext.GetEntityAsync<Tenant>(e => e.TenantID == tenantId, cancellationToken);
+
+                if (tenant == null)
                 {
-                    Tenant tenant = await _dbContext.GetEntityAsync<Tenant>(e => e.TenantID == tenantId, cancellationToken);
+                    return new NotFoundResult();
+                }
 
-                    if (tenant == null)
+                HttpContext httpContext = _actionContextAccessor.ActionContext.HttpContext;
+
+                if (httpContext.Request.Headers.TryGetValue(HeaderNames.IfModifiedSince, out StringValues stringValues))
+                {
+                    if (DateTimeOffset.TryParse(stringValues, out DateTimeOffset modifiedSince) && (modifiedSince >= tenant.LastModifiedDateTime))
                     {
-                        return new NotFoundResult();
+                        return new StatusCodeResult(StatusCodes.Status304NotModified);
                     }
+                }
 
-                    HttpContext httpContext = _actionContextAccessor.ActionContext.HttpContext;
-
-                    if (httpContext.Request.Headers.TryGetValue(HeaderNames.IfModifiedSince, out StringValues stringValues))
-                    {
-                        if (DateTimeOffset.TryParse(stringValues, out DateTimeOffset modifiedSince) && (modifiedSince >= tenant.LastModifiedDateTime))
-                        {
-                            return new StatusCodeResult(StatusCodes.Status304NotModified);
-                        }
-                    }
-
-                    TenantVm tenantViewModel = _tenantVmMapper.Map(tenant);
-                    httpContext.Response.Headers.Add(HeaderNames.LastModified, tenant.LastModifiedDateTime.ToString("R"));
+                TenantVm tenantViewModel = _tenantVmMapper.Map(tenant);
+                httpContext.Response.Headers.Add(HeaderNames.LastModified, tenant.LastModifiedDateTime.ToString("R"));
                     
-                    return new OkObjectResult(tenantViewModel);
-                }
-                catch (Exception e) when (_log.LogException(e))
-                {
-                    throw;
-                }
+                return new OkObjectResult(tenantViewModel);
             }
         }
     }

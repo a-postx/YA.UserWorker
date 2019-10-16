@@ -11,7 +11,7 @@ using Serilog;
 using Serilog.Context;
 using YA.TenantWorker.Application.Enums;
 using YA.TenantWorker.Application.Models.Dto;
-using YA.TenantWorker.Application.ValueObjects;
+using YA.TenantWorker.Application.Models.ValueObjects;
 using YA.TenantWorker.Constants;
 
 namespace YA.TenantWorker.Application
@@ -21,12 +21,12 @@ namespace YA.TenantWorker.Application
     /// </summary>
     public class HttpRequestLogger
     {
-        readonly RequestDelegate _next;
-
         public HttpRequestLogger(RequestDelegate next)
         {
             _next = next ?? throw new ArgumentNullException(nameof(next));
         }
+
+        readonly RequestDelegate _next;
 
         public async Task InvokeAsync(HttpContext httpContext, ICorrelationContextAccessor correlationContextAccessor)
         {

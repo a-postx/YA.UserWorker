@@ -160,11 +160,6 @@ namespace YA.TenantWorker
                 });
             });
 
-            services.Configure<ApiBehaviorOptions>(options =>
-            {
-                options.ClientErrorMapping.Add(444, new ClientErrorData { Title = "mytitle", Link = "https://httpstatuses.com/404" });
-            });
-
             services.AddSingleton<IPublishEndpoint>(provider => provider.GetRequiredService<IBusControl>());
             services.AddSingleton<ISendEndpointProvider>(provider => provider.GetRequiredService<IBusControl>());
             services.AddSingleton<IBus>(provider => provider.GetRequiredService<IBusControl>());
@@ -172,9 +167,10 @@ namespace YA.TenantWorker
             //services.AddScoped(provider => provider.GetRequiredService<IBus>().CreatePublishRequestClient<ICreateTenantV1, ITenantCreatedV1>(TimeSpan.FromSeconds(5)));
             
             services.AddSingleton<IMessageAuditStore, MessageAuditStore>();
-
-            services.AddScoped<GetTenantRouteAttribute>();
-            services.AddScoped<GetApiRequestAttribute>();
+            
+            services.AddScoped<TenantRouteFilter>();
+            services.AddScoped<ApiRequestFilter>();
+            services.AddScoped<LoggingFilter>();
 
             services.AddTransient<IApiRequestManager, ApiRequestManager>();
             services.AddSingleton<ApiRequestMemoryCache>();
@@ -207,7 +203,7 @@ namespace YA.TenantWorker
                 .UseResponseCompression()
                 
                 .UseMiddleware<HttpRequestLogger>()
-                
+
                 .UseCors(CorsPolicyName.AllowAny)
 
                 ////.UseIf(

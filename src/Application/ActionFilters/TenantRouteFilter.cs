@@ -10,9 +10,9 @@ using System.Threading.Tasks;
 
 namespace YA.TenantWorker.Application.ActionFilters
 {
-    public sealed class GetTenantRouteAttribute : ActionFilterAttribute
+    public sealed class TenantRouteFilter : ActionFilterAttribute
     {
-        public GetTenantRouteAttribute(ITenantWorkerDbContext dbContext)
+        public TenantRouteFilter(ITenantWorkerDbContext dbContext)
         {
             _dbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
         }

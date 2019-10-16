@@ -38,49 +38,34 @@ namespace YA.TenantWorker.Application.Commands
         {
             Guid correlationId = _actionContextAccessor.GetCorrelationIdFromActionContext();
 
-            if (correlationId == Guid.Empty)
+            ICollection<Tenant> tenants = await _dbContext
+                .GetEntitiesOrderedAndPagedAsync<Tenant>(e => e.TenantID, pageOptions.Page.Value, pageOptions.Count.Value, cancellationToken);
+
+            if (tenants == null)
             {
-                return new BadRequestResult();
+                return new NotFoundResult();
             }
 
-            using (_log.BeginScopeWith((Logs.CorrelationId, correlationId)))
+            (int totalCount, int totalPages) = await _dbContext.GetTotalPagesAsync<Tenant>(pageOptions.Count.Value, cancellationToken);
+            List<TenantVm> tenantVms = _tenantVmMapper.MapList(tenants);
+
+            PageResult<TenantVm> page = new PageResult<TenantVm>()
             {
-                try
-                {
-                    ICollection<Tenant> tenants = await _dbContext
-                        .GetEntitiesOrderedAndPagedAsync<Tenant>(e => e.TenantID, pageOptions.Page.Value, pageOptions.Count.Value, cancellationToken);
+                Count = pageOptions.Count.Value,
+                Items = tenantVms,
+                Page = pageOptions.Page.Value,
+                TotalCount = totalCount,
+                TotalPages = totalPages,
+            };
 
-                    if (tenants == null)
-                    {
-                        return new NotFoundResult();
-                    }
+            // Add the Link HTTP Header to add URL's to next, previous, first and last pages.
+            // See https://tools.ietf.org/html/rfc5988#page-6
+            // There is a standard list of link relation types e.g. next, previous, first and last.
+            // See https://www.iana.org/assignments/link-relations/link-relations.xhtml
+            _actionContextAccessor.ActionContext.HttpContext
+                .Response.Headers.Add("Link", _pagingLinkHelper.GetLinkValue(page, RouteNames.GetTenantPage));
 
-                    (int totalCount, int totalPages) = await _dbContext.GetTotalPagesAsync<Tenant>(pageOptions.Count.Value, cancellationToken);
-                    List<TenantVm> tenantVms = _tenantVmMapper.MapList(tenants);
-
-                    PageResult<TenantVm> page = new PageResult<TenantVm>()
-                    {
-                        Count = pageOptions.Count.Value,
-                        Items = tenantVms,
-                        Page = pageOptions.Page.Value,
-                        TotalCount = totalCount,
-                        TotalPages = totalPages,
-                    };
-
-                    // Add the Link HTTP Header to add URL's to next, previous, first and last pages.
-                    // See https://tools.ietf.org/html/rfc5988#page-6
-                    // There is a standard list of link relation types e.g. next, previous, first and last.
-                    // See https://www.iana.org/assignments/link-relations/link-relations.xhtml
-                    _actionContextAccessor.ActionContext.HttpContext
-                        .Response.Headers.Add("Link", _pagingLinkHelper.GetLinkValue(page, RouteNames.GetTenantPage));
-
-                    return new OkObjectResult(page);
-                }
-                catch (Exception e) when (_log.LogException(e))
-                {
-                    throw;
-                } 
-            }
+            return new OkObjectResult(page);
         }
     }
 }

@@ -42,30 +42,23 @@ namespace YA.TenantWorker.Application.Commands
         {
             Guid correlationId = _actionContextAccessor.GetCorrelationIdFromActionContext();
             
-            if (correlationId == Guid.Empty || tenantSm.TenantId == Guid.Empty || string.IsNullOrEmpty(tenantSm.TenantName))
+            if (tenantSm.TenantId == Guid.Empty || string.IsNullOrEmpty(tenantSm.TenantName))
             {
                 return new BadRequestResult();
             }
             
-            using (_log.BeginScopeWith((Logs.TenantId, tenantSm.TenantId), (Logs.CorrelationId, correlationId)))
+            using (_log.BeginScopeWith((Logs.TenantId, tenantSm.TenantId)))
             {
-                try
-                {
-                    Tenant tenant = _tenantSmMapper.Map(tenantSm);
-                    tenant.TenantType = TenantTypes.Custom;
-                    TenantVm tenantVm = _tenantVmMapper.Map(tenant);
+                Tenant tenant = _tenantSmMapper.Map(tenantSm);
+                tenant.TenantType = TenantTypes.Custom;
+                TenantVm tenantVm = _tenantVmMapper.Map(tenant);
 
-                    await _dbContext.CreateAndReturnEntityAsync(tenant, cancellationToken);
-                    await _dbContext.ApplyChangesAsync(cancellationToken);
+                await _dbContext.CreateAndReturnEntityAsync(tenant, cancellationToken);
+                await _dbContext.ApplyChangesAsync(cancellationToken);
 
-                    await _messageBus.CreateTenantV1(tenantSm, correlationId, cancellationToken);
+                await _messageBus.CreateTenantV1(tenantSm, correlationId, cancellationToken);
 
-                    return new CreatedAtRouteResult(RouteNames.GetTenant, new { TenantId = tenantVm.TenantId, TenantName = tenantVm.TenantName }, tenantVm);
-                }
-                catch (Exception e) when (_log.LogException(e))
-                {
-                    throw;
-                }
+                return new CreatedAtRouteResult(RouteNames.GetTenant, new { TenantId = tenantVm.TenantId, TenantName = tenantVm.TenantName }, tenantVm);
             }
         }
     }
