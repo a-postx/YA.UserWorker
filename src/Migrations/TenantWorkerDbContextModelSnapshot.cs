@@ -94,7 +94,11 @@ namespace YA.TenantWorker.Migrations
                         .ValueGeneratedOnAdd()
                         .HasDefaultValueSql("GETUTCDATE()");
 
+                    b.Property<bool>("IsActive");
+
                     b.Property<bool>("IsReadOnly");
+
+                    b.Property<bool>("IsTrial");
 
                     b.Property<DateTime>("LastModifiedDateTime")
                         .ValueGeneratedOnAdd()
@@ -122,7 +126,9 @@ namespace YA.TenantWorker.Migrations
                         new
                         {
                             TenantID = new Guid("00000000-0000-0000-0000-000000000001"),
+                            IsActive = true,
                             IsReadOnly = false,
+                            IsTrial = false,
                             PricingTierID = new Guid("00000000-0000-0000-0000-000000000003"),
                             TenantName = "Прохожий",
                             TenantType = 1
@@ -134,8 +140,6 @@ namespace YA.TenantWorker.Migrations
                     b.Property<Guid>("UserID")
                         .ValueGeneratedOnAdd();
 
-                    b.Property<bool>("Active");
-
                     b.Property<DateTime>("CreatedDateTime")
                         .ValueGeneratedOnAdd()
                         .HasDefaultValueSql("GETUTCDATE()");
@@ -146,6 +150,8 @@ namespace YA.TenantWorker.Migrations
                     b.Property<string>("FirstName")
                         .HasMaxLength(255)
                         .IsUnicode(true);
+
+                    b.Property<bool>("IsActive");
 
                     b.Property<bool>("IsDeleted");
 
@@ -160,6 +166,9 @@ namespace YA.TenantWorker.Migrations
                     b.Property<string>("LastName")
                         .HasMaxLength(255)
                         .IsUnicode(true);
+
+                    b.Property<string>("Password")
+                        .HasMaxLength(50);
 
                     b.Property<Guid>("TenantID");
 
@@ -176,6 +185,23 @@ namespace YA.TenantWorker.Migrations
                     b.HasIndex("TenantID");
 
                     b.ToTable("Users");
+
+                    b.HasData(
+                        new
+                        {
+                            UserID = new Guid("00000000-0000-0000-0000-000000000011"),
+                            CreatedDateTime = new DateTime(2019, 11, 7, 12, 51, 32, 437, DateTimeKind.Utc).AddTicks(5815),
+                            Email = "admin@email.com",
+                            FirstName = "My",
+                            IsActive = true,
+                            IsDeleted = false,
+                            IsPendingActivation = false,
+                            LastModifiedDateTime = new DateTime(2019, 11, 7, 12, 51, 32, 437, DateTimeKind.Utc).AddTicks(5816),
+                            LastName = "Admin",
+                            Password = "123",
+                            TenantID = new Guid("00000000-0000-0000-0000-000000000001"),
+                            Username = "admin@ya.ru"
+                        });
                 });
 
             modelBuilder.Entity("YA.TenantWorker.Core.Entities.Tenant", b =>

@@ -13,6 +13,9 @@ namespace YA.TenantWorker.Infrastructure.Data.Configurations
         public void Configure(EntityTypeBuilder<ApiRequest> modelBuilder)
         {
             modelBuilder.HasKey(k => k.ApiRequestID);
+
+            modelBuilder.Property(p => p.ApiRequestDateTime)
+               .HasConversion(v => v, v => DateTime.SpecifyKind(v, DateTimeKind.Utc));
             modelBuilder.Property(p => p.tstamp).IsRowVersion();
         }
     }

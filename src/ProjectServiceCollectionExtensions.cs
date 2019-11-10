@@ -29,6 +29,7 @@ namespace YA.TenantWorker
         public static IServiceCollection AddProjectCommands(this IServiceCollection services)
         {
             return services
+                .AddSingleton<IAuthenticateCommand, AuthenticateCommand>()
                 .AddSingleton<IGetTenantCommand, GetTenantCommand>()
                 .AddSingleton<IGetTenantPageCommand, GetTenantPageCommand>()
                 .AddSingleton<IPostTenantCommand, PostTenantCommand>()

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using CorrelationId;
 using GreenPipes;
 using MassTransit;
@@ -9,7 +9,6 @@ using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
-using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -30,6 +29,16 @@ using YA.TenantWorker.Application.Interfaces;
 using YA.TenantWorker.Application;
 using YA.TenantWorker.Core.Entities;
 using YA.TenantWorker.Application.Caching;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Authentication.Google;
+using System.Collections.Generic;
+using Microsoft.AspNetCore.Authentication;
+using System.Threading.Tasks;
+using System.Linq;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using System.IdentityModel.Tokens.Jwt;
+using System.Text;
 
 namespace YA.TenantWorker
 {
@@ -85,16 +94,87 @@ namespace YA.TenantWorker
                 .AddHttpContextAccessor()
 
                 .AddSingleton<IActionContextAccessor, ActionContextAccessor>()
-                .AddTransient(x => x
-                    .GetRequiredService<IUrlHelperFactory>()
-                    .GetUrlHelper(x.GetRequiredService<IActionContextAccessor>().ActionContext))
-                .AddScoped<IPagingLinkHelper, PagingLinkHelper>()
+                //.AddTransient(x => x
+                //    .GetRequiredService<IUrlHelperFactory>()
+                //    .GetUrlHelper(x.GetRequiredService<IActionContextAccessor>().ActionContext))
+                //.AddScoped<IPagingLinkHelper, PagingLinkHelper>()
 
                 .AddCustomApiVersioning()
                 .AddVersionedApiExplorer(x =>
                     {
                         x.GroupNameFormat = "'v'VVV"; // Version format: 'v'major[.minor][-status]
-                    })
+                    });
+
+
+            //IdentityServer auth
+            ////IConfigurationSection section = Configuration.GetSection("SSOConfig");
+
+            ////services.AddIdentityServer(options =>
+            ////    {
+            ////        options.Events.RaiseErrorEvents = true;
+            ////        options.Events.RaiseInformationEvents = true;
+            ////        options.Events.RaiseFailureEvents = true;
+            ////        options.Events.RaiseSuccessEvents = true;
+            ////        options.PublicOrigin = "http://localhost:7453";
+            ////        options.IssuerUri = "http://localhost:7453";
+            ////    })
+            ////    .AddDeveloperSigningCredential()
+            ////    .AddInMemoryApiResources(SSOConfig.GetApiResources(section))
+            ////    .AddInMemoryClients(SSOConfig.GetClients(section))
+            ////    //.AddInMemoryClients(Config.GetClients())
+            ////    .AddInMemoryIdentityResources(Config.GetIdentityResources());
+
+
+            //Google auth
+            ////services.AddIdentity<IdentityUser, IdentityRole>();
+            ////services.AddAuthentication(options =>
+            ////{
+            ////    options.DefaultAuthenticateScheme = GoogleDefaults.AuthenticationScheme;
+            ////    options.DefaultChallengeScheme = GoogleDefaults.AuthenticationScheme;
+            ////})
+            ////.AddGoogle(options =>
+            ////{
+            ////    options.ClientId = "1015973033066-lh7s32vgvs0acfhg7e5u3v8ff9irdk61.apps.googleusercontent.com";
+            ////    options.ClientSecret = "AkaCTPmJH4pHbrCqDAtM4RqV";
+            ////    options.CallbackPath = "/auth/getcallback";
+            ////    //options.CorrelationCookie = new Microsoft.AspNetCore.Http.CookieBuilder { Name = "Google", };
+            ////    options.SaveTokens = true;
+
+            ////    options.Events.OnCreatingTicket = ctx =>
+            ////    {
+            ////        List<AuthenticationToken> tokens = ctx.Properties.GetTokens().ToList();
+
+            ////        tokens.Add(new AuthenticationToken()
+            ////        {
+            ////            Name = "TicketCreated",
+            ////            Value = DateTime.UtcNow.ToString()
+            ////        });
+
+            ////        ctx.Properties.StoreTokens(tokens);
+
+            ////        return Task.CompletedTask;
+            ////    };
+            ////});
+
+            ////services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+            ////        .AddJwtBearer(options =>
+            ////        {
+            ////            options.RequireHttpsMetadata = false;
+            ////            options.TokenValidationParameters = new TokenValidationParameters
+            ////            {
+            ////                NameClaimType = JwtClaimTypes.Name,
+            ////                RoleClaimType = JwtClaimTypes.Role,
+            ////                ValidateIssuer = true,
+            ////                ValidIssuer = "https://localhost:7453",
+            ////                ValidateAudience = true,
+            ////                ValidAudience = "YATenantWorker",
+            ////                ValidateLifetime = true,
+            ////                ValidateIssuerSigningKey = true,
+            ////                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("RANDOM_KEY_MUST_NOT_BE_SHARED")),
+            ////            };
+            ////        });
+
+            services
                 .AddMvcCore()
                     .SetCompatibilityVersion(CompatibilityVersion.Version_2_2)
                     .AddApiExplorer()
@@ -102,9 +182,7 @@ namespace YA.TenantWorker
                     .AddDataAnnotations()
                     .AddJsonFormatters()
                     .AddCustomJsonOptions(_hostingEnvironment)
-                
                     .AddCustomCors()
-
                     .AddCustomMvcOptions(_hostingEnvironment);
             services
                 .AddProjectCommands()
@@ -115,7 +193,8 @@ namespace YA.TenantWorker
             services
                 .AddEntityFrameworkSqlServer()
                 .AddDbContext<TenantWorkerDbContext>(options =>
-                    options.UseSqlServer(connectionString, x => x.EnableRetryOnFailure())
+                    options.UseSqlServer(connectionString, sqlOptions => 
+                        sqlOptions.EnableRetryOnFailure().CommandTimeout(60))
                     .ConfigureWarnings(x => x.Throw(RelationalEventId.QueryClientEvaluationWarning))
                     .EnableSensitiveDataLogging(_hostingEnvironment.IsDevelopment()));
                     //// useful for API-related projects that only read data
@@ -128,7 +207,6 @@ namespace YA.TenantWorker
             
             services.AddMassTransit(options =>
             {
-                // add all consumers to the container
                 options.AddConsumers(GetType().Assembly);
             });
 
@@ -204,8 +282,6 @@ namespace YA.TenantWorker
                 
                 .UseMiddleware<HttpRequestLogger>()
 
-                .UseCors(CorsPolicyName.AllowAny)
-
                 ////.UseIf(
                 ////    !_hostingEnvironment.IsDevelopment(),
                 ////    x => x.UseHsts())
@@ -234,7 +310,12 @@ namespace YA.TenantWorker
                 })
 
                 .UseStaticFilesWithCacheControl()
-                
+
+                //.UseIdentityServer()
+                //////////////////.UseHttpsRedirection()
+                ////.UseAuthentication()
+                //.UseAuthorization()
+
                 .UseMvc()
                 .UseSwagger()
                 .UseCustomSwaggerUI();

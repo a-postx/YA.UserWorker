@@ -158,7 +158,20 @@ namespace YA.TenantWorker
             return Guid.Empty;
         }
 
-        public static Guid GetCorrelationIdFromHttpContext(HttpContext context)
+        public static Guid GetCorrelationIdFromIHttpContext(this IHttpContextAccessor context)
+        {
+            if (context.HttpContext.Request.Headers.TryGetValue(General.CorrelationIdHeader, out StringValues stringValues))
+            {
+                if (Guid.TryParse(stringValues[0], out Guid corrId))
+                {
+                    return corrId;
+                }
+            }
+
+            return Guid.Empty;
+        }
+
+        public static Guid GetCorrelationIdFromHttpContext(this HttpContext context)
         {
             if (context.Request.Headers.TryGetValue(General.CorrelationIdHeader, out StringValues stringValues))
             {
@@ -169,6 +182,46 @@ namespace YA.TenantWorker
             }
 
             return Guid.Empty;
+        }
+
+        public static IEnumerable<T> If<T>(this IEnumerable<T> enumerable, bool condition, Func<IEnumerable<T>, IEnumerable<T>> action)
+        {
+            if (condition)
+            {
+                return action(enumerable);
+            }
+
+            return enumerable;
+        }
+
+        public static async Task<IEnumerable<T>> IfAsync<T>(this IEnumerable<T> enumerable, bool condition, Func<IEnumerable<T>, Task<IEnumerable<T>>> action)
+        {
+            if (condition)
+            {
+                return await action(enumerable);
+            }
+
+            return enumerable;
+        }
+
+        public static IQueryable<T> If<T>(this IQueryable<T> enumerable, bool condition, Func<IQueryable<T>, IQueryable<T>> action)
+        {
+            if (condition)
+            {
+                return action(enumerable);
+            }
+
+            return enumerable;
+        }
+
+        public static async Task<IQueryable<T>> IfAsync<T>(this IQueryable<T> enumerable, bool condition, Func<IQueryable<T>, Task<IQueryable<T>>> action)
+        {
+            if (condition)
+            {
+                return await action(enumerable);
+            }
+
+            return enumerable;
         }
     }
 }

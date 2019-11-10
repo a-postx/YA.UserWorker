@@ -131,6 +131,8 @@ namespace YA.TenantWorker
                     {
                         Console.WriteLine("Hosting environment is Development");
                         keyVaultEndpoint = General.DevelopmentKeyVault;
+
+                        IgnoreInvalidCertificates();
                     }
                     else if (hostingContext.HostingEnvironment.IsProduction())
                     {
@@ -319,6 +321,22 @@ namespace YA.TenantWorker
             return netCoreAppIndex > 0 && netCoreAppIndex < assemblyPath.Length - 2
                 ? assemblyPath[netCoreAppIndex + 1]
                 : null;
+        }
+
+        private static void IgnoreInvalidCertificates()
+        {
+            System.Net.ServicePointManager.ServerCertificateValidationCallback =
+            (sender, certificate, chain, sslPolicyErrors) =>
+            {
+                switch (sslPolicyErrors)
+                {
+                    case System.Net.Security.SslPolicyErrors.RemoteCertificateChainErrors:
+                    case System.Net.Security.SslPolicyErrors.RemoteCertificateNameMismatch:
+                    case System.Net.Security.SslPolicyErrors.RemoteCertificateNotAvailable:
+                        break;
+                }
+                return true;
+            };
         }
     }
 }

@@ -1,6 +1,8 @@
-﻿using Delobytes.Mapper;
+﻿using Delobytes.AspNetCore;
+using Delobytes.Mapper;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Infrastructure;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -18,54 +20,101 @@ namespace YA.TenantWorker.Application.Commands
         public GetTenantPageCommand(ILogger<GetTenantPageCommand> logger,
             ITenantWorkerDbContext workerDbContext,
             IMapper<Tenant, TenantVm> tenantVmMapper,
-            IActionContextAccessor actionContextAccessor,
-            IPagingLinkHelper pagingLinkHelper)
+            IHttpContextAccessor httpContextAccessor,
+            LinkGenerator linkGenerator)
         {
             _log = logger ?? throw new ArgumentNullException(nameof(logger));
             _dbContext = workerDbContext ?? throw new ArgumentNullException(nameof(workerDbContext));
             _tenantVmMapper = tenantVmMapper ?? throw new ArgumentNullException(nameof(tenantVmMapper));
-            _actionContextAccessor = actionContextAccessor ?? throw new ArgumentNullException(nameof(actionContextAccessor));
-            _pagingLinkHelper = pagingLinkHelper ?? throw new ArgumentNullException(nameof(pagingLinkHelper));
+            _httpContextAccessor = httpContextAccessor ?? throw new ArgumentNullException(nameof(httpContextAccessor));
+            _linkGenerator = linkGenerator ?? throw new ArgumentNullException(nameof(linkGenerator));
         }
-
+        
         private readonly ILogger<GetTenantPageCommand> _log;
         private readonly ITenantWorkerDbContext _dbContext;
         private readonly IMapper<Tenant, TenantVm> _tenantVmMapper;
-        private readonly IActionContextAccessor _actionContextAccessor;
-        private readonly IPagingLinkHelper _pagingLinkHelper;
+        private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly LinkGenerator _linkGenerator;
 
         public async Task<IActionResult> ExecuteAsync(PageOptions pageOptions, CancellationToken cancellationToken)
         {
-            Guid correlationId = _actionContextAccessor.GetCorrelationIdFromActionContext();
+            Guid correlationId = _httpContextAccessor.GetCorrelationIdFromIHttpContext();
 
-            ICollection<Tenant> tenants = await _dbContext
-                .GetEntitiesOrderedAndPagedAsync<Tenant>(e => e.TenantID, pageOptions.Page.Value, pageOptions.Count.Value, cancellationToken);
+            pageOptions.First = !pageOptions.First.HasValue && !pageOptions.Last.HasValue ? General.DefaultPageSizeForPagination : pageOptions.First;
+            DateTimeOffset? createdAfter = Cursor.FromCursor<DateTimeOffset?>(pageOptions.After);
+            DateTimeOffset? createdBefore = Cursor.FromCursor<DateTimeOffset?>(pageOptions.Before);
 
+            Task<List<Tenant>> getTenantsTask = _dbContext
+                .GetItemsTask<Tenant>(pageOptions.First, pageOptions.Last, createdAfter, createdBefore, cancellationToken);
+            Task<bool> getHasNextPageTask = _dbContext
+                .GetHasNextPage<Tenant>(pageOptions.First, createdAfter, createdBefore, cancellationToken);
+            Task<bool> getHasPreviousPageTask = _dbContext
+                .GetHasPreviousPage<Tenant>(pageOptions.Last, createdAfter, createdBefore, cancellationToken);
+            Task<int> totalCountTask = _dbContext.GetTotalItemsCountAsync<Tenant>(cancellationToken);
+
+            await Task.WhenAll(getTenantsTask, getHasNextPageTask, getHasPreviousPageTask, totalCountTask);
+
+            List<Tenant> tenants = getTenantsTask.Result;
+            bool hasNextPage = getHasNextPageTask.Result;
+            bool hasPreviousPage = getHasPreviousPageTask.Result;
+            int totalCount = totalCountTask.Result;
+            
             if (tenants == null)
             {
                 return new NotFoundResult();
             }
 
-            (int totalCount, int totalPages) = await _dbContext.GetTotalPagesAsync<Tenant>(pageOptions.Count.Value, cancellationToken);
+            (string startCursor, string endCursor) = Cursor.GetFirstAndLastCursor(tenants, x => x.CreatedDateTime);
+
             List<TenantVm> tenantVms = _tenantVmMapper.MapList(tenants);
 
-            PageResult<TenantVm> page = new PageResult<TenantVm>()
+            Connection<TenantVm> connection = new Connection<TenantVm>()
             {
-                Count = pageOptions.Count.Value,
                 Items = tenantVms,
-                Page = pageOptions.Page.Value,
-                TotalCount = totalCount,
-                TotalPages = totalPages,
+                PageInfo = new PageInfo()
+                {
+                    Count = tenantVms.Count,
+                    HasNextPage = hasNextPage,
+                    HasPreviousPage = hasPreviousPage,
+                    NextPageUrl = hasNextPage ? new Uri(_linkGenerator.GetUriByRouteValues(
+                        _httpContextAccessor.HttpContext,
+                        RouteNames.GetTenantPage,
+                        new PageOptions()
+                        {
+                            First = pageOptions.First,
+                            Last = pageOptions.Last,
+                            After = endCursor,
+                        })) : null,
+                    PreviousPageUrl = hasPreviousPage ? new Uri(_linkGenerator.GetUriByRouteValues(
+                        _httpContextAccessor.HttpContext,
+                        RouteNames.GetTenantPage,
+                        new PageOptions()
+                        {
+                            First = pageOptions.First,
+                            Last = pageOptions.Last,
+                            Before = startCursor
+                        })) : null,
+                    FirstPageUrl = new Uri(_linkGenerator.GetUriByRouteValues(
+                        _httpContextAccessor.HttpContext,
+                        RouteNames.GetTenantPage,
+                        new PageOptions()
+                        {
+                            First = pageOptions.First ?? pageOptions.Last,
+                        })),
+                    LastPageUrl = new Uri(_linkGenerator.GetUriByRouteValues(
+                        _httpContextAccessor.HttpContext,
+                        RouteNames.GetTenantPage,
+                        new PageOptions()
+                        {
+                            Last = pageOptions.First ?? pageOptions.Last,
+                        })),
+                },
+                TotalCount = totalCount
             };
 
-            // Add the Link HTTP Header to add URL's to next, previous, first and last pages.
-            // See https://tools.ietf.org/html/rfc5988#page-6
-            // There is a standard list of link relation types e.g. next, previous, first and last.
-            // See https://www.iana.org/assignments/link-relations/link-relations.xhtml
-            _actionContextAccessor.ActionContext.HttpContext
-                .Response.Headers.Add("Link", _pagingLinkHelper.GetLinkValue(page, RouteNames.GetTenantPage));
+            _httpContextAccessor.HttpContext.Response.Headers.Add(CustomHeaderNames.Link, connection.PageInfo.ToLinkHttpHeaderValue());
 
-            return new OkObjectResult(page);
+            return new OkObjectResult(connection);
         }
     }
 }

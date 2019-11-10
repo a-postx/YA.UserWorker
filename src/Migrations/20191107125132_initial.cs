@@ -49,6 +49,8 @@ namespace YA.TenantWorker.Migrations
                     TenantType = table.Column<int>(nullable: false),
                     TenantName = table.Column<string>(maxLength: 128, nullable: true),
                     PricingTierID = table.Column<Guid>(nullable: true),
+                    IsTrial = table.Column<bool>(nullable: false),
+                    IsActive = table.Column<bool>(nullable: false),
                     IsReadOnly = table.Column<bool>(nullable: false),
                     CreatedDateTime = table.Column<DateTime>(nullable: false, defaultValueSql: "GETUTCDATE()"),
                     LastModifiedDateTime = table.Column<DateTime>(nullable: false, defaultValueSql: "GETUTCDATE()"),
@@ -72,10 +74,11 @@ namespace YA.TenantWorker.Migrations
                     UserID = table.Column<Guid>(nullable: false),
                     TenantID = table.Column<Guid>(nullable: false),
                     Username = table.Column<string>(maxLength: 64, nullable: false),
+                    Password = table.Column<string>(maxLength: 50, nullable: true),
                     FirstName = table.Column<string>(maxLength: 255, nullable: true),
                     LastName = table.Column<string>(maxLength: 255, nullable: true),
                     Email = table.Column<string>(maxLength: 128, nullable: true),
-                    Active = table.Column<bool>(nullable: false),
+                    IsActive = table.Column<bool>(nullable: false),
                     IsPendingActivation = table.Column<bool>(nullable: false),
                     IsDeleted = table.Column<bool>(nullable: false),
                     CreatedDateTime = table.Column<DateTime>(nullable: false, defaultValueSql: "GETUTCDATE()"),
@@ -101,8 +104,13 @@ namespace YA.TenantWorker.Migrations
 
             migrationBuilder.InsertData(
                 table: "Tenants",
-                columns: new[] { "TenantID", "IsReadOnly", "PricingTierID", "TenantName", "TenantType" },
-                values: new object[] { new Guid("00000000-0000-0000-0000-000000000001"), false, new Guid("00000000-0000-0000-0000-000000000003"), "Прохожий", 1 });
+                columns: new[] { "TenantID", "IsActive", "IsReadOnly", "IsTrial", "PricingTierID", "TenantName", "TenantType" },
+                values: new object[] { new Guid("00000000-0000-0000-0000-000000000001"), true, false, false, new Guid("00000000-0000-0000-0000-000000000003"), "Прохожий", 1 });
+
+            migrationBuilder.InsertData(
+                table: "Users",
+                columns: new[] { "UserID", "CreatedDateTime", "Email", "FirstName", "IsActive", "IsDeleted", "IsPendingActivation", "LastLoginDate", "LastModifiedDateTime", "LastName", "Password", "TenantID", "Username" },
+                values: new object[] { new Guid("00000000-0000-0000-0000-000000000011"), new DateTime(2019, 11, 7, 12, 51, 32, 437, DateTimeKind.Utc).AddTicks(5815), "admin@email.com", "My", true, false, false, null, new DateTime(2019, 11, 7, 12, 51, 32, 437, DateTimeKind.Utc).AddTicks(5816), "Admin", "123", new Guid("00000000-0000-0000-0000-000000000001"), "admin@ya.ru" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_Tenants_PricingTierID",

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using YA.TenantWorker.Constants;
@@ -12,8 +13,14 @@ namespace YA.TenantWorker.Infrastructure.Data.Configurations
         {
             modelBuilder.HasKey(k => k.TenantID);
 
-            modelBuilder.Property(p => p.CreatedDateTime).HasDefaultValueSql(General.DefaultSqlModelDateTimeFunction).ValueGeneratedOnAdd();
-            modelBuilder.Property(p => p.LastModifiedDateTime).HasDefaultValueSql(General.DefaultSqlModelDateTimeFunction).ValueGeneratedOnAdd();
+            modelBuilder.Property(p => p.CreatedDateTime)
+                .HasDefaultValueSql(General.DefaultSqlModelDateTimeFunction)
+                .ValueGeneratedOnAdd()
+                .HasConversion(v => v, v => DateTime.SpecifyKind(v, DateTimeKind.Utc));
+            modelBuilder.Property(p => p.LastModifiedDateTime)
+                .HasDefaultValueSql(General.DefaultSqlModelDateTimeFunction)
+                .ValueGeneratedOnAdd()
+                .HasConversion(v => v, v => DateTime.SpecifyKind(v, DateTimeKind.Utc));
             modelBuilder.Property(p => p.tstamp).IsRowVersion();
             modelBuilder.Property(p => p.TenantName)
                 .IsUnicode()

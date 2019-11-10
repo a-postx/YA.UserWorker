@@ -9,5 +9,6 @@
         public string MessageBusLogin { get; set; }
         public string MessageBusPassword { get; set; }
         public string TenantWorkerConnStr { get; set; }
+        public string JwtSigningKey { get; set; }
     }
 }

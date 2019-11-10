@@ -31,7 +31,29 @@ namespace YA.TenantWorker.Infrastructure.Data
                     TenantName = "Прохожий",
                     PricingTierID = seedPricingTierId,
                     TenantType = TenantTypes.Custom,
+                    IsActive = true,
+                    IsTrial = false,
                     IsReadOnly = false
+                }
+            );
+
+            Guid seedAdminId = Guid.Parse("00000000-0000-0000-0000-000000000011");
+
+            modelBuilder.Entity<User>().HasData(
+                new
+                {
+                    UserID = seedAdminId,
+                    TenantID = seedTenantId,
+                    Username = "admin@ya.ru",
+                    Password = "123",
+                    FirstName = "My",
+                    LastName = "Admin",
+                    Email = "admin@email.com",
+                    IsActive = true,
+                    IsPendingActivation = false,
+                    IsDeleted = false,
+                    CreatedDateTime = DateTime.UtcNow,
+                    LastModifiedDateTime = DateTime.UtcNow
                 }
             );
         }

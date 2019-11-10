@@ -7,6 +7,7 @@ namespace YA.TenantWorker.Constants
 {
     public static class RouteNames
     {
+        public const string GetToken = ControllerName.Token + nameof(GetToken);
         public const string GetTenant = ControllerName.Tenant + nameof(GetTenant);
         public const string GetTenantPage = ControllerName.Tenant + nameof(GetTenantPage);
         public const string HeadTenant = ControllerName.Tenant + nameof(HeadTenant);
