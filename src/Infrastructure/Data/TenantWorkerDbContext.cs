@@ -67,21 +67,22 @@ namespace YA.TenantWorker.Infrastructure.Data
             await Set<T>().AddRangeAsync(newItems, cancellationToken);
         }
 
-        public Task<List<T>> GetItems<T>(int? first, DateTimeOffset? createdAfter, DateTimeOffset? createdBefore, CancellationToken cancellationToken) where T : class, IAuditedEntityBase
+        public Task<List<T>> GetItems<T>(int? first, DateTimeOffset? createdAfter, DateTimeOffset? createdBefore, CancellationToken cancellationToken) where T : class, IAuditedEntityBase, IRowVersionedEntity
         {
-            return Task.FromResult(Set<T>()
+            return Task.FromResult(Set<T>().OrderBy(t => t.tstamp)
                 .If(createdAfter.HasValue, x => x.Where(y => y.CreatedDateTime > createdAfter.Value))
                 .If(createdBefore.HasValue, x => x.Where(y => y.CreatedDateTime < createdBefore.Value))
                 .If(first.HasValue, x => x.Take(first.Value))
                 .ToList());
         }
 
-        public Task<List<T>> GetItemsReverse<T>(int? last, DateTimeOffset? createdAfter, DateTimeOffset? createdBefore, CancellationToken cancellationToken) where T : class, IAuditedEntityBase
+        public Task<List<T>> GetItemsReverse<T>(int? last, DateTimeOffset? createdAfter, DateTimeOffset? createdBefore, CancellationToken cancellationToken) where T : class, IAuditedEntityBase, IRowVersionedEntity
         {
-            return Task.FromResult(Set<T>()
+            return Task.FromResult(Set<T>().OrderBy(t => t.tstamp)
                 .If(createdAfter.HasValue, x => x.Where(y => y.CreatedDateTime > createdAfter.Value))
                 .If(createdBefore.HasValue, x => x.Where(y => y.CreatedDateTime < createdBefore.Value))
-                .If(last.HasValue, x => x.TakeLast(last.Value))
+                //converting to Enumerable because of error "This overload of the method 'System.Linq.Queryable.TakeLast' is currently not supported." in v.4.0.3.0
+                .If(last.HasValue, x => x.AsEnumerable().TakeLast(last.Value))
                 .ToList());
         }
 
@@ -97,11 +98,12 @@ namespace YA.TenantWorker.Infrastructure.Data
         {
             return Task.FromResult(Set<T>().OrderBy(t => t.tstamp)
                 .If(createdBefore.HasValue, x => x.Where(y => y.CreatedDateTime < createdBefore.Value))
-                .SkipLast(last.Value)
+                //converting to Enumerable because of error "This overload of the method 'System.Linq.Queryable.SkipLast' is currently not supported." in v.4.0.3.0
+                .AsEnumerable().SkipLast(last.Value)
                 .Any());
         }
 
-        public Task<List<T>> GetItemsTask<T>(int? first, int? last, DateTimeOffset? createdAfter, DateTimeOffset? createdBefore, CancellationToken cancellationToken) where T : class, IAuditedEntityBase
+        public Task<List<T>> GetItemsTask<T>(int? first, int? last, DateTimeOffset? createdAfter, DateTimeOffset? createdBefore, CancellationToken cancellationToken) where T : class, IAuditedEntityBase, IRowVersionedEntity
         {
             Task<List<T>> getTenantsTask;
 

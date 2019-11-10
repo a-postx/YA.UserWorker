@@ -16,11 +16,11 @@ namespace YA.TenantWorker.Application.Interfaces
         Task CreateEntityAsync<T>(T item, CancellationToken cancellationToken) where T : class;
         Task<T> CreateAndReturnEntityAsync<T>(T item, CancellationToken cancellationToken) where T : class;
         Task CreateEntitiesAsync<T>(List<T> newItems, CancellationToken cancellationToken) where T : class;
-        Task<List<T>> GetItems<T>(int? first, DateTimeOffset? createdAfter, DateTimeOffset? createdBefore, CancellationToken cancellationToken) where T : class, IAuditedEntityBase;
-        Task<List<T>> GetItemsReverse<T>(int? last, DateTimeOffset? createdAfter, DateTimeOffset? createdBefore, CancellationToken cancellationToken) where T : class, IAuditedEntityBase;
+        Task<List<T>> GetItems<T>(int? first, DateTimeOffset? createdAfter, DateTimeOffset? createdBefore, CancellationToken cancellationToken) where T : class, IAuditedEntityBase, IRowVersionedEntity;
+        Task<List<T>> GetItemsReverse<T>(int? last, DateTimeOffset? createdAfter, DateTimeOffset? createdBefore, CancellationToken cancellationToken) where T : class, IAuditedEntityBase, IRowVersionedEntity;
+        Task<List<T>> GetItemsTask<T>(int? first, int? last, DateTimeOffset? createdAfter, DateTimeOffset? createdBefore, CancellationToken cancellationToken) where T : class, IAuditedEntityBase, IRowVersionedEntity;
         Task<bool> GetItemsHasNextPage<T>(int? first, DateTimeOffset? createdAfter, CancellationToken cancellationToken) where T : class, IAuditedEntityBase, IRowVersionedEntity;
         Task<bool> GetItemsHasPreviousPage<T>(int? last, DateTimeOffset? createdBefore, CancellationToken cancellationToken) where T : class, IAuditedEntityBase, IRowVersionedEntity;
-        Task<List<T>> GetItemsTask<T>(int? first, int? last, DateTimeOffset? createdAfter, DateTimeOffset? createdBefore, CancellationToken cancellationToken) where T : class, IAuditedEntityBase;
         Task<bool> GetHasNextPage<T>(int? first, DateTimeOffset? createdAfter, DateTimeOffset? createdBefore, CancellationToken cancellationToken) where T : class, IAuditedEntityBase, IRowVersionedEntity;
         Task<bool> GetHasPreviousPage<T>(int? last, DateTimeOffset? createdAfter, DateTimeOffset? createdBefore, CancellationToken cancellationToken) where T : class, IAuditedEntityBase, IRowVersionedEntity;
         Task<int> GetTotalItemsCountAsync<T>(CancellationToken cancellationToken) where T : class;

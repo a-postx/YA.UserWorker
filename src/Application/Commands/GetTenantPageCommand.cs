@@ -58,7 +58,7 @@ namespace YA.TenantWorker.Application.Commands
             bool hasNextPage = getHasNextPageTask.Result;
             bool hasPreviousPage = getHasPreviousPageTask.Result;
             int totalCount = totalCountTask.Result;
-            
+
             if (tenants == null)
             {
                 return new NotFoundResult();
@@ -67,54 +67,12 @@ namespace YA.TenantWorker.Application.Commands
             (string startCursor, string endCursor) = Cursor.GetFirstAndLastCursor(tenants, x => x.CreatedDateTime);
 
             List<TenantVm> tenantVms = _tenantVmMapper.MapList(tenants);
+            PaginatedResult<TenantVm> paginatedResult= new PaginatedResult<TenantVm>(_linkGenerator, pageOptions, hasNextPage,
+                hasPreviousPage, totalCount, startCursor, endCursor, _httpContextAccessor.HttpContext, RouteNames.GetTenantPage, tenantVms);
 
-            Connection<TenantVm> connection = new Connection<TenantVm>()
-            {
-                Items = tenantVms,
-                PageInfo = new PageInfo()
-                {
-                    Count = tenantVms.Count,
-                    HasNextPage = hasNextPage,
-                    HasPreviousPage = hasPreviousPage,
-                    NextPageUrl = hasNextPage ? new Uri(_linkGenerator.GetUriByRouteValues(
-                        _httpContextAccessor.HttpContext,
-                        RouteNames.GetTenantPage,
-                        new PageOptions()
-                        {
-                            First = pageOptions.First,
-                            Last = pageOptions.Last,
-                            After = endCursor,
-                        })) : null,
-                    PreviousPageUrl = hasPreviousPage ? new Uri(_linkGenerator.GetUriByRouteValues(
-                        _httpContextAccessor.HttpContext,
-                        RouteNames.GetTenantPage,
-                        new PageOptions()
-                        {
-                            First = pageOptions.First,
-                            Last = pageOptions.Last,
-                            Before = startCursor
-                        })) : null,
-                    FirstPageUrl = new Uri(_linkGenerator.GetUriByRouteValues(
-                        _httpContextAccessor.HttpContext,
-                        RouteNames.GetTenantPage,
-                        new PageOptions()
-                        {
-                            First = pageOptions.First ?? pageOptions.Last,
-                        })),
-                    LastPageUrl = new Uri(_linkGenerator.GetUriByRouteValues(
-                        _httpContextAccessor.HttpContext,
-                        RouteNames.GetTenantPage,
-                        new PageOptions()
-                        {
-                            Last = pageOptions.First ?? pageOptions.Last,
-                        })),
-                },
-                TotalCount = totalCount
-            };
+            _httpContextAccessor.HttpContext.Response.Headers.Add(CustomHeaderNames.Link, paginatedResult.PageInfo.ToLinkHttpHeaderValue());
 
-            _httpContextAccessor.HttpContext.Response.Headers.Add(CustomHeaderNames.Link, connection.PageInfo.ToLinkHttpHeaderValue());
-
-            return new OkObjectResult(connection);
+            return new OkObjectResult(paginatedResult);
         }
     }
 }

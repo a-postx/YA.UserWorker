@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using YA.TenantWorker.Application.Enums;
 
 namespace YA.TenantWorker.Application.Models.ValueObjects

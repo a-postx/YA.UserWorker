@@ -100,7 +100,7 @@ namespace YA.TenantWorker.Controllers
         /// or 409 Conflict if the request is a duplicate.</returns>
         [HttpGet("", Name = RouteNames.GetTenantPage)]
         [HttpHead("", Name = RouteNames.HeadTenantPage)]
-        [SwaggerResponse(StatusCodes.Status200OK, "Collection of tenants for the specified page.", typeof(PageResult<TenantVm>))]
+        [SwaggerResponse(StatusCodes.Status200OK, "Collection of tenants for the specified page.", typeof(PaginatedResult<TenantVm>))]
         [SwaggerResponse(StatusCodes.Status400BadRequest, "Page request parameters are invalid.")]
         [SwaggerResponse(StatusCodes.Status404NotFound, "Page with the specified page number was not found.")]
         [SwaggerResponse(StatusCodes.Status409Conflict, "Duplicate request.", typeof(ApiError))]
