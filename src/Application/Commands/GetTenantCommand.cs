@@ -35,7 +35,7 @@ namespace YA.TenantWorker.Application.Commands
 
         public async Task<IActionResult> ExecuteAsync(Guid tenantId, CancellationToken cancellationToken = default)
         {
-            Guid correlationId = _actionContextAccessor.GetCorrelationIdFromActionContext();
+            Guid correlationId = _actionContextAccessor.GetCorrelationId();
 
             if (tenantId == Guid.Empty)
             {
@@ -51,9 +51,8 @@ namespace YA.TenantWorker.Application.Commands
                     return new NotFoundResult();
                 }
 
-                HttpContext httpContext = _actionContextAccessor.ActionContext.HttpContext;
-
-                if (httpContext.Request.Headers.TryGetValue(HeaderNames.IfModifiedSince, out StringValues stringValues))
+                if (_actionContextAccessor.ActionContext.HttpContext
+                    .Request.Headers.TryGetValue(HeaderNames.IfModifiedSince, out StringValues stringValues))
                 {
                     if (DateTimeOffset.TryParse(stringValues, out DateTimeOffset modifiedSince) && (modifiedSince >= tenant.LastModifiedDateTime))
                     {
@@ -62,7 +61,8 @@ namespace YA.TenantWorker.Application.Commands
                 }
 
                 TenantVm tenantViewModel = _tenantVmMapper.Map(tenant);
-                httpContext.Response.Headers.Add(HeaderNames.LastModified, tenant.LastModifiedDateTime.ToString("R"));
+                _actionContextAccessor.ActionContext.HttpContext
+                    .Response.Headers.Add(HeaderNames.LastModified, tenant.LastModifiedDateTime.ToString("R"));
                     
                 return new OkObjectResult(tenantViewModel);
             }

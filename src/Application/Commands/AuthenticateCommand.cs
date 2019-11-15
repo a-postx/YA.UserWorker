@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
@@ -40,51 +41,54 @@ namespace YA.TenantWorker.Application.Commands
 
             KeyVaultSecrets secrets = _config.Get<KeyVaultSecrets>();
 
-            using (_log.BeginScopeWith((Logs.Username, credentials.Username)))
+            User user = await _dbContext.GetEntityWithTenantAsync<User>(u => u.Username == credentials.Username && u.Password == credentials.Password, cancellationToken);
+
+            if (user != null)
             {
-                User user = await _dbContext.GetEntityWithTenantAsync<User>(u => u.Username == credentials.Username && u.Password == credentials.Password, cancellationToken);
-
-                if (user != null)
+                Claim[] claims = new[]
                 {
-                    Claim[] claims = new[]
-                    {
-                        new Claim("client_id", "marklimit"),
-                        new Claim(JwtRegisteredClaimNames.Sub, user.Username),
-                        new Claim("user_id", user.UserID.ToString()),
-                        new Claim(JwtRegisteredClaimNames.Email, user.Email),
-                        new Claim("name", user.FirstName + " " + user.LastName),
-                        new Claim("role", "Administrator"),
-                        new Claim("tenant_id", user.Tenant.TenantID.ToString()),
-                        new Claim("language", "ru"),
-                        new Claim("scope", "identityServerYATenantWorker")
-                    };
+                    new Claim(CustomClaimNames.client_id, "web_app"),
+                    new Claim(CustomClaimNames.tenant_id, user.Tenant.TenantID.ToString()),
+                    new Claim(JwtRegisteredClaimNames.Sub, user.Username),
+                    new Claim(CustomClaimNames.nameidentifier, user.UserID.ToString()),
+                    //Ocelot doesn't transform "sub" claim
+                    new Claim(CustomClaimNames.authsub, user.Username),
+                    new Claim(CustomClaimNames.authemail, user.Email),
+                    new Claim(JwtRegisteredClaimNames.Email, user.Email),
+                    new Claim(CustomClaimNames.name, user.FirstName + " " + user.LastName),
+                    new Claim(CustomClaimNames.role, "Administrator"),
+                    new Claim(CustomClaimNames.language, "ru"),
+                    new Claim(CustomClaimNames.scope, "mySuperServiceScope"),
+                };
 
-                    SymmetricSecurityKey key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secrets.JwtSigningKey));
-                    SigningCredentials creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-                    DateTime expiry = DateTime.Now.AddDays(Convert.ToInt32(360));
-                    JwtSecurityToken token = new JwtSecurityToken(
-                        "https://localhost:7453",
-                        "YATenantWorker",
-                        claims,
-                        DateTime.Now,
-                        expires: expiry,
-                        signingCredentials: creds
-                    );
+                SymmetricSecurityKey key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secrets.JwtSigningKey));
+                SigningCredentials creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+                DateTime expiry = DateTime.Now.AddDays(Convert.ToInt32(360));
+                JwtSecurityToken token = new JwtSecurityToken(
+                    "https://localhost:7453",
+                    "YATenantWorker",
+                    claims,
+                    DateTime.Now,
+                    expires: expiry,
+                    signingCredentials: creds
+                );
 
-                    string wToken = new JwtSecurityTokenHandler().WriteToken(token);
+                string wToken = new JwtSecurityTokenHandler().WriteToken(token);
 
-                    return new OkObjectResult(new TokenVm
-                    {
-                        access_token = wToken,
-                        expires_in = 31104000,
-                        token_type = "Bearer",
-                        scope = "identityServerYATenantWorker"
-                    });
-                }
-                else
+                _log.LogInformation("User {Username} authenticated successfully.", credentials.Username);
+
+                return new OkObjectResult(new TokenVm
                 {
-                    return new BadRequestObjectResult("Username and/or password is invalid.");
-                }
+                    access_token = wToken,
+                    expires_in = 31104000,
+                    token_type = "Bearer",
+                    scope = "identityServerYATenantWorker"
+                });
+            }
+            else
+            {
+                _log.LogInformation("Username and/or password for {Username} is invalid.", credentials.Username);
+                return new BadRequestObjectResult("Username and/or password is invalid.");
             }
         }
     }

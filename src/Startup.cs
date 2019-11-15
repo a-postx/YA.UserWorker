@@ -17,18 +17,19 @@ using Microsoft.Extensions.Hosting;
 using Delobytes.AspNetCore;
 using YA.TenantWorker.Constants;
 using YA.TenantWorker.Health;
+using YA.TenantWorker.Application.Interfaces;
+using YA.TenantWorker.Application;
+using YA.TenantWorker.Application.ActionFilters;
+using YA.TenantWorker.Application.Caching;
+using YA.TenantWorker.Application.Models.ViewModels;
 using YA.TenantWorker.Infrastructure.Messaging;
 using YA.TenantWorker.Infrastructure.Data;
+using YA.TenantWorker.Infrastructure.Messaging.Test;
+using YA.TenantWorker.Infrastructure.Authentication;
+using YA.TenantWorker.Core.Entities;
 using Serilog;
 using IHostingEnvironment = Microsoft.AspNetCore.Hosting.IHostingEnvironment;
 using Microsoft.EntityFrameworkCore.Diagnostics;
-using YA.TenantWorker.Application.ActionFilters;
-using YA.TenantWorker.Application.Models.ViewModels;
-using YA.TenantWorker.Infrastructure.Messaging.Test;
-using YA.TenantWorker.Application.Interfaces;
-using YA.TenantWorker.Application;
-using YA.TenantWorker.Core.Entities;
-using YA.TenantWorker.Application.Caching;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Authentication.Google;
@@ -94,67 +95,12 @@ namespace YA.TenantWorker
                 .AddHttpContextAccessor()
 
                 .AddSingleton<IActionContextAccessor, ActionContextAccessor>()
-                //.AddTransient(x => x
-                //    .GetRequiredService<IUrlHelperFactory>()
-                //    .GetUrlHelper(x.GetRequiredService<IActionContextAccessor>().ActionContext))
-                //.AddScoped<IPagingLinkHelper, PagingLinkHelper>()
 
                 .AddCustomApiVersioning()
                 .AddVersionedApiExplorer(x =>
                     {
                         x.GroupNameFormat = "'v'VVV"; // Version format: 'v'major[.minor][-status]
                     });
-
-
-            //IdentityServer auth
-            ////IConfigurationSection section = Configuration.GetSection("SSOConfig");
-
-            ////services.AddIdentityServer(options =>
-            ////    {
-            ////        options.Events.RaiseErrorEvents = true;
-            ////        options.Events.RaiseInformationEvents = true;
-            ////        options.Events.RaiseFailureEvents = true;
-            ////        options.Events.RaiseSuccessEvents = true;
-            ////        options.PublicOrigin = "http://localhost:7453";
-            ////        options.IssuerUri = "http://localhost:7453";
-            ////    })
-            ////    .AddDeveloperSigningCredential()
-            ////    .AddInMemoryApiResources(SSOConfig.GetApiResources(section))
-            ////    .AddInMemoryClients(SSOConfig.GetClients(section))
-            ////    //.AddInMemoryClients(Config.GetClients())
-            ////    .AddInMemoryIdentityResources(Config.GetIdentityResources());
-
-
-            //Google auth
-            ////services.AddIdentity<IdentityUser, IdentityRole>();
-            ////services.AddAuthentication(options =>
-            ////{
-            ////    options.DefaultAuthenticateScheme = GoogleDefaults.AuthenticationScheme;
-            ////    options.DefaultChallengeScheme = GoogleDefaults.AuthenticationScheme;
-            ////})
-            ////.AddGoogle(options =>
-            ////{
-            ////    options.ClientId = "1015973033066-lh7s32vgvs0acfhg7e5u3v8ff9irdk61.apps.googleusercontent.com";
-            ////    options.ClientSecret = "AkaCTPmJH4pHbrCqDAtM4RqV";
-            ////    options.CallbackPath = "/auth/getcallback";
-            ////    //options.CorrelationCookie = new Microsoft.AspNetCore.Http.CookieBuilder { Name = "Google", };
-            ////    options.SaveTokens = true;
-
-            ////    options.Events.OnCreatingTicket = ctx =>
-            ////    {
-            ////        List<AuthenticationToken> tokens = ctx.Properties.GetTokens().ToList();
-
-            ////        tokens.Add(new AuthenticationToken()
-            ////        {
-            ////            Name = "TicketCreated",
-            ////            Value = DateTime.UtcNow.ToString()
-            ////        });
-
-            ////        ctx.Properties.StoreTokens(tokens);
-
-            ////        return Task.CompletedTask;
-            ////    };
-            ////});
 
             ////services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ////        .AddJwtBearer(options =>
@@ -173,6 +119,12 @@ namespace YA.TenantWorker
             ////                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("RANDOM_KEY_MUST_NOT_BE_SHARED")),
             ////            };
             ////        });
+
+            services.AddAuthenticationCore(o =>
+            {
+                o.DefaultScheme = "YaHeaderClaimsScheme";
+                o.AddScheme<YaAuthenticationHandler>("YaHeaderClaimsScheme", "Authentication scheme that use claims from request headers extracted from JWT token on a web api gateway.");
+            });
 
             services
                 .AddMvcCore()
@@ -248,7 +200,6 @@ namespace YA.TenantWorker
             
             services.AddScoped<TenantRouteFilter>();
             services.AddScoped<ApiRequestFilter>();
-            services.AddScoped<LoggingFilter>();
 
             services.AddTransient<IApiRequestManager, ApiRequestManager>();
             services.AddSingleton<ApiRequestMemoryCache>();
@@ -272,6 +223,8 @@ namespace YA.TenantWorker
                     UpdateTraceIdentifier = false,
                     UseGuidForCorrelationId = false
                     })
+                .UseCorrelationIdLogging()
+                ////.UseAllElasticApm(Configuration)
                 
                 //!experimental!
                 ////.UseHttpException()
@@ -280,7 +233,9 @@ namespace YA.TenantWorker
                 .UseResponseCaching()
                 .UseResponseCompression()
                 
-                .UseMiddleware<HttpRequestLogger>()
+                .UseHttpContextLogging()
+
+                .UseCors(CorsPolicyName.AllowAny)
 
                 ////.UseIf(
                 ////    !_hostingEnvironment.IsDevelopment(),
@@ -313,8 +268,8 @@ namespace YA.TenantWorker
 
                 //.UseIdentityServer()
                 //////////////////.UseHttpsRedirection()
-                ////.UseAuthentication()
-                //.UseAuthorization()
+                .UseAuthentication()
+                .UseAuthenticationContextLogging()
 
                 .UseMvc()
                 .UseSwagger()

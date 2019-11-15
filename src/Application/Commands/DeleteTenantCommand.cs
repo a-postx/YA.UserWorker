@@ -30,7 +30,7 @@ namespace YA.TenantWorker.Application.Commands
 
         public async Task<IActionResult> ExecuteAsync(Guid tenantId, CancellationToken cancellationToken = default)
         {
-            Guid correlationId = _actionContextAccessor.GetCorrelationIdFromActionContext();
+            Guid correlationId = _actionContextAccessor.GetCorrelationId();
 
             if (tenantId == Guid.Empty)
             {

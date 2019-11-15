@@ -50,7 +50,7 @@ namespace YA.TenantWorker.Application.Commands
 
         public async Task<IActionResult> ExecuteAsync(Guid tenantId, JsonPatchDocument<TenantSm> patch, CancellationToken cancellationToken)
         {
-            Guid correlationId = _actionContextAccessor.GetCorrelationIdFromActionContext();
+            Guid correlationId = _actionContextAccessor.GetCorrelationId();
 
             if (tenantId == Guid.Empty || patch == null)
             {

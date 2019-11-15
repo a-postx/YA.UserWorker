@@ -10,6 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using YA.TenantWorker.Application.Interfaces;
 using YA.TenantWorker.Application.Models.ViewModels;
+using YA.TenantWorker.Application.Models.ValueObjects;
 using YA.TenantWorker.Constants;
 using YA.TenantWorker.Core.Entities;
 
@@ -38,37 +39,37 @@ namespace YA.TenantWorker.Application.Commands
 
         public async Task<IActionResult> ExecuteAsync(PageOptions pageOptions, CancellationToken cancellationToken)
         {
-            Guid correlationId = _httpContextAccessor.GetCorrelationIdFromIHttpContext();
+            Guid correlationId = _httpContextAccessor.GetCorrelationId();
 
             pageOptions.First = !pageOptions.First.HasValue && !pageOptions.Last.HasValue ? General.DefaultPageSizeForPagination : pageOptions.First;
             DateTimeOffset? createdAfter = Cursor.FromCursor<DateTimeOffset?>(pageOptions.After);
             DateTimeOffset? createdBefore = Cursor.FromCursor<DateTimeOffset?>(pageOptions.Before);
 
-            Task<List<Tenant>> getTenantsTask = _dbContext
-                .GetItemsTask<Tenant>(pageOptions.First, pageOptions.Last, createdAfter, createdBefore, cancellationToken);
+            Task<List<Tenant>> getItemsTask = _dbContext
+                .GetEntitiesPagedTask<Tenant>(pageOptions.First, pageOptions.Last, createdAfter, createdBefore, cancellationToken);
             Task<bool> getHasNextPageTask = _dbContext
                 .GetHasNextPage<Tenant>(pageOptions.First, createdAfter, createdBefore, cancellationToken);
             Task<bool> getHasPreviousPageTask = _dbContext
                 .GetHasPreviousPage<Tenant>(pageOptions.Last, createdAfter, createdBefore, cancellationToken);
-            Task<int> totalCountTask = _dbContext.GetTotalItemsCountAsync<Tenant>(cancellationToken);
+            Task<int> totalCountTask = _dbContext.GetEntitiesCountAsync<Tenant>(cancellationToken);
 
-            await Task.WhenAll(getTenantsTask, getHasNextPageTask, getHasPreviousPageTask, totalCountTask);
+            await Task.WhenAll(getItemsTask, getHasNextPageTask, getHasPreviousPageTask, totalCountTask);
 
-            List<Tenant> tenants = getTenantsTask.Result;
+            List<Tenant> items = getItemsTask.Result;
             bool hasNextPage = getHasNextPageTask.Result;
             bool hasPreviousPage = getHasPreviousPageTask.Result;
             int totalCount = totalCountTask.Result;
 
-            if (tenants == null)
+            if (items == null)
             {
                 return new NotFoundResult();
             }
 
-            (string startCursor, string endCursor) = Cursor.GetFirstAndLastCursor(tenants, x => x.CreatedDateTime);
+            (string startCursor, string endCursor) = Cursor.GetFirstAndLastCursor(items, x => x.CreatedDateTime);
 
-            List<TenantVm> tenantVms = _tenantVmMapper.MapList(tenants);
+            List<TenantVm> itemVms = _tenantVmMapper.MapList(items);
             PaginatedResult<TenantVm> paginatedResult= new PaginatedResult<TenantVm>(_linkGenerator, pageOptions, hasNextPage,
-                hasPreviousPage, totalCount, startCursor, endCursor, _httpContextAccessor.HttpContext, RouteNames.GetTenantPage, tenantVms);
+                hasPreviousPage, totalCount, startCursor, endCursor, _httpContextAccessor.HttpContext, RouteNames.GetTenantPage, itemVms);
 
             _httpContextAccessor.HttpContext.Response.Headers.Add(CustomHeaderNames.Link, paginatedResult.PageInfo.ToLinkHttpHeaderValue());
 

@@ -26,7 +26,7 @@ namespace YA.TenantWorker.Application
         
         public async Task<(bool created, ApiRequest request)> GetOrCreateRequestAsync(Guid correlationId, string method, CancellationToken cancellationToken)
         {
-            (bool requestFoundInCache, ApiRequest request) = await GetFromCacheOrDbAsync(correlationId, method, cancellationToken);
+            (bool requestFoundInCache, ApiRequest request) = await GetFromCacheOrDbAsync(correlationId, cancellationToken);
 
             if (requestFoundInCache)
             {
@@ -53,7 +53,7 @@ namespace YA.TenantWorker.Application
             }
         }
 
-        private async Task<(bool requestFoundInCache, ApiRequest request)> GetFromCacheOrDbAsync(Guid correlationId, string method, CancellationToken cancellationToken)
+        private async Task<(bool requestFoundInCache, ApiRequest request)> GetFromCacheOrDbAsync(Guid correlationId, CancellationToken cancellationToken)
         {
             ApiRequest requestFromCache = _apiRequestCache.GetApiRequestFromCache(correlationId);
                 

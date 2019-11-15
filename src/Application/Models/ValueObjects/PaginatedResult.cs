@@ -2,8 +2,9 @@
 using Microsoft.AspNetCore.Routing;
 using System;
 using System.Collections.Generic;
+using YA.TenantWorker.Application.Models.ViewModels;
 
-namespace YA.TenantWorker.Application.Models.ViewModels
+namespace YA.TenantWorker.Application.Models.ValueObjects
 {
     public class PaginatedResult<T> : ValueObject where T : class
     {

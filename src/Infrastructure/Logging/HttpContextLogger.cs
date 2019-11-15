@@ -5,7 +5,6 @@ using System.Text;
 using System.Threading.Tasks;
 using CorrelationId;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Internal;
 using Newtonsoft.Json;
 using Serilog;
 using Serilog.Context;
@@ -14,14 +13,14 @@ using YA.TenantWorker.Application.Models.Dto;
 using YA.TenantWorker.Application.Models.ValueObjects;
 using YA.TenantWorker.Constants;
 
-namespace YA.TenantWorker.Application
+namespace YA.TenantWorker.Infrastructure.Logging
 {
     /// <summary>
-    /// Middleware to log HTTP requests and exceptions. 
+    /// HTTP request, response and exceptions logging middleware. 
     /// </summary>
-    public class HttpRequestLogger
+    public class HttpContextLogger
     {
-        public HttpRequestLogger(RequestDelegate next)
+        public HttpContextLogger(RequestDelegate next)
         {
             _next = next ?? throw new ArgumentNullException(nameof(next));
         }
@@ -31,29 +30,26 @@ namespace YA.TenantWorker.Application
         public async Task InvokeAsync(HttpContext httpContext, ICorrelationContextAccessor correlationContextAccessor)
         {
             HttpContext context = httpContext ?? throw new ArgumentNullException(nameof(httpContext));
-
-            string correlationId = correlationContextAccessor.CorrelationContext.CorrelationId;
             
-            LogContext.PushProperty("UserName", context.User.Identity.Name);
-            LogContext.PushProperty(Logs.CorrelationId, correlationId);
-            LogContext.PushProperty("LogType", "request");
+            LogContext.PushProperty(Logs.LogType, LogTypes.Request);
 
-            context.Request.EnableRewind();
-            Stream body = context.Request.Body;
-            byte[] buffer = new byte[Convert.ToInt32(context.Request.ContentLength)];
-            await context.Request.Body.ReadAsync(buffer, 0, buffer.Length);
-            string incomingRequestBody = Encoding.UTF8.GetString(buffer);
+            string initialRequestBody = "";
+            httpContext.Request.EnableBuffering();
+            Stream body = httpContext.Request.Body;
+            byte[] buffer = new byte[Convert.ToInt32(httpContext.Request.ContentLength)];
+            await httpContext.Request.Body.ReadAsync(buffer, 0, buffer.Length);
+            initialRequestBody = Encoding.UTF8.GetString(buffer);
             body.Seek(0, SeekOrigin.Begin);
-            context.Request.Body = body;
+            httpContext.Request.Body = body;
 
             //logz.io/logstash fields can accept only 32k strings so request/response bodies are cut
-            if (incomingRequestBody.Length > General.MaxLogFieldLength)
+            if (initialRequestBody.Length > General.MaxLogFieldLength)
             {
-                incomingRequestBody = incomingRequestBody.Substring(0, General.MaxLogFieldLength);
+                initialRequestBody = initialRequestBody.Substring(0, General.MaxLogFieldLength);
             }
 
-            Log.ForContext("RequestHeaders", context.Request.Headers.ToDictionary(h => h.Key, h => h.Value.ToString()), true)
-                .ForContext("RequestBody", incomingRequestBody)
+            Log.ForContext(Logs.RequestHeaders, context.Request.Headers.ToDictionary(h => h.Key, h => h.Value.ToString()), true)
+                .ForContext(Logs.RequestBody, initialRequestBody)
                 .Information("Request information {RequestMethod} {RequestPath} information", context.Request.Method, context.Request.Path);
 
             using (MemoryStream responseBodyMemoryStream = new MemoryStream())
@@ -74,7 +70,7 @@ namespace YA.TenantWorker.Application
                         ApiErrorTypes.Exception,
                         ApiErrorCodes.INTERNAL_SERVER_ERROR,
                         errorMessage,
-                        correlationId);
+                        correlationContextAccessor.CorrelationContext.CorrelationId);
 
                     string errorResponseBody = JsonConvert.SerializeObject(unknownError);
                     context.Response.ContentType = "application/json";
@@ -91,13 +87,12 @@ namespace YA.TenantWorker.Application
                 {
                     LogContext.PushProperty(Logs.TraceId, GetTraceId(responseBody));
                 }
-
-                string endRequestBody = incomingRequestBody;
+                
                 string endResponseBody = (responseBody.Length > General.MaxLogFieldLength) ?
                     responseBody.Substring(0, General.MaxLogFieldLength) : responseBody;
 
-                Log.ForContext("ResponseHeaders", context.Response.Headers.ToDictionary(h => h.Key, h => h.Value.ToString()), true)
-                    .ForContext("ResponseBody", endResponseBody)
+                Log.ForContext(Logs.ResponseHeaders, context.Response.Headers.ToDictionary(h => h.Key, h => h.Value.ToString()), true)
+                    .ForContext(Logs.ResponseBody, endResponseBody)
                     .Information("Response information {RequestMethod} {RequestPath} {StatusCode}", context.Request.Method, context.Request.Path, context.Response.StatusCode);
 
                 await responseBodyMemoryStream.CopyToAsync(originalResponseBodyReference);

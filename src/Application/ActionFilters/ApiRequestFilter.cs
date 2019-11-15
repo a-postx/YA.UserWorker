@@ -27,7 +27,10 @@ namespace YA.TenantWorker.Application.ActionFilters
         {
             using (CancellationTokenSource cts = new CancellationTokenSource())
             {
-                (bool requestCreated, ApiRequest request) = await GetRequestAsync(context.HttpContext, cts.Token);
+                string method = context.HttpContext.Request.Method;
+                IHeaderDictionary headers = context.HttpContext.Request.Headers;
+
+                (bool requestCreated, ApiRequest request) = await GetOrCreateRequestAsync(headers, method, cts.Token);
 
                 if (request == null)
                 {
@@ -63,7 +66,10 @@ namespace YA.TenantWorker.Application.ActionFilters
         {
             using (CancellationTokenSource cts = new CancellationTokenSource())
             {
-                (bool requestCreated, ApiRequest request) = await GetRequestAsync(context.HttpContext, cts.Token);
+                string method = context.HttpContext.Request.Method;
+                IHeaderDictionary headers = context.HttpContext.Request.Headers;
+
+                (bool requestCreated, ApiRequest request) = await GetOrCreateRequestAsync(headers, method, cts.Token);
 
                 if (request != null)
                 {
@@ -123,12 +129,12 @@ namespace YA.TenantWorker.Application.ActionFilters
             await next.Invoke();
         }
 
-        private async Task<(bool requestCreated, ApiRequest request)> GetRequestAsync(HttpContext context, CancellationToken cancellationToken)
+        private async Task<(bool requestCreated, ApiRequest request)> GetOrCreateRequestAsync(IHeaderDictionary headers, string method, CancellationToken cancellationToken)
         {
-            Guid correlationId = Utils.GetCorrelationIdFromHttpContext(context);
+            Guid correlationId = Utils.GetCorrelationId(headers);
 
             return (correlationId == Guid.Empty) ? (false, null) : await _apiRequestManager
-                .GetOrCreateRequestAsync(correlationId, context.Request.Method, cancellationToken);
+                .GetOrCreateRequestAsync(correlationId, method, cancellationToken);
         }
     }
 }

@@ -12,6 +12,7 @@ using YA.TenantWorker.Application.Models.SaveModels;
 using YA.TenantWorker.Application.Models.ViewModels;
 using YA.TenantWorker.Application.Models.ValueObjects;
 using YA.TenantWorker.Constants;
+using Microsoft.AspNetCore.Authorization;
 
 namespace YA.TenantWorker.Controllers
 {
@@ -21,8 +22,8 @@ namespace YA.TenantWorker.Controllers
     [Route("[controller]")]
     [ApiController]
     [ApiVersion("1.0")]
+    [Authorize]
     [ServiceFilter(typeof(ApiRequestFilter))]
-    [ServiceFilter(typeof(LoggingFilter))]
     [SwaggerResponse(StatusCodes.Status500InternalServerError, HttpCodeMessages.Code500ErrorMessage, typeof(ApiError))]
     public class TenantsController : ControllerBase
     {

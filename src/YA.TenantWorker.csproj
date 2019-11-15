@@ -21,39 +21,10 @@
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
   </PropertyGroup>
 
-  <ItemGroup>
-    <Compile Remove="Migrations\20190927114012_initial.cs" />
-    <Compile Remove="Migrations\20190927114012_initial.Designer.cs" />
-    <Compile Remove="Migrations\20190929035757_initial.cs" />
-    <Compile Remove="Migrations\20190929035757_initial.Designer.cs" />
-    <Compile Remove="Migrations\20190929142122_initial.cs" />
-    <Compile Remove="Migrations\20190929142122_initial.Designer.cs" />
-    <Compile Remove="Migrations\20190930045801_initial.cs" />
-    <Compile Remove="Migrations\20190930045801_initial.Designer.cs" />
-    <Compile Remove="Migrations\20191003111421_initial.cs" />
-    <Compile Remove="Migrations\20191003111421_initial.Designer.cs" />
-    <Compile Remove="Migrations\20191003112809_штшешфд.cs" />
-    <Compile Remove="Migrations\20191003112809_штшешфд.Designer.cs" />
-    <Compile Remove="Migrations\20191003123616_initial.cs" />
-    <Compile Remove="Migrations\20191003123616_initial.Designer.cs" />
-    <Compile Remove="Migrations\20191005092819_initial.cs" />
-    <Compile Remove="Migrations\20191005092819_initial.Designer.cs" />
-    <Compile Remove="Migrations\20191006085421_initial.cs" />
-    <Compile Remove="Migrations\20191006085421_initial.Designer.cs" />
-    <Compile Remove="Migrations\20191107042105_initial.cs" />
-    <Compile Remove="Migrations\20191107042105_initial.Designer.cs" />
-    <Compile Remove="Migrations\20191107042606_initial.cs" />
-    <Compile Remove="Migrations\20191107042606_initial.Designer.cs" />
-    <Compile Remove="Migrations\20191107042837_initial.cs" />
-    <Compile Remove="Migrations\20191107042837_initial.Designer.cs" />
-    <Compile Remove="Migrations\20191107043028_initial.cs" />
-    <Compile Remove="Migrations\20191107043028_initial.Designer.cs" />
-  </ItemGroup>
-
   <ItemGroup Label="Package References">
     <PackageReference Include="AspNetCore.HealthChecks.SqlServer" Version="2.2.1" />
     <PackageReference Include="CorrelationId" Version="2.1.0" />
-    <PackageReference Include="Delobytes.AspNetCore" Version="1.2.0" />
+    <PackageReference Include="Delobytes.AspNetCore" Version="1.4.0" />
     <PackageReference Include="Delobytes.AspNetCore.Swagger" Version="1.0.1" />
     <PackageReference Include="Delobytes.Mapper" Version="1.1.0" />
     <PackageReference Include="MassTransit.Extensions.DependencyInjection" Version="5.5.5" />

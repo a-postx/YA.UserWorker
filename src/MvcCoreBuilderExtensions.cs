@@ -59,9 +59,7 @@ namespace YA.TenantWorker
         public static IMvcCoreBuilder AddCustomMvcOptions(this IMvcCoreBuilder builder, IHostingEnvironment hostingEnvironment)
         {
             return builder.AddMvcOptions(options =>
-                {
-                    ////options.Filters.Add(typeof(GetTenantRouteAttribute));
-                    
+                {                    
                     // Controls how controller actions cache content from the appsettings.json file.
                     CacheProfileOptions cacheProfileOptions = builder
                         .Services

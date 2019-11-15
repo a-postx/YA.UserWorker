@@ -73,7 +73,7 @@ namespace YA.TenantWorker
             }
             catch (Exception e)
             {
-                Console.WriteLine($"Error building WebHost: {e.Message}.\nPlease check Internet connection.");
+                Console.WriteLine($"Error building WebHost: {e}.");
                 return 1;
             }
 
@@ -83,7 +83,7 @@ namespace YA.TenantWorker
             }
             catch (Exception e)
             {
-                Console.WriteLine($"Error building logger: {e.Message}.");
+                Console.WriteLine($"Error building logger: {e}.");
                 return 1;
             }
 

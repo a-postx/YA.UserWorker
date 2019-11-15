@@ -17,8 +17,7 @@ namespace YA.TenantWorker.Controllers
     [ApiController]
     [ApiVersion("1.0")]
     [ServiceFilter(typeof(ApiRequestFilter))]
-    [ServiceFilter(typeof(LoggingFilter))]
-    public class AuthController : Controller
+    public class AuthenticationController : Controller
     {
         /// <summary>
         /// Authenticate user and creates a new token.
