@@ -13,6 +13,7 @@ using YA.TenantWorker.Application.Interfaces;
 using YA.TenantWorker.Core.Entities;
 using YA.TenantWorker.Application.Models.SaveModels;
 using YA.TenantWorker.Application.Models.ViewModels;
+using Delobytes.AspNetCore;
 
 namespace YA.TenantWorker.Application.Commands
 {
@@ -48,47 +49,45 @@ namespace YA.TenantWorker.Application.Commands
         private readonly IMapper<Tenant, TenantSm> _tenantSmMapper;
         private readonly IMapper<TenantSm, Tenant> _tenantMapper;
 
-        public async Task<IActionResult> ExecuteAsync(Guid tenantId, JsonPatchDocument<TenantSm> patch, CancellationToken cancellationToken)
+        public async Task<IActionResult> ExecuteAsync(JsonPatchDocument<TenantSm> patch, CancellationToken cancellationToken)
         {
-            Guid correlationId = _actionContextAccessor.GetCorrelationId();
+            Guid correlationId = _actionContextAccessor.GetCorrelationId(General.CorrelationIdHeader);
+            Guid tenantId = _actionContextAccessor.ActionContext.HttpContext.User.GetClaimValue<Guid>(CustomClaimNames.tenant_id);
 
             if (tenantId == Guid.Empty || patch == null)
             {
                 return new BadRequestResult();
             }
 
-            using (_log.BeginScopeWith((Logs.TenantId, tenantId)))
+            Tenant tenant = await _dbContext.GetEntityAsync<Tenant>(e => e.TenantID == tenantId, cancellationToken);
+
+            if (tenant == null)
             {
-                Tenant tenant = await _dbContext.GetEntityAsync<Tenant>(e => e.TenantID == tenantId, cancellationToken);
-
-                if (tenant == null)
-                {
-                    return new NotFoundResult();
-                }
-
-                TenantSm tenantSm = _tenantSmMapper.Map(tenant);
-
-                ModelStateDictionary modelState = _actionContextAccessor.ActionContext.ModelState;
-                patch.ApplyTo(tenantSm, modelState);
-
-                _objectModelValidator.Validate(_actionContextAccessor.ActionContext, null, null, tenantSm);
-
-                if (!modelState.IsValid)
-                {
-                    return new BadRequestObjectResult(modelState);
-                }
-
-                _tenantMapper.Map(tenantSm, tenant);
-
-                _dbContext.UpdateTenant(tenant);
-                await _dbContext.ApplyChangesAsync(cancellationToken);
-
-                await _messageBus.UpdateTenantV1(tenantSm, correlationId, cancellationToken);
-
-                TenantVm tenantVm = _tenantVmMapper.Map(tenant);
-
-                return new OkObjectResult(tenantVm);
+                return new NotFoundResult();
             }
+
+            TenantSm tenantSm = _tenantSmMapper.Map(tenant);
+
+            ModelStateDictionary modelState = _actionContextAccessor.ActionContext.ModelState;
+            patch.ApplyTo(tenantSm, modelState);
+
+            _objectModelValidator.Validate(_actionContextAccessor.ActionContext, null, null, tenantSm);
+
+            if (!modelState.IsValid)
+            {
+                return new BadRequestObjectResult(modelState);
+            }
+
+            _tenantMapper.Map(tenantSm, tenant);
+
+            _dbContext.UpdateTenant(tenant);
+            await _dbContext.ApplyChangesAsync(cancellationToken);
+
+            await _messageBus.UpdateTenantV1(tenantSm, correlationId, cancellationToken);
+
+            TenantVm tenantVm = _tenantVmMapper.Map(tenant);
+
+            return new OkObjectResult(tenantVm);
         }
     }
 }

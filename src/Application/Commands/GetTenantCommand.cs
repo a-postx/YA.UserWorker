@@ -12,6 +12,7 @@ using YA.TenantWorker.Core.Entities;
 using YA.TenantWorker.Application.Models.ViewModels;
 using Delobytes.Mapper;
 using YA.TenantWorker.Constants;
+using Delobytes.AspNetCore;
 
 namespace YA.TenantWorker.Application.Commands
 {
@@ -33,39 +34,36 @@ namespace YA.TenantWorker.Application.Commands
         private readonly ITenantWorkerDbContext _dbContext;
         private readonly IMapper<Tenant, TenantVm> _tenantVmMapper;
 
-        public async Task<IActionResult> ExecuteAsync(Guid tenantId, CancellationToken cancellationToken = default)
+        public async Task<IActionResult> ExecuteAsync(CancellationToken cancellationToken = default)
         {
-            Guid correlationId = _actionContextAccessor.GetCorrelationId();
+            Guid tenantId = _actionContextAccessor.ActionContext.HttpContext.User.GetClaimValue<Guid>(CustomClaimNames.tenant_id);
 
             if (tenantId == Guid.Empty)
             {
                 return new BadRequestResult();
             }
 
-            using (_log.BeginScopeWith((Logs.TenantId, tenantId)))
+            Tenant tenant = await _dbContext.GetEntityAsync<Tenant>(e => e.TenantID == tenantId, cancellationToken);
+
+            if (tenant == null)
             {
-                Tenant tenant = await _dbContext.GetEntityAsync<Tenant>(e => e.TenantID == tenantId, cancellationToken);
-
-                if (tenant == null)
-                {
-                    return new NotFoundResult();
-                }
-
-                if (_actionContextAccessor.ActionContext.HttpContext
-                    .Request.Headers.TryGetValue(HeaderNames.IfModifiedSince, out StringValues stringValues))
-                {
-                    if (DateTimeOffset.TryParse(stringValues, out DateTimeOffset modifiedSince) && (modifiedSince >= tenant.LastModifiedDateTime))
-                    {
-                        return new StatusCodeResult(StatusCodes.Status304NotModified);
-                    }
-                }
-
-                TenantVm tenantViewModel = _tenantVmMapper.Map(tenant);
-                _actionContextAccessor.ActionContext.HttpContext
-                    .Response.Headers.Add(HeaderNames.LastModified, tenant.LastModifiedDateTime.ToString("R"));
-                    
-                return new OkObjectResult(tenantViewModel);
+                return new NotFoundResult();
             }
+
+            if (_actionContextAccessor.ActionContext.HttpContext
+                .Request.Headers.TryGetValue(HeaderNames.IfModifiedSince, out StringValues stringValues))
+            {
+                if (DateTimeOffset.TryParse(stringValues, out DateTimeOffset modifiedSince) && (modifiedSince >= tenant.LastModifiedDateTime))
+                {
+                    return new StatusCodeResult(StatusCodes.Status304NotModified);
+                }
+            }
+
+            TenantVm tenantViewModel = _tenantVmMapper.Map(tenant);
+            _actionContextAccessor.ActionContext.HttpContext
+                .Response.Headers.Add(HeaderNames.LastModified, tenant.LastModifiedDateTime.ToString("R"));
+                    
+            return new OkObjectResult(tenantViewModel);
         }
     }
 }

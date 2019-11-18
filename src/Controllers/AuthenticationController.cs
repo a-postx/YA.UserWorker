@@ -20,7 +20,7 @@ namespace YA.TenantWorker.Controllers
     public class AuthenticationController : Controller
     {
         /// <summary>
-        /// Authenticate user and creates a new token.
+        /// Authenticate user and create a new token.
         /// </summary>
         /// <param name="command">Action command.</param>
         /// <param name="credentials">Credentials to use for authentication.</param>

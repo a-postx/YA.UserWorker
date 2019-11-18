@@ -102,24 +102,6 @@ namespace YA.TenantWorker
                         x.GroupNameFormat = "'v'VVV"; // Version format: 'v'major[.minor][-status]
                     });
 
-            ////services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-            ////        .AddJwtBearer(options =>
-            ////        {
-            ////            options.RequireHttpsMetadata = false;
-            ////            options.TokenValidationParameters = new TokenValidationParameters
-            ////            {
-            ////                NameClaimType = JwtClaimTypes.Name,
-            ////                RoleClaimType = JwtClaimTypes.Role,
-            ////                ValidateIssuer = true,
-            ////                ValidIssuer = "https://localhost:7453",
-            ////                ValidateAudience = true,
-            ////                ValidAudience = "YATenantWorker",
-            ////                ValidateLifetime = true,
-            ////                ValidateIssuerSigningKey = true,
-            ////                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("RANDOM_KEY_MUST_NOT_BE_SHARED")),
-            ////            };
-            ////        });
-
             services.AddAuthenticationCore(o =>
             {
                 o.DefaultScheme = "YaHeaderClaimsScheme";
@@ -130,7 +112,7 @@ namespace YA.TenantWorker
                 .AddMvcCore()
                     .SetCompatibilityVersion(CompatibilityVersion.Version_2_2)
                     .AddApiExplorer()
-                    .AddAuthorization()
+                    .AddAuthorization(options => options.AddPolicy("MustBeAdministrator", policy => policy.RequireClaim("role",  "Administrator")))
                     .AddDataAnnotations()
                     .AddJsonFormatters()
                     .AddCustomJsonOptions(_hostingEnvironment)
@@ -198,7 +180,6 @@ namespace YA.TenantWorker
             
             services.AddSingleton<IMessageAuditStore, MessageAuditStore>();
             
-            services.AddScoped<TenantRouteFilter>();
             services.AddScoped<ApiRequestFilter>();
 
             services.AddTransient<IApiRequestManager, ApiRequestManager>();
@@ -223,7 +204,7 @@ namespace YA.TenantWorker
                     UpdateTraceIdentifier = false,
                     UseGuidForCorrelationId = false
                     })
-                .UseCorrelationIdLogging()
+                .UseCorrelationIdContextLogging()
                 ////.UseAllElasticApm(Configuration)
                 
                 //!experimental!

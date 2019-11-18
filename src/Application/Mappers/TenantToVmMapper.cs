@@ -6,6 +6,7 @@ using Delobytes.Mapper;
 using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.Primitives;
 
 namespace YA.TenantWorker.Application.Mappers
 {
@@ -40,7 +41,24 @@ namespace YA.TenantWorker.Application.Mappers
             destination.TenantName = source.TenantName;
 
             //property name of anonymous route value object must correspond to controller http route values
-            destination.Url = _linkGenerator.GetUriByRouteValues(_httpContextAccessor.HttpContext, RouteNames.GetTenant, new { tenantId });
+            //destination.Url = _linkGenerator.GetUriByRouteValues(_httpContextAccessor.HttpContext, RouteNames.GetTenant, new { tenantId });
+            destination.Url = _linkGenerator.GetUriByAction(_httpContextAccessor.HttpContext);
+            
+            ////var hhh = _linkGenerator.GetUriByName(_httpContextAccessor.HttpContext, RouteNames.GetTenant, new { tenantId });
+            ////bool gotGwHost = _httpContextAccessor.HttpContext.Request.Headers.TryGetValue("Gateway-Base-Url", out StringValues baseUrl);
+            ////if (gotGwHost)
+            ////{
+            ////    string[] gwHostValues = baseUrl.ToString().Split(':');
+            ////    string gwScheme = gwHostValues[0];
+            ////    string gwHost = gwHostValues[1].Replace("//", "");
+            ////    int gwPort = int.Parse(gwHostValues[2]);
+            ////    _httpContextAccessor.HttpContext.Request.Host = new HostString(gwHost, gwPort);
+            ////    destination.Url = _linkGenerator.GetUriByPage(_httpContextAccessor.HttpContext);
+            ////}
+            ////else
+            ////{
+            ////    destination.Url = _linkGenerator.GetUriByPage(_httpContextAccessor.HttpContext);
+            ////}
         }
     }
 }

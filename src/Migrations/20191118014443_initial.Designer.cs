@@ -10,7 +10,7 @@ using YA.TenantWorker.Infrastructure.Data;
 namespace YA.TenantWorker.Migrations
 {
     [DbContext(typeof(TenantWorkerDbContext))]
-    [Migration("20191107125132_initial")]
+    [Migration("20191118014443_initial")]
     partial class initial
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -172,6 +172,8 @@ namespace YA.TenantWorker.Migrations
                     b.Property<string>("Password")
                         .HasMaxLength(50);
 
+                    b.Property<string>("Role");
+
                     b.Property<Guid>("TenantID");
 
                     b.Property<string>("Username")
@@ -192,17 +194,34 @@ namespace YA.TenantWorker.Migrations
                         new
                         {
                             UserID = new Guid("00000000-0000-0000-0000-000000000011"),
-                            CreatedDateTime = new DateTime(2019, 11, 7, 12, 51, 32, 437, DateTimeKind.Utc).AddTicks(5815),
+                            CreatedDateTime = new DateTime(2019, 11, 18, 1, 44, 42, 769, DateTimeKind.Utc).AddTicks(2318),
                             Email = "admin@email.com",
                             FirstName = "My",
                             IsActive = true,
                             IsDeleted = false,
                             IsPendingActivation = false,
-                            LastModifiedDateTime = new DateTime(2019, 11, 7, 12, 51, 32, 437, DateTimeKind.Utc).AddTicks(5816),
+                            LastModifiedDateTime = new DateTime(2019, 11, 18, 1, 44, 42, 769, DateTimeKind.Utc).AddTicks(2318),
                             LastName = "Admin",
                             Password = "123",
+                            Role = "Administrator",
                             TenantID = new Guid("00000000-0000-0000-0000-000000000001"),
                             Username = "admin@ya.ru"
+                        },
+                        new
+                        {
+                            UserID = new Guid("00000000-0000-0000-0000-000000000012"),
+                            CreatedDateTime = new DateTime(2019, 11, 18, 1, 44, 42, 769, DateTimeKind.Utc).AddTicks(4317),
+                            Email = "user@email.com",
+                            FirstName = "My",
+                            IsActive = true,
+                            IsDeleted = false,
+                            IsPendingActivation = false,
+                            LastModifiedDateTime = new DateTime(2019, 11, 18, 1, 44, 42, 769, DateTimeKind.Utc).AddTicks(4318),
+                            LastName = "User",
+                            Password = "123",
+                            Role = "User",
+                            TenantID = new Guid("00000000-0000-0000-0000-000000000001"),
+                            Username = "user@ya.ru"
                         });
                 });
 

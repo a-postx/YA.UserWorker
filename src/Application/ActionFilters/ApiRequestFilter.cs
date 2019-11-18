@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Delobytes.AspNetCore;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Newtonsoft.Json;
@@ -10,6 +11,7 @@ using YA.TenantWorker.Application.Enums;
 using YA.TenantWorker.Application.Interfaces;
 using YA.TenantWorker.Application.Models.Dto;
 using YA.TenantWorker.Application.Models.ValueObjects;
+using YA.TenantWorker.Constants;
 using YA.TenantWorker.Core.Entities;
 
 namespace YA.TenantWorker.Application.ActionFilters
@@ -131,7 +133,7 @@ namespace YA.TenantWorker.Application.ActionFilters
 
         private async Task<(bool requestCreated, ApiRequest request)> GetOrCreateRequestAsync(IHeaderDictionary headers, string method, CancellationToken cancellationToken)
         {
-            Guid correlationId = Utils.GetCorrelationId(headers);
+            Guid correlationId = headers.GetCorrelationId(General.CorrelationIdHeader);
 
             return (correlationId == Guid.Empty) ? (false, null) : await _apiRequestManager
                 .GetOrCreateRequestAsync(correlationId, method, cancellationToken);

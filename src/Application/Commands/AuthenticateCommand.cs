@@ -1,7 +1,8 @@
-﻿using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Primitives;
 using Microsoft.IdentityModel.Tokens;
 using System;
 using System.IdentityModel.Tokens.Jwt;
@@ -20,15 +21,18 @@ namespace YA.TenantWorker.Application.Commands
     public class AuthenticateCommand : IAuthenticateCommand
     {
         public AuthenticateCommand(ILogger<AuthenticateCommand> logger,
+            IActionContextAccessor actionContextAccessor,
             IConfiguration configuration,
             ITenantWorkerDbContext workerDbContext)
         {
             _log = logger ?? throw new ArgumentNullException(nameof(logger));
+            _actionContextAccessor = actionContextAccessor ?? throw new ArgumentNullException(nameof(actionContextAccessor));
             _config = configuration ?? throw new ArgumentNullException(nameof(configuration));
             _dbContext = workerDbContext ?? throw new ArgumentNullException(nameof(workerDbContext));
         }
 
         private readonly ILogger<AuthenticateCommand> _log;
+        private readonly IActionContextAccessor _actionContextAccessor;
         private readonly IConfiguration _config;
         private readonly ITenantWorkerDbContext _dbContext;
 
@@ -56,7 +60,7 @@ namespace YA.TenantWorker.Application.Commands
                     new Claim(CustomClaimNames.authemail, user.Email),
                     new Claim(JwtRegisteredClaimNames.Email, user.Email),
                     new Claim(CustomClaimNames.name, user.FirstName + " " + user.LastName),
-                    new Claim(CustomClaimNames.role, "Administrator"),
+                    new Claim(CustomClaimNames.role, user.Role),
                     new Claim(CustomClaimNames.language, "ru"),
                     new Claim(CustomClaimNames.scope, "mySuperServiceScope"),
                 };
@@ -64,6 +68,10 @@ namespace YA.TenantWorker.Application.Commands
                 SymmetricSecurityKey key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secrets.JwtSigningKey));
                 SigningCredentials creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
                 DateTime expiry = DateTime.Now.AddDays(Convert.ToInt32(360));
+
+                bool gotGwTargetValue = _actionContextAccessor.ActionContext.HttpContext
+                    .Request.Headers.TryGetValue("Gateway-Base-Url", out StringValues gwTargetValue);
+
                 JwtSecurityToken token = new JwtSecurityToken(
                     "https://localhost:7453",
                     "YATenantWorker",
@@ -82,7 +90,7 @@ namespace YA.TenantWorker.Application.Commands
                     access_token = wToken,
                     expires_in = 31104000,
                     token_type = "Bearer",
-                    scope = "identityServerYATenantWorker"
+                    scope = "mySuperServiceScope"
                 });
             }
             else

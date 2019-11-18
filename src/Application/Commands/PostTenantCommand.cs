@@ -1,4 +1,5 @@
-﻿using Delobytes.Mapper;
+﻿using Delobytes.AspNetCore;
+using Delobytes.Mapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.Logging;
@@ -40,7 +41,7 @@ namespace YA.TenantWorker.Application.Commands
 
         public async Task<IActionResult> ExecuteAsync(TenantSm tenantSm, CancellationToken cancellationToken)
         {
-            Guid correlationId = _actionContextAccessor.GetCorrelationId();
+            Guid correlationId = _actionContextAccessor.GetCorrelationId(General.CorrelationIdHeader);
             
             if (tenantSm.TenantId == Guid.Empty || string.IsNullOrEmpty(tenantSm.TenantName))
             {

@@ -45,15 +45,13 @@ namespace YA.TenantWorker.Controllers
         }
 
         /// <summary>
-        /// Return Allow HTTP header with allowed HTTP methods for a tenant with the specified identifier.
+        /// Return Allow HTTP header with allowed HTTP methods for current tenant.
         /// </summary>
-        /// <param name="tenantId">Tenant unique identifier.</param>
         /// <returns>200 OK response.</returns>
-        [HttpOptions("{tenantId}")]
-        [ServiceFilter(typeof(TenantRouteFilter))]
+        [HttpOptions("tenant")]
         [SwaggerResponse(StatusCodes.Status200OK, "Allowed HTTP methods.")]
-        [SwaggerResponse(StatusCodes.Status404NotFound, "Tenant with the specified identifier could not be found.")]
-        public IActionResult Options(Guid tenantId)
+        [SwaggerResponse(StatusCodes.Status404NotFound, "Tenant could not be found.")]
+        public IActionResult OptionsTenant()
         {
             HttpContext.Response.Headers.AppendCommaSeparatedValues(
                 HeaderNames.Allow,
@@ -67,27 +65,22 @@ namespace YA.TenantWorker.Controllers
         }
 
         /// <summary>
-        /// Get tenant with the specified identifier.
+        /// Get current tenant.
         /// </summary>
         /// <param name="command">Action command.</param>
-        /// <param name="tenantId">Tenant unique identifier.</param>
         /// <param name="cancellationToken">Cancellation token used to cancel the HTTP request.</param>
         /// <returns>200 OK response containing the tenant,
         /// 404 Not Found if tenant with the specified unique identifier was not found
         /// or 409 Conflict if the request is a duplicate.</returns>
-        [HttpGet("{tenantId}", Name = RouteNames.GetTenant)]
-        [HttpHead("{tenantId}", Name = RouteNames.HeadTenant)]
-        [ServiceFilter(typeof(TenantRouteFilter))]
-        [SwaggerResponse(StatusCodes.Status200OK, "Tenant with the specified identifier.", typeof(TenantVm))]
+        [HttpGet("tenant", Name = RouteNames.GetTenant)]
+        [HttpHead("tenant", Name = RouteNames.HeadTenant)]
+        [SwaggerResponse(StatusCodes.Status200OK, "Current tenant.", typeof(TenantVm))]
         [SwaggerResponse(StatusCodes.Status304NotModified, "The tenant has not changed since the date given in the If-Modified-Since HTTP header.")]
-        [SwaggerResponse(StatusCodes.Status404NotFound, "Tenant with the specified identifier could not be found.")]
+        [SwaggerResponse(StatusCodes.Status404NotFound, "Current tenant could not be found.")]
         [SwaggerResponse(StatusCodes.Status409Conflict, "Duplicate request.", typeof(ApiError))]
-        public Task<IActionResult> Get(
-            [FromServices] IGetTenantCommand command,
-            Guid tenantId,
-            CancellationToken cancellationToken)
+        public Task<IActionResult> GetTenant([FromServices] IGetTenantCommand command, CancellationToken cancellationToken)
         {
-            return command.ExecuteAsync(tenantId, cancellationToken);
+            return command.ExecuteAsync(cancellationToken);
         }
 
         /// <summary>
@@ -101,11 +94,12 @@ namespace YA.TenantWorker.Controllers
         /// or 409 Conflict if the request is a duplicate.</returns>
         [HttpGet("", Name = RouteNames.GetTenantPage)]
         [HttpHead("", Name = RouteNames.HeadTenantPage)]
+        [Authorize(Policy = "MustBeAdministrator")]
         [SwaggerResponse(StatusCodes.Status200OK, "Collection of tenants for the specified page.", typeof(PaginatedResult<TenantVm>))]
         [SwaggerResponse(StatusCodes.Status400BadRequest, "Page request parameters are invalid.")]
         [SwaggerResponse(StatusCodes.Status404NotFound, "Page with the specified page number was not found.")]
         [SwaggerResponse(StatusCodes.Status409Conflict, "Duplicate request.", typeof(ApiError))]
-        public Task<IActionResult> GetPage(
+        public Task<IActionResult> GetTenantPage(
             [FromServices] IGetTenantPageCommand command,
             [FromQuery] PageOptions pageOptions,
             CancellationToken cancellationToken)
@@ -126,7 +120,7 @@ namespace YA.TenantWorker.Controllers
         [SwaggerResponse(StatusCodes.Status201Created, "Tenant was created.", typeof(TenantVm))]
         [SwaggerResponse(StatusCodes.Status400BadRequest, "Request is invalid.")]
         [SwaggerResponse(StatusCodes.Status409Conflict, "Duplicate request.", typeof(ApiError))]
-        public Task<IActionResult> Post(
+        public Task<IActionResult> PostTenant(
             [FromServices] IPostTenantCommand command,
             [FromBody] TenantSm tenantSm,
             CancellationToken cancellationToken)
@@ -135,27 +129,25 @@ namespace YA.TenantWorker.Controllers
         }
 
         /// <summary>
-        /// Patch tenant with the specified unique identifier.
+        /// Patch current tenant.
         /// </summary>
         /// <param name="command">Action command.</param>
-        /// <param name="tenantId">Tenant unique identifier.</param>
         /// <param name="patch">Patch document. See http://jsonpatch.com.</param>
         /// <param name="cancellationToken">Cancellation token used to cancel the HTTP request.</param>
         /// <returns>200 OK if the tenant was patched, 400 Bad Request if the patch was invalid,
-        /// 404 Not Found if a tenant with the specified unique identifier was not found
+        /// 404 Not Found if tenant was not found
         /// or 409 Conflict if the request is a duplicate.</returns>
-        [HttpPatch("{tenantId}", Name = RouteNames.PatchTenant)]
-        [SwaggerResponse(StatusCodes.Status200OK, "Patched tenant with the specified unique identifier.", typeof(TenantVm))]
+        [HttpPatch("tenant", Name = RouteNames.PatchTenant)]
+        [SwaggerResponse(StatusCodes.Status200OK, "Patched current tenant.", typeof(TenantVm))]
         [SwaggerResponse(StatusCodes.Status400BadRequest, "Patch document is invalid.")]
-        [SwaggerResponse(StatusCodes.Status404NotFound, "Tenant with the specified unique identifier could not be found.")]
+        [SwaggerResponse(StatusCodes.Status404NotFound, "Tenant could not be found.")]
         [SwaggerResponse(StatusCodes.Status409Conflict, "Duplicate request.", typeof(ApiError))]
-        public Task<IActionResult> Patch(
+        public Task<IActionResult> PatchTenant(
             [FromServices] IPatchTenantCommand command,
-            Guid tenantId,
             [FromBody] JsonPatchDocument<TenantSm> patch,
             CancellationToken cancellationToken)
         {
-            return command.ExecuteAsync(tenantId, patch, cancellationToken);
+            return command.ExecuteAsync(patch, cancellationToken);
         }
 
         /// <summary>
@@ -168,10 +160,11 @@ namespace YA.TenantWorker.Controllers
         /// 404 Not Found if tenant with the specified unique identifier was not found
         /// or 409 Conflict if the request is a duplicate.</returns>
         [HttpDelete("{tenantId}", Name = RouteNames.DeleteTenant)]
+        [Authorize(Policy = "MustBeAdministrator")]
         [SwaggerResponse(StatusCodes.Status204NoContent, "Tenant with the specified unique identifier was deleted.")]
         [SwaggerResponse(StatusCodes.Status404NotFound, "Tenant with the specified unique identifier was not found.")]
         [SwaggerResponse(StatusCodes.Status409Conflict, "Duplicate request.", typeof(ApiError))]
-        public Task<IActionResult> Delete(
+        public Task<IActionResult> DeleteTenant(
             [FromServices] IDeleteTenantCommand command,
             Guid tenantId,
             CancellationToken cancellationToken)

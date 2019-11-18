@@ -68,7 +68,7 @@ namespace YA.TenantWorker
                 });
         }
 
-        public static IApplicationBuilder UseCorrelationIdLogging(this IApplicationBuilder application)
+        public static IApplicationBuilder UseCorrelationIdContextLogging(this IApplicationBuilder application)
         {
             return application
                 .UseMiddleware<CorrelationIdContextLogger>();

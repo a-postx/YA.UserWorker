@@ -38,6 +38,7 @@ namespace YA.TenantWorker.Infrastructure.Data
             );
 
             Guid seedAdminId = Guid.Parse("00000000-0000-0000-0000-000000000011");
+            Guid seedUserId = Guid.Parse("00000000-0000-0000-0000-000000000012");
 
             modelBuilder.Entity<User>().HasData(
                 new
@@ -49,6 +50,23 @@ namespace YA.TenantWorker.Infrastructure.Data
                     FirstName = "My",
                     LastName = "Admin",
                     Email = "admin@email.com",
+                    Role = "Administrator",
+                    IsActive = true,
+                    IsPendingActivation = false,
+                    IsDeleted = false,
+                    CreatedDateTime = DateTime.UtcNow,
+                    LastModifiedDateTime = DateTime.UtcNow
+                },
+                new
+                {
+                    UserID = seedUserId,
+                    TenantID = seedTenantId,
+                    Username = "user@ya.ru",
+                    Password = "123",
+                    FirstName = "My",
+                    LastName = "User",
+                    Email = "user@email.com",
+                    Role = "User",
                     IsActive = true,
                     IsPendingActivation = false,
                     IsDeleted = false,

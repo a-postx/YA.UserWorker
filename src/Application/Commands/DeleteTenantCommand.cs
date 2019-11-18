@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Delobytes.AspNetCore;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.Logging;
 using System;
@@ -30,29 +31,26 @@ namespace YA.TenantWorker.Application.Commands
 
         public async Task<IActionResult> ExecuteAsync(Guid tenantId, CancellationToken cancellationToken = default)
         {
-            Guid correlationId = _actionContextAccessor.GetCorrelationId();
+            Guid correlationId = _actionContextAccessor.GetCorrelationId(General.CorrelationIdHeader);
 
             if (tenantId == Guid.Empty)
             {
                 return new BadRequestResult();
             }
 
-            using (_log.BeginScopeWith((Logs.TenantId, tenantId)))
+            Tenant tenant = await _dbContext.GetEntityAsync<Tenant>(e => e.TenantID == tenantId, cancellationToken);
+
+            if (tenant == null)
             {
-                Tenant tenant = await _dbContext.GetEntityAsync<Tenant>(e => e.TenantID == tenantId, cancellationToken);
-
-                if (tenant == null)
-                {
-                    return new NotFoundResult();
-                }
-
-                _dbContext.DeleteTenant(tenant);
-                await _dbContext.ApplyChangesAsync(cancellationToken);
-
-                await _messageBus.DeleteTenantV1(tenant.TenantID, correlationId, cancellationToken);
-
-                return new NoContentResult();
+                return new NotFoundResult();
             }
+
+            _dbContext.DeleteTenant(tenant);
+            await _dbContext.ApplyChangesAsync(cancellationToken);
+
+            await _messageBus.DeleteTenantV1(tenant.TenantID, correlationId, cancellationToken);
+
+            return new NoContentResult();
         }
     }
 }

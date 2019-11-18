@@ -3,8 +3,11 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Headers;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.Net.Http.Headers;
 using System;
+using System.IdentityModel.Tokens.Jwt;
+using System.Linq;
 using System.Security.Claims;
 using System.Security.Principal;
 using System.Threading.Tasks;
@@ -47,44 +50,57 @@ namespace YA.TenantWorker.Infrastructure.Authentication
         {
             if (_headers.Headers.TryGetValue(HeaderNames.Authorization, out StringValues authValue))
             {
-                bool gotTenantId = _headers.Headers.TryGetValue(CustomHeaderNames.claims_tenant_id, out StringValues tenantIdValue);
-                bool gotUserId = _headers.Headers.TryGetValue(CustomHeaderNames.claims_nameidentifier, out StringValues userIdValue);
-                bool gotUsername = _headers.Headers.TryGetValue(CustomHeaderNames.claims_authsub, out StringValues usernameValue);
-                bool gotName = _headers.Headers.TryGetValue(CustomHeaderNames.claims_name, out StringValues nameValue);
-                bool gotUserEmail = _headers.Headers.TryGetValue(CustomHeaderNames.claims_authemail, out StringValues userEmailValue);
+                string[] authHeaderValues = authValue.ToString().Split(" ");
 
-                if (!gotTenantId)
+                string token = (authHeaderValues.Length > 1) ? authHeaderValues[1] : authHeaderValues[0];
+
+                JwtSecurityTokenHandler handler = new JwtSecurityTokenHandler();
+                SecurityToken jsonToken = handler.ReadToken(token);
+                JwtSecurityToken tokenS = handler.ReadToken(token) as JwtSecurityToken;
+
+                string tenant_id = tokenS.Claims.FirstOrDefault(claim => claim.Type == CustomClaimNames.tenant_id)?.Value;
+                string user_id = tokenS.Claims.FirstOrDefault(claim => claim.Type == CustomClaimNames.nameidentifier)?.Value;
+                string username = tokenS.Claims.FirstOrDefault(claim => claim.Type == CustomClaimNames.authsub)?.Value;
+                string name = tokenS.Claims.FirstOrDefault(claim => claim.Type == CustomClaimNames.name)?.Value;
+                string useremail = tokenS.Claims.FirstOrDefault(claim => claim.Type == CustomClaimNames.authemail)?.Value;
+                string userrole = tokenS.Claims.FirstOrDefault(claim => claim.Type == CustomClaimNames.role)?.Value;
+
+                if (tenant_id == null)
                 {
-                    throw new Exception($"Authentication failed: {CustomHeaderNames.claims_tenant_id} claim cannot be found.");
+                    throw new Exception($"Authentication failed: {CustomClaimNames.tenant_id} claim cannot be found.");
                 }
-                if (!gotUserId)
+                if (user_id == null)
                 {
-                    throw new Exception($"Authentication failed: {CustomHeaderNames.claims_nameidentifier} claim cannot be found.");
+                    throw new Exception($"Authentication failed: {CustomClaimNames.nameidentifier} claim cannot be found.");
                 }
-                if (!gotUsername)
+                if (username == null)
                 {
-                    throw new Exception($"Authentication failed: {CustomHeaderNames.claims_authsub} claim cannot be found.");
+                    throw new Exception($"Authentication failed: {CustomClaimNames.authsub} claim cannot be found.");
                 }
-                if (!gotName)
+                if (name == null)
                 {
-                    throw new Exception($"Authentication failed: {CustomHeaderNames.claims_name} claim cannot be found.");
+                    throw new Exception($"Authentication failed: {CustomClaimNames.name} claim cannot be found.");
                 }
-                if (!gotUserEmail)
+                if (useremail == null)
                 {
-                    throw new Exception($"Authentication failed: {CustomHeaderNames.claims_authemail} claim cannot be found.");
+                    throw new Exception($"Authentication failed: {CustomClaimNames.authemail} claim cannot be found.");
+                }
+                if (userrole == null)
+                {
+                    throw new Exception($"Authentication failed: {CustomClaimNames.role} claim cannot be found.");
                 }
 
-                ClaimsIdentity userIdentity = new ClaimsIdentity("Header", "name", "role");
-                
-                userIdentity.AddClaim(new Claim(CustomClaimNames.tenant_id, tenantIdValue));
-                userIdentity.AddClaim(new Claim(CustomClaimNames.nameidentifier, userIdValue));
-                userIdentity.AddClaim(new Claim(CustomClaimNames.username, usernameValue));
-                userIdentity.AddClaim(new Claim(CustomClaimNames.name, nameValue));
-                userIdentity.AddClaim(new Claim(CustomClaimNames.useremail, userEmailValue));
-                GenericPrincipal userPricipal = new GenericPrincipal(userIdentity, new string[] { "Administrator" });
+                ClaimsIdentity userIdentity = new ClaimsIdentity("Bearer", CustomClaimNames.name, CustomClaimNames.role);
+
+                userIdentity.AddClaim(new Claim(CustomClaimNames.tenant_id, tenant_id));
+                userIdentity.AddClaim(new Claim(CustomClaimNames.nameidentifier, user_id));
+                userIdentity.AddClaim(new Claim(CustomClaimNames.username, username));
+                userIdentity.AddClaim(new Claim(CustomClaimNames.name, name));
+                userIdentity.AddClaim(new Claim(CustomClaimNames.useremail, useremail));
+                GenericPrincipal userPricipal = new GenericPrincipal(userIdentity, new string[] { userrole });
                 ClaimsPrincipal principal = new ClaimsPrincipal(userPricipal);
 
-                _log.LogInformation("User {Username} is authenticated.", usernameValue);
+                _log.LogInformation("User {Username} is authenticated.", username);
 
                 return Task.FromResult(
                     AuthenticateResult.Success(new AuthenticationTicket(principal, new AuthenticationProperties(), _scheme.Name))

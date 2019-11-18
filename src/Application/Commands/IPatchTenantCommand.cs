@@ -5,7 +5,7 @@ using YA.TenantWorker.Application.Models.SaveModels;
 
 namespace YA.TenantWorker.Application.Commands
 {
-    public interface IPatchTenantCommand : IAsyncCommand<Guid, JsonPatchDocument<TenantSm>>
+    public interface IPatchTenantCommand : IAsyncCommand<JsonPatchDocument<TenantSm>>
     {
 
     }

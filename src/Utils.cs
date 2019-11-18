@@ -6,13 +6,9 @@ using System.Net;
 using System.Net.Http;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
-using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Primitives;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using YA.TenantWorker.Constants;
@@ -144,47 +140,6 @@ namespace YA.TenantWorker
             return true;
         }
 
-        public static Guid GetCorrelationId(this IActionContextAccessor context)
-        {
-            HttpContext httpContext = context.ActionContext.HttpContext;
-
-            if (httpContext.Request.Headers.TryGetValue(General.CorrelationIdHeader, out StringValues stringValues))
-            {
-                if (Guid.TryParse(stringValues[0], out Guid corrId))
-                {
-                    return corrId;
-                }
-            }
-
-            return Guid.Empty;
-        }
-
-        public static Guid GetCorrelationId(this IHttpContextAccessor context)
-        {
-            if (context.HttpContext.Request.Headers.TryGetValue(General.CorrelationIdHeader, out StringValues stringValues))
-            {
-                if (Guid.TryParse(stringValues[0], out Guid corrId))
-                {
-                    return corrId;
-                }
-            }
-
-            return Guid.Empty;
-        }
-
-        public static Guid GetCorrelationId(this IHeaderDictionary headers)
-        {
-            if (headers.TryGetValue(General.CorrelationIdHeader, out StringValues stringValues))
-            {
-                if (Guid.TryParse(stringValues[0], out Guid corrId))
-                {
-                    return corrId;
-                }
-            }
-
-            return Guid.Empty;
-        }
-
         public static IEnumerable<T> If<T>(this IEnumerable<T> enumerable, bool condition, Func<IEnumerable<T>, IEnumerable<T>> action)
         {
             if (condition)
@@ -223,46 +178,6 @@ namespace YA.TenantWorker
             }
 
             return enumerable;
-        }
-
-        public static T GetClaimValue<T>(this ClaimsPrincipal principal, string claimName)
-        {
-            if (principal == null)
-            {
-                throw new ArgumentNullException(nameof(principal));
-            }
-            if (claimName == null)
-            {
-                throw new ArgumentNullException(nameof(claimName));
-            }
-
-            string claimValue = principal.FindFirstValue(claimName);
-
-            if (typeof(T) == typeof(string))
-            {
-                return (T)Convert.ChangeType(claimValue, typeof(T));
-            }
-            else if (typeof(T) == typeof(int) || typeof(T) == typeof(long))
-            {
-                return claimValue != null ? (T)Convert.ChangeType(claimValue, typeof(T)) : (T)Convert.ChangeType(0, typeof(T));
-            }
-            else if (typeof(T) == typeof(Guid))
-            {
-                bool parsed = Guid.TryParse(claimValue, out Guid guidClaimValue);
-
-                if (parsed)
-                {
-                    return (T)Convert.ChangeType(guidClaimValue, typeof(T));
-                }
-                else
-                {
-                    throw new Exception("Invalid Guid value provided.");
-                }
-            }
-            else
-            {
-                throw new Exception("Invalid type provided.");
-            }
         }
     }
 }

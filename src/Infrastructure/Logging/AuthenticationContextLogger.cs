@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Delobytes.AspNetCore;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Threading.Tasks;
@@ -37,5 +38,4 @@ namespace YA.TenantWorker.Infrastructure.Logging
             }
         }
     }
-
 }

@@ -21,10 +21,15 @@
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Compile Remove="Migrations\20191107125132_initial.cs" />
+    <Compile Remove="Migrations\20191107125132_initial.Designer.cs" />
+  </ItemGroup>
+
   <ItemGroup Label="Package References">
     <PackageReference Include="AspNetCore.HealthChecks.SqlServer" Version="2.2.1" />
     <PackageReference Include="CorrelationId" Version="2.1.0" />
-    <PackageReference Include="Delobytes.AspNetCore" Version="1.4.0" />
+    <PackageReference Include="Delobytes.AspNetCore" Version="1.4.1" />
     <PackageReference Include="Delobytes.AspNetCore.Swagger" Version="1.0.1" />
     <PackageReference Include="Delobytes.Mapper" Version="1.1.0" />
     <PackageReference Include="MassTransit.Extensions.DependencyInjection" Version="5.5.5" />
