@@ -13,7 +13,7 @@ using YA.TenantWorker.Application.Models.Dto;
 using YA.TenantWorker.Application.Models.ValueObjects;
 using YA.TenantWorker.Constants;
 
-namespace YA.TenantWorker.Infrastructure.Logging
+namespace YA.TenantWorker.Infrastructure.Logging.Requests
 {
     /// <summary>
     /// HTTP request, response and exceptions logging middleware. 
@@ -31,7 +31,7 @@ namespace YA.TenantWorker.Infrastructure.Logging
         {
             HttpContext context = httpContext ?? throw new ArgumentNullException(nameof(httpContext));
             
-            LogContext.PushProperty(Logs.LogType, LogTypes.Request);
+            LogContext.PushProperty(Logs.LogType, LogTypes.BackendApiRequest.ToString());
 
             string initialRequestBody = "";
             httpContext.Request.EnableBuffering();

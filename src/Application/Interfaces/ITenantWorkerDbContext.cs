@@ -33,6 +33,14 @@ namespace YA.TenantWorker.Application.Interfaces
         Task<bool> GetHasPreviousPage<T>(int? last, DateTimeOffset? createdAfter, DateTimeOffset? createdBefore, CancellationToken cancellationToken) where T : class, IAuditedEntityBase, IRowVersionedEntity;
         Task<int> GetEntitiesCountAsync<T>(CancellationToken cancellationToken) where T : class;
 
+        Task<List<T>> GetTenantEntitiesPaged<T>(Expression<Func<T, bool>> wherePredicate, int? first, DateTimeOffset? createdAfter, DateTimeOffset? createdBefore, CancellationToken cancellationToken) where T : class, ITenantEntity, IAuditedEntityBase, IRowVersionedEntity;
+        Task<List<T>> GetTenantEntitiesPagedReverse<T>(Expression<Func<T, bool>> wherePredicate, int? last, DateTimeOffset? createdAfter, DateTimeOffset? createdBefore, CancellationToken cancellationToken) where T : class, ITenantEntity, IAuditedEntityBase, IRowVersionedEntity;
+        Task<List<T>> GetTenantEntitiesPagedTask<T>(Expression<Func<T, bool>> wherePredicate, int? first, int? last, DateTimeOffset? createdAfter, DateTimeOffset? createdBefore, CancellationToken cancellationToken) where T : class, ITenantEntity, IAuditedEntityBase, IRowVersionedEntity;
+        Task<bool> GetTenantEntitiesPagedHasNextPage<T>(Expression<Func<T, bool>> wherePredicate, int? first, DateTimeOffset? createdAfter, CancellationToken cancellationToken) where T : class, ITenantEntity, IAuditedEntityBase, IRowVersionedEntity;
+        Task<bool> GetTenantEntitiesPagedHasPreviousPage<T>(Expression<Func<T, bool>> wherePredicate, int? last, DateTimeOffset? createdBefore, CancellationToken cancellationToken) where T : class, ITenantEntity, IAuditedEntityBase, IRowVersionedEntity;
+        Task<bool> GetTenantHasNextPage<T>(Expression<Func<T, bool>> wherePredicate, int? first, DateTimeOffset? createdAfter, DateTimeOffset? createdBefore, CancellationToken cancellationToken) where T : class, ITenantEntity, IAuditedEntityBase, IRowVersionedEntity;
+        Task<bool> GetTenantHasPreviousPage<T>(Expression<Func<T, bool>> wherePredicate, int? last, DateTimeOffset? createdAfter, DateTimeOffset? createdBefore, CancellationToken cancellationToken) where T : class, ITenantEntity, IAuditedEntityBase, IRowVersionedEntity;
+        Task<int> GetTenantEntitiesCountAsync<T>(Expression<Func<T, bool>> wherePredicate, CancellationToken cancellationToken) where T : class, ITenantEntity;
 
         int ApplyChanges();
         Task<int> ApplyChangesAsync(CancellationToken cancellationToken = default);

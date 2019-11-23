@@ -8,7 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Delobytes.AspNetCore;
 using YA.TenantWorker.Constants;
 using YA.TenantWorker.Options;
-using YA.TenantWorker.Infrastructure.Logging;
+using YA.TenantWorker.Infrastructure.Logging.Requests;
 
 namespace YA.TenantWorker
 {
@@ -66,6 +66,12 @@ namespace YA.TenantWorker
                             $"Version {apiVersionDescription.ApiVersion}");
                     }
                 });
+        }
+
+        public static IApplicationBuilder UseNetworkContextLogging(this IApplicationBuilder application)
+        {
+            return application
+                .UseMiddleware<NetworkContextLogger>();
         }
 
         public static IApplicationBuilder UseCorrelationIdContextLogging(this IApplicationBuilder application)

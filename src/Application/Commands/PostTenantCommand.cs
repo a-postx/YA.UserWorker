@@ -48,19 +48,16 @@ namespace YA.TenantWorker.Application.Commands
                 return new BadRequestResult();
             }
             
-            using (_log.BeginScopeWith((Logs.TenantId, tenantSm.TenantId)))
-            {
-                Tenant tenant = _tenantSmMapper.Map(tenantSm);
-                tenant.TenantType = TenantTypes.Custom;
-                TenantVm tenantVm = _tenantVmMapper.Map(tenant);
+            Tenant tenant = _tenantSmMapper.Map(tenantSm);
+            tenant.TenantType = TenantTypes.Custom;
+            TenantVm tenantVm = _tenantVmMapper.Map(tenant);
 
-                await _dbContext.CreateAndReturnEntityAsync(tenant, cancellationToken);
-                await _dbContext.ApplyChangesAsync(cancellationToken);
+            await _dbContext.CreateAndReturnEntityAsync(tenant, cancellationToken);
+            await _dbContext.ApplyChangesAsync(cancellationToken);
 
-                await _messageBus.CreateTenantV1(tenantSm, correlationId, cancellationToken);
+            await _messageBus.CreateTenantV1(tenant.TenantID, correlationId, tenantSm, cancellationToken);
 
-                return new CreatedAtRouteResult(RouteNames.GetTenant, new { TenantId = tenantVm.TenantId, TenantName = tenantVm.TenantName }, tenantVm);
-            }
+            return new CreatedAtRouteResult(RouteNames.GetTenant, new { TenantId = tenantVm.TenantId, TenantName = tenantVm.TenantName }, tenantVm);
         }
     }
 }

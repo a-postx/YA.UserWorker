@@ -40,6 +40,8 @@ using System.Linq;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using System.IdentityModel.Tokens.Jwt;
 using System.Text;
+using Serilog.Context;
+using Microsoft.AspNetCore.HttpOverrides;
 
 namespace YA.TenantWorker
 {
@@ -105,14 +107,14 @@ namespace YA.TenantWorker
             services.AddAuthenticationCore(o =>
             {
                 o.DefaultScheme = "YaHeaderClaimsScheme";
-                o.AddScheme<YaAuthenticationHandler>("YaHeaderClaimsScheme", "Authentication scheme that use claims from request headers extracted from JWT token on a web api gateway.");
+                o.AddScheme<YaAuthenticationHandler>("YaHeaderClaimsScheme", "Authentication scheme that use claims extracted from JWT token.");
             });
 
             services
                 .AddMvcCore()
                     .SetCompatibilityVersion(CompatibilityVersion.Version_2_2)
                     .AddApiExplorer()
-                    .AddAuthorization(options => options.AddPolicy("MustBeAdministrator", policy => policy.RequireClaim("role",  "Administrator")))
+                    .AddAuthorization(options => options.AddPolicy("MustBeAdministrator", policy => policy.RequireClaim(CustomClaimNames.role,  "Administrator")))
                     .AddDataAnnotations()
                     .AddJsonFormatters()
                     .AddCustomJsonOptions(_hostingEnvironment)
@@ -155,6 +157,8 @@ namespace YA.TenantWorker
                     });
 
                     cfg.UseSerilog();
+                    cfg.UseSerilogMessagePropertiesEnricher();
+                    cfg.UseSerilogCustomMbEventEnricher();
 
                     cfg.ReceiveEndpoint(host, MbQueueNames.PrivateServiceQueueName, e =>
                     {
@@ -195,7 +199,6 @@ namespace YA.TenantWorker
         public void Configure(IApplicationBuilder application)
         {
             application
-
                 // Pass a GUID in X-Correlation-ID HTTP header to set the HttpContext.TraceIdentifier.
                 // UpdateTraceIdentifier must be false due to a bug. See https://github.com/aspnet/AspNetCore/issues/5144
                 .UseCorrelationId(new CorrelationIdOptions {
@@ -205,12 +208,18 @@ namespace YA.TenantWorker
                     UseGuidForCorrelationId = false
                     })
                 .UseCorrelationIdContextLogging()
+
                 ////.UseAllElasticApm(Configuration)
-                
+
                 //!experimental!
                 ////.UseHttpException()
 
-                .UseForwardedHeaders()
+                .UseForwardedHeaders(new ForwardedHeadersOptions
+                {
+                    ForwardedHeaders = ForwardedHeaders.XForwardedFor
+                })
+                .UseNetworkContextLogging()
+
                 .UseResponseCaching()
                 .UseResponseCompression()
                 

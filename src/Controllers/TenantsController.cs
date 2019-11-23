@@ -24,6 +24,7 @@ namespace YA.TenantWorker.Controllers
     [ApiVersion("1.0")]
     [Authorize]
     [ServiceFilter(typeof(ApiRequestFilter))]
+    [SwaggerResponse(StatusCodes.Status403Forbidden)]
     [SwaggerResponse(StatusCodes.Status500InternalServerError, HttpCodeMessages.Code500ErrorMessage, typeof(ApiError))]
     public class TenantsController : ControllerBase
     {

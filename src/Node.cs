@@ -4,9 +4,9 @@ using YA.TenantWorker.Constants;
 
 namespace YA.TenantWorker
 {
-    public static class Node
+    internal static class Node
     {
-        public static readonly string Id;
+        internal static readonly string Id;
 
         static Node()
         {

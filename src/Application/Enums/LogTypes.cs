@@ -8,6 +8,7 @@ namespace YA.TenantWorker.Application.Enums
     public enum LogTypes
     {
         Unknown = 0,
-        Request = 1
+        BackendApiRequest = 1,
+        MessageBusMessage = 2
     }
 }

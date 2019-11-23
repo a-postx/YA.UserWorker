@@ -2,6 +2,7 @@
 {
     public static class Logs
     {
+        public const string ClientIP = nameof(ClientIP);
         public const string CorrelationId = nameof(CorrelationId);
         public const string MbMessage = nameof(MbMessage);
         public const string TenantId = nameof(TenantId);

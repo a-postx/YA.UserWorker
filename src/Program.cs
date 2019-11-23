@@ -45,8 +45,7 @@ namespace YA.TenantWorker
         internal static readonly string UserName = Environment.UserName;
 
         internal static string NodeId { get; private set; }
-        internal static Countries Country { get; private set; }
-        
+        internal static Countries Country { get; private set; }        
         internal static OsPlatforms OsPlatform { get; private set; }
         internal static string DotNetVersion { get; private set; }
 
@@ -109,7 +108,7 @@ namespace YA.TenantWorker
             }
         }
 
-        public static IWebHostBuilder CreateWebHostBuilder(string[] args)
+        private static IWebHostBuilder CreateWebHostBuilder(string[] args)
         {
             return new WebHostBuilder()
                 .UseIf(
@@ -232,6 +231,8 @@ namespace YA.TenantWorker
                 .Enrich.WithProperty("MachineName", MachineName)
                 .Enrich.WithProperty("EnvironmentUserName", UserName)
                 .Enrich.WithProperty("OSPlatform", OsPlatform.ToString())
+                .Enrich.FromMassTransitMessage()
+                .Enrich.FromCustomMbEvent()
                 .Enrich.WithExceptionDetails(new DestructuringOptionsBuilder()
                     .WithDefaultDestructurers()
                     //speed up EF Core exception destructuring

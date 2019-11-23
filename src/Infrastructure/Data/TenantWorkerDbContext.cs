@@ -211,6 +211,91 @@ namespace YA.TenantWorker.Infrastructure.Data
             return await Set<T>().CountAsync();
         }
 
+        public Task<List<T>> GetTenantEntitiesPaged<T>(Expression<Func<T, bool>> wherePredicate, int? first, DateTimeOffset? createdAfter, DateTimeOffset? createdBefore, CancellationToken cancellationToken) where T : class, ITenantEntity, IAuditedEntityBase, IRowVersionedEntity
+        {
+            return Task.FromResult(Set<T>().Where(wherePredicate).OrderBy(t => t.tstamp)
+                .If(createdAfter.HasValue, x => x.Where(y => y.CreatedDateTime > createdAfter.Value))
+                .If(createdBefore.HasValue, x => x.Where(y => y.CreatedDateTime < createdBefore.Value))
+                .If(first.HasValue, x => x.Take(first.Value))
+                .ToList());
+        }
+
+        public Task<List<T>> GetTenantEntitiesPagedReverse<T>(Expression<Func<T, bool>> wherePredicate, int? last, DateTimeOffset? createdAfter, DateTimeOffset? createdBefore, CancellationToken cancellationToken) where T : class, ITenantEntity, IAuditedEntityBase, IRowVersionedEntity
+        {
+            return Task.FromResult(Set<T>().Where(wherePredicate).OrderBy(t => t.tstamp)
+                .If(createdAfter.HasValue, x => x.Where(y => y.CreatedDateTime > createdAfter.Value))
+                .If(createdBefore.HasValue, x => x.Where(y => y.CreatedDateTime < createdBefore.Value))
+                //converting to Enumerable because of error "This overload of the method 'System.Linq.Queryable.TakeLast' is currently not supported." in v.4.0.3.0
+                .If(last.HasValue, x => x.AsEnumerable().TakeLast(last.Value))
+                .ToList());
+        }
+
+        public Task<bool> GetTenantEntitiesPagedHasNextPage<T>(Expression<Func<T, bool>> wherePredicate, int? first, DateTimeOffset? createdAfter, CancellationToken cancellationToken) where T : class, ITenantEntity, IAuditedEntityBase, IRowVersionedEntity
+        {
+            return Task.FromResult(Set<T>().Where(wherePredicate).OrderBy(t => t.tstamp)
+                .If(createdAfter.HasValue, x => x.Where(y => y.CreatedDateTime > createdAfter.Value))
+                .Skip(first.Value)
+                .Any());
+        }
+
+        public Task<bool> GetTenantEntitiesPagedHasPreviousPage<T>(Expression<Func<T, bool>> wherePredicate, int? last, DateTimeOffset? createdBefore, CancellationToken cancellationToken) where T : class, ITenantEntity, IAuditedEntityBase, IRowVersionedEntity
+        {
+            return Task.FromResult(Set<T>().Where(wherePredicate).OrderBy(t => t.tstamp)
+                .If(createdBefore.HasValue, x => x.Where(y => y.CreatedDateTime < createdBefore.Value))
+                //converting to Enumerable because of error "This overload of the method 'System.Linq.Queryable.SkipLast' is currently not supported." in v.4.0.3.0
+                .AsEnumerable().SkipLast(last.Value)
+                .Any());
+        }
+
+        public Task<List<T>> GetTenantEntitiesPagedTask<T>(Expression<Func<T, bool>> wherePredicate, int? first, int? last, DateTimeOffset? createdAfter, DateTimeOffset? createdBefore, CancellationToken cancellationToken) where T : class, ITenantEntity, IAuditedEntityBase, IRowVersionedEntity
+        {
+            Task<List<T>> getTenantsTask;
+
+            if (first.HasValue)
+            {
+                getTenantsTask = GetTenantEntitiesPaged<T>(wherePredicate, first, createdAfter, createdBefore, cancellationToken);
+            }
+            else
+            {
+                getTenantsTask = GetTenantEntitiesPagedReverse<T>(wherePredicate, last, createdAfter, createdBefore, cancellationToken);
+            }
+
+            return getTenantsTask;
+        }
+
+        public async Task<bool> GetTenantHasNextPage<T>(Expression<Func<T, bool>> wherePredicate, int? first, DateTimeOffset? createdAfter, DateTimeOffset? createdBefore, CancellationToken cancellationToken) where T : class, ITenantEntity, IAuditedEntityBase, IRowVersionedEntity
+        {
+            if (first.HasValue)
+            {
+                return await GetTenantEntitiesPagedHasNextPage<T>(wherePredicate, first, createdAfter, cancellationToken);
+            }
+            else if (createdBefore.HasValue)
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        public async Task<bool> GetTenantHasPreviousPage<T>(Expression<Func<T, bool>> wherePredicate, int? last, DateTimeOffset? createdAfter, DateTimeOffset? createdBefore, CancellationToken cancellationToken) where T : class, ITenantEntity, IAuditedEntityBase, IRowVersionedEntity
+        {
+            if (last.HasValue)
+            {
+                return await GetTenantEntitiesPagedHasPreviousPage<T>(wherePredicate, last, createdBefore, cancellationToken);
+            }
+            else if (createdAfter.HasValue)
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        public async Task<int> GetTenantEntitiesCountAsync<T>(Expression<Func<T, bool>> wherePredicate, CancellationToken cancellationToken) where T : class, ITenantEntity
+        {
+            return await Set<T>().Where(wherePredicate).CountAsync(cancellationToken);
+        }
+
         #region Tenants
         public void DeleteTenant(Tenant tenant)
         {

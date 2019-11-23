@@ -18,6 +18,7 @@
         public const string MessageBusServiceHealthCheckName = "message_bus_service";
         public const string MessageBusServiceStartupHealthCheckName = "message_bus_service_startup";
         public const string SqlDatabaseHealthCheckName = "sql_database";
+        public const string ForwardedIpHeader = "X-Forwarded-For";
         public const string CorrelationIdHeader = "X-Correlation-ID";
         public const int StartupServiceCheckRetryIntervalMs = 10000;
         public const int ApiRequestsCacheSize = 256;

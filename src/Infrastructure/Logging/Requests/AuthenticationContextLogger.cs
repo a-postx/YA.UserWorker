@@ -5,7 +5,7 @@ using System;
 using System.Threading.Tasks;
 using YA.TenantWorker.Constants;
 
-namespace YA.TenantWorker.Infrastructure.Logging
+namespace YA.TenantWorker.Infrastructure.Logging.Requests
 {
     /// <summary>
     /// Authentication context logging middleware. 

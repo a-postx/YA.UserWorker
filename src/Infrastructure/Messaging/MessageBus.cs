@@ -6,6 +6,7 @@ using MbEvents;
 using Microsoft.Extensions.Logging;
 using YA.TenantWorker.Application.Models.SaveModels;
 using YA.TenantWorker.Application.Interfaces;
+using YA.TenantWorker.Infrastructure.Messaging.Messages;
 
 namespace YA.TenantWorker.Infrastructure.Messaging
 {
@@ -30,19 +31,19 @@ namespace YA.TenantWorker.Infrastructure.Messaging
         private readonly IBus _bus;
         private readonly IPublishEndpoint _publishEndpoint;
 
-        public async Task CreateTenantV1(TenantSm tenantSm, Guid correlationId, CancellationToken cancellationToken)
+        public async Task CreateTenantV1(Guid tenantId, Guid correlationId, TenantSm tenantSm, CancellationToken cancellationToken)
         {
-            await _publishEndpoint.Publish<ICreateTenantV1>(new { CorrelationId = correlationId, Tenant = tenantSm }, cancellationToken);
+            await _publishEndpoint.Publish<ICreateTenantV1>(new CreateTenantV1(tenantId, correlationId, tenantSm), cancellationToken);
         }
 
-        public async Task DeleteTenantV1(Guid tenantId, Guid correlationId, CancellationToken cancellationToken)
+        public async Task DeleteTenantV1(Guid tenantId, Guid correlationId, TenantSm tenantSm, CancellationToken cancellationToken)
         {
-            await _publishEndpoint.Publish<IDeleteTenantV1>(new { CorrelationId = correlationId, TenantID = tenantId }, cancellationToken);
+            await _publishEndpoint.Publish<IDeleteTenantV1>(new DeleteTenantV1(tenantId, correlationId, tenantSm), cancellationToken);
         }
 
-        public async Task UpdateTenantV1(TenantSm tenantSm, Guid correlationId, CancellationToken cancellationToken)
+        public async Task UpdateTenantV1(Guid tenantId, Guid correlationId, TenantSm tenantSm, CancellationToken cancellationToken)
         {
-            await _publishEndpoint.Publish<IUpdateTenantV1>(new { CorrelationId = correlationId, Tenant = tenantSm }, cancellationToken);
+            await _publishEndpoint.Publish<IUpdateTenantV1>(new UpdateTenantV1(tenantId, correlationId, tenantSm), cancellationToken);
         }
     }
 }

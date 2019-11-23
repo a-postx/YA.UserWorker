@@ -48,7 +48,7 @@ namespace YA.TenantWorker.Application.Commands
             _dbContext.DeleteTenant(tenant);
             await _dbContext.ApplyChangesAsync(cancellationToken);
 
-            await _messageBus.DeleteTenantV1(tenant.TenantID, correlationId, cancellationToken);
+            await _messageBus.DeleteTenantV1(tenant.TenantID, correlationId, new Models.SaveModels.TenantSm { TenantId = tenant.TenantID, TenantName = tenant.TenantName }, cancellationToken);
 
             return new NoContentResult();
         }

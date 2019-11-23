@@ -82,8 +82,7 @@ namespace YA.TenantWorker.Application.Commands
 
             _dbContext.UpdateTenant(tenant);
             await _dbContext.ApplyChangesAsync(cancellationToken);
-
-            await _messageBus.UpdateTenantV1(tenantSm, correlationId, cancellationToken);
+            await _messageBus.UpdateTenantV1(tenantId, correlationId, tenantSm, cancellationToken);
 
             TenantVm tenantVm = _tenantVmMapper.Map(tenant);
 

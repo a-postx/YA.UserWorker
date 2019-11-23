@@ -4,6 +4,7 @@ using MassTransit.Audit;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using YA.TenantWorker.Application.Enums;
 using YA.TenantWorker.Constants;
 
 namespace YA.TenantWorker.Infrastructure.Messaging
@@ -27,8 +28,11 @@ namespace YA.TenantWorker.Infrastructure.Messaging
                 savedMessage = savedMessage.Substring(0, General.MaxLogFieldLength);
             }
 
-            _log.LogInformation("{ContextType}{DestinationAddress}{SourceAddress}{CorrelationId}{Message}",
-                metadata.ContextType, metadata.DestinationAddress, metadata.SourceAddress, metadata.CorrelationId, savedMessage);
+            //CorrelationId being overwritten if exist
+            _log.LogInformation("{LogType}{MessageBusContextType}{MessageBusDestinationAddress}{MessageBusSourceAddress}{CorrelationId}{MessageBusConversationId}{MessageBusMessage}",
+                LogTypes.MessageBusMessage.ToString(), metadata.ContextType, metadata.DestinationAddress, metadata.SourceAddress,
+                metadata.CorrelationId, metadata.ConversationId, savedMessage);
+            
             return Task.CompletedTask;
         }
     }
