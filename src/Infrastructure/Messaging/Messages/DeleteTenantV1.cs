@@ -6,15 +6,15 @@ namespace YA.TenantWorker.Infrastructure.Messaging.Messages
 {
     internal class DeleteTenantV1 : IDeleteTenantV1
     {
-        internal DeleteTenantV1(Guid tenantId, Guid correlationId, TenantSm tenantSm)
+        internal DeleteTenantV1(Guid correlationId, Guid tenantId, TenantSm tenantSm)
         {
-            TenantId = tenantId;
             CorrelationId = correlationId;
+            TenantId = tenantId;            
             Tenant = tenantSm;
         }
 
-        public Guid TenantId { get; private set; }
         public Guid CorrelationId { get; private set; }
+        public Guid TenantId { get; private set; }        
         public TenantSm Tenant { get; private set; }
     }
 }

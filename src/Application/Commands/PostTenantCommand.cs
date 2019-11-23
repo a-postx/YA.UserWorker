@@ -55,7 +55,7 @@ namespace YA.TenantWorker.Application.Commands
             await _dbContext.CreateAndReturnEntityAsync(tenant, cancellationToken);
             await _dbContext.ApplyChangesAsync(cancellationToken);
 
-            await _messageBus.CreateTenantV1(tenant.TenantID, correlationId, tenantSm, cancellationToken);
+            await _messageBus.CreateTenantV1(correlationId, tenant.TenantID, tenantSm, cancellationToken);
 
             return new CreatedAtRouteResult(RouteNames.GetTenant, new { TenantId = tenantVm.TenantId, TenantName = tenantVm.TenantName }, tenantVm);
         }

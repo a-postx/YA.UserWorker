@@ -6,6 +6,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using YA.TenantWorker.Application.Interfaces;
+using YA.TenantWorker.Application.Models.SaveModels;
 using YA.TenantWorker.Constants;
 using YA.TenantWorker.Core.Entities;
 
@@ -48,7 +49,7 @@ namespace YA.TenantWorker.Application.Commands
             _dbContext.DeleteTenant(tenant);
             await _dbContext.ApplyChangesAsync(cancellationToken);
 
-            await _messageBus.DeleteTenantV1(tenant.TenantID, correlationId, new Models.SaveModels.TenantSm { TenantId = tenant.TenantID, TenantName = tenant.TenantName }, cancellationToken);
+            await _messageBus.DeleteTenantV1(correlationId, tenant.TenantID, new TenantSm { TenantId = tenant.TenantID, TenantName = tenant.TenantName }, cancellationToken);
 
             return new NoContentResult();
         }

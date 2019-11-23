@@ -1,8 +1,5 @@
 ﻿using Swashbuckle.AspNetCore.Annotations;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using YA.TenantWorker.Application.Models.ViewModelSchemaFilters;
 
 namespace YA.TenantWorker.Application.Models.SaveModels

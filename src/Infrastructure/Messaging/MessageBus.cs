@@ -31,19 +31,19 @@ namespace YA.TenantWorker.Infrastructure.Messaging
         private readonly IBus _bus;
         private readonly IPublishEndpoint _publishEndpoint;
 
-        public async Task CreateTenantV1(Guid tenantId, Guid correlationId, TenantSm tenantSm, CancellationToken cancellationToken)
+        public async Task CreateTenantV1(Guid correlationId, Guid tenantId, TenantSm tenantSm, CancellationToken cancellationToken)
         {
-            await _publishEndpoint.Publish<ICreateTenantV1>(new CreateTenantV1(tenantId, correlationId, tenantSm), cancellationToken);
+            await _publishEndpoint.Publish<ICreateTenantV1>(new CreateTenantV1(correlationId, tenantId, tenantSm), cancellationToken);
         }
 
-        public async Task DeleteTenantV1(Guid tenantId, Guid correlationId, TenantSm tenantSm, CancellationToken cancellationToken)
+        public async Task DeleteTenantV1(Guid correlationId, Guid tenantId, TenantSm tenantSm, CancellationToken cancellationToken)
         {
-            await _publishEndpoint.Publish<IDeleteTenantV1>(new DeleteTenantV1(tenantId, correlationId, tenantSm), cancellationToken);
+            await _publishEndpoint.Publish<IDeleteTenantV1>(new DeleteTenantV1(correlationId, tenantId, tenantSm), cancellationToken);
         }
 
-        public async Task UpdateTenantV1(Guid tenantId, Guid correlationId, TenantSm tenantSm, CancellationToken cancellationToken)
+        public async Task UpdateTenantV1(Guid correlationId, Guid tenantId, TenantSm tenantSm, CancellationToken cancellationToken)
         {
-            await _publishEndpoint.Publish<IUpdateTenantV1>(new UpdateTenantV1(tenantId, correlationId, tenantSm), cancellationToken);
+            await _publishEndpoint.Publish<IUpdateTenantV1>(new UpdateTenantV1(correlationId, tenantId, tenantSm), cancellationToken);
         }
     }
 }
