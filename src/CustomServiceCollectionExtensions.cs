@@ -180,6 +180,7 @@ namespace YA.TenantWorker
 
                     options.OperationFilter<ApiVersionOperationFilter>();
                     options.OperationFilter<CorrelationIdOperationFilter>();
+                    options.OperationFilter<ContentTypeOperationFilter>();
                     options.OperationFilter<ForbiddenResponseOperationFilter>();
                     options.OperationFilter<UnauthorizedResponseOperationFilter>();
 

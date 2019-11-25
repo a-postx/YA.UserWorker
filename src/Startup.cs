@@ -38,6 +38,7 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using System.IdentityModel.Tokens.Jwt;
 using System.Text;
 using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.AspNetCore.Http;
 
 namespace YA.TenantWorker
 {
@@ -82,7 +83,12 @@ namespace YA.TenantWorker
                 .AddApplicationInsightsTelemetry(_config)
                 
                 .AddCorrelationIdFluent()
-                
+
+                ////.AddHttpsRedirection(options =>
+                ////{
+                ////    options.RedirectStatusCode = StatusCodes.Status307TemporaryRedirect;
+                ////})
+
                 .AddCustomCaching()
                 .AddCustomOptions(_config)
                 .AddCustomRouting()
@@ -205,6 +211,8 @@ namespace YA.TenantWorker
                     })
                 .UseCorrelationIdContextLogging()
 
+                ////.UseHttpsRedirection()
+
                 ////.UseAllElasticApm(Configuration)
 
                 //!experimental!
@@ -252,8 +260,6 @@ namespace YA.TenantWorker
 
                 .UseStaticFilesWithCacheControl()
 
-                //.UseIdentityServer()
-                //////////////////.UseHttpsRedirection()
                 .UseAuthentication()
                 .UseAuthenticationContextLogging()
 

@@ -1,17 +1,16 @@
-using System;
-using System.Collections.Generic;
+﻿using Microsoft.Net.Http.Headers;
 using Swashbuckle.AspNetCore.Swagger;
 using Swashbuckle.AspNetCore.SwaggerGen;
-using YA.TenantWorker.Constants;
+using System.Collections.Generic;
 
 namespace YA.TenantWorker.OperationFilters
 {
     /// <summary>
-    /// Adds a Swashbuckle <see cref="NonBodyParameter"/> to all available operations with a description of X-Correlation-ID
+    /// Adds a Swashbuckle <see cref="NonBodyParameter"/> to all available operations
     /// HTTP header and default GUID value.
     /// </summary>
     /// <seealso cref="IOperationFilter" />
-    public class CorrelationIdOperationFilter : IOperationFilter
+    public class ContentTypeOperationFilter : IOperationFilter
     {
         /// <summary>
         /// Apply the specified operation.
@@ -28,10 +27,10 @@ namespace YA.TenantWorker.OperationFilters
             operation.Parameters.Add(
                 new NonBodyParameter()
                 {
-                    Default = Guid.NewGuid(),
-                    Description = "Used to identify HTTP request: the ID will correlate HTTP request between server and client.",
+                    Default = "application/json",
+                    Description = "Used to properly process HTTP request content.",
                     In = "header",
-                    Name = General.CorrelationIdHeader,
+                    Name = HeaderNames.ContentType,
                     Required = true,
                     Type = "string",
                 });
