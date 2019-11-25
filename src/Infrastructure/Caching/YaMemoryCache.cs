@@ -2,9 +2,9 @@
 using System;
 using System.Threading.Tasks;
 
-namespace YA.TenantWorker.Application.Caching
+namespace YA.TenantWorker.Infrastructure.Caching
 {
-    public class AppMemoryCache<T>
+    public class YaMemoryCache<T>
     {
         private MemoryCache _cache;
 

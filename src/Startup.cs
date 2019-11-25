@@ -18,15 +18,12 @@ using Delobytes.AspNetCore;
 using YA.TenantWorker.Constants;
 using YA.TenantWorker.Health;
 using YA.TenantWorker.Application.Interfaces;
-using YA.TenantWorker.Application;
 using YA.TenantWorker.Application.ActionFilters;
-using YA.TenantWorker.Application.Caching;
-using YA.TenantWorker.Application.Models.ViewModels;
 using YA.TenantWorker.Infrastructure.Messaging;
 using YA.TenantWorker.Infrastructure.Data;
 using YA.TenantWorker.Infrastructure.Messaging.Test;
 using YA.TenantWorker.Infrastructure.Authentication;
-using YA.TenantWorker.Core.Entities;
+using YA.TenantWorker.Infrastructure.Caching;
 using Serilog;
 using IHostingEnvironment = Microsoft.AspNetCore.Hosting.IHostingEnvironment;
 using Microsoft.EntityFrameworkCore.Diagnostics;
@@ -40,7 +37,6 @@ using System.Linq;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using System.IdentityModel.Tokens.Jwt;
 using System.Text;
-using Serilog.Context;
 using Microsoft.AspNetCore.HttpOverrides;
 
 namespace YA.TenantWorker

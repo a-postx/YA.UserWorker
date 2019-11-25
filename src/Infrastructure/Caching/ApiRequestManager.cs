@@ -4,12 +4,11 @@ using Newtonsoft.Json.Linq;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using YA.TenantWorker.Application.Caching;
 using YA.TenantWorker.Application.Interfaces;
 using YA.TenantWorker.Application.Models.Dto;
 using YA.TenantWorker.Core.Entities;
 
-namespace YA.TenantWorker.Application
+namespace YA.TenantWorker.Infrastructure.Caching
 {
     public class ApiRequestManager : IApiRequestManager
     {

@@ -4,9 +4,9 @@ using System.Threading.Tasks;
 using YA.TenantWorker.Constants;
 using YA.TenantWorker.Core.Entities;
 
-namespace YA.TenantWorker.Application.Caching
+namespace YA.TenantWorker.Infrastructure.Caching
 {
-    public class ApiRequestMemoryCache : AppMemoryCache<ApiRequest>
+    public class ApiRequestMemoryCache : YaMemoryCache<ApiRequest>
     {
         public ApiRequestMemoryCache()
         {

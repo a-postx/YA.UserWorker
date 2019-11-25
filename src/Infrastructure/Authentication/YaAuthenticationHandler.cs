@@ -120,7 +120,7 @@ namespace YA.TenantWorker.Infrastructure.Authentication
 
         public Task ForbidAsync(AuthenticationProperties properties)
         {
-            _context.Response.StatusCode = 403;
+            _context.Response.StatusCode = StatusCodes.Status403Forbidden;
             return Task.CompletedTask;
         }
     }
