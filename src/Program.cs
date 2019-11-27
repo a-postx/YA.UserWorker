@@ -286,7 +286,7 @@ namespace YA.TenantWorker
             limits.MaxRequestBodySize = sourceLimits.MaxRequestBodySize;
             limits.MaxRequestBufferSize = sourceLimits.MaxRequestBufferSize;
             //Azure App Service add > 20 headers
-            ////limits.MaxRequestHeaderCount = sourceLimits.MaxRequestHeaderCount;
+            limits.MaxRequestHeaderCount = sourceLimits.MaxRequestHeaderCount;
             limits.MaxRequestHeadersTotalSize = sourceLimits.MaxRequestHeadersTotalSize;
             limits.MaxRequestLineSize = sourceLimits.MaxRequestLineSize;
             limits.MaxResponseBufferSize = sourceLimits.MaxResponseBufferSize;

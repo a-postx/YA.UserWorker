@@ -23,9 +23,9 @@ namespace YA.TenantWorker.Infrastructure.Logging.Requests
         {
             HttpContext context = httpContext ?? throw new ArgumentNullException(nameof(httpContext));
 
-            if (context.Request.Headers.TryGetValue(General.ForwardedIpHeader, out StringValues forwardedValue))
+            if (context.Request.Headers.TryGetValue(General.ForwardedForHeader, out StringValues forwardedValue))
             {
-                string clientIp = forwardedValue.ToString();
+                string clientIp = forwardedValue.ToString().Split(':')[0];
 
                 using (logger.BeginScopeWith((Logs.ClientIP, !string.IsNullOrEmpty(clientIp) ? clientIp : "unknown")))
                 {
