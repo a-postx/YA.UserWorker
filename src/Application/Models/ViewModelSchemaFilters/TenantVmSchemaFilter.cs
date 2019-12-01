@@ -2,12 +2,15 @@
 using YA.TenantWorker.Application.Models.ViewModels;
 using Swashbuckle.AspNetCore.Swagger;
 using Swashbuckle.AspNetCore.SwaggerGen;
+using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi.Any;
+using Newtonsoft.Json;
 
 namespace YA.TenantWorker.Application.Models.ViewModelSchemaFilters
 {
     public class TenantVmSchemaFilter : ISchemaFilter
     {
-        public void Apply(Schema model, SchemaFilterContext context)
+        public void Apply(OpenApiSchema model, SchemaFilterContext context)
         {
             Guid tenantId = Guid.NewGuid();
 
@@ -18,8 +21,8 @@ namespace YA.TenantWorker.Application.Models.ViewModelSchemaFilters
                 Url = $"/tenants/{tenantId}"
             };
 
-            model.Default = tenant;
-            model.Example = tenant;
+            model.Default = new OpenApiString(JsonConvert.SerializeObject(tenant, Formatting.Indented));
+            model.Example = new OpenApiString(JsonConvert.SerializeObject(tenant, Formatting.Indented));
         }
     }
 }

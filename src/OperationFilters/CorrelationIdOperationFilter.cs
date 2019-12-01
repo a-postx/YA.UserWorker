@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using Microsoft.OpenApi.Any;
+using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.Swagger;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using YA.TenantWorker.Constants;
@@ -7,7 +9,7 @@ using YA.TenantWorker.Constants;
 namespace YA.TenantWorker.OperationFilters
 {
     /// <summary>
-    /// Adds a Swashbuckle <see cref="NonBodyParameter"/> to all available operations with a description of X-Correlation-ID
+    /// Adds a Swashbuckle <see cref="OpenApiExample"/> to all available operations with a description of X-Correlation-ID
     /// HTTP header and default GUID value.
     /// </summary>
     /// <seealso cref="IOperationFilter" />
@@ -18,22 +20,25 @@ namespace YA.TenantWorker.OperationFilters
         /// </summary>
         /// <param name="operation">Operation.</param>
         /// <param name="context">Context.</param>
-        public void Apply(Operation operation, OperationFilterContext context)
+        public void Apply(OpenApiOperation operation, OperationFilterContext context)
         {
             if (operation.Parameters == null)
             {
-                operation.Parameters = new List<IParameter>();
+                operation.Parameters = new List<OpenApiParameter>();
             }
 
             operation.Parameters.Add(
-                new NonBodyParameter()
+                new OpenApiParameter()
                 {
-                    Default = Guid.NewGuid(),
                     Description = "Used to identify HTTP request: the ID will correlate HTTP request between server and client.",
-                    In = "header",
+                    In = ParameterLocation.Header,
                     Name = General.CorrelationIdHeader,
                     Required = true,
-                    Type = "string",
+                    Schema = new OpenApiSchema
+                    {
+                        Default = new OpenApiString(Guid.NewGuid().ToString()),
+                        Type = "string",
+                    },
                 });
         }
     }

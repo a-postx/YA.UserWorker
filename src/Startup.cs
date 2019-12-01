@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -27,28 +27,27 @@ using YA.TenantWorker.Infrastructure.Caching;
 using Serilog;
 using IHostingEnvironment = Microsoft.AspNetCore.Hosting.IHostingEnvironment;
 using Microsoft.EntityFrameworkCore.Diagnostics;
-using Microsoft.IdentityModel.Tokens;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Authentication.Google;
 using System.Collections.Generic;
-using Microsoft.AspNetCore.Authentication;
 using System.Threading.Tasks;
 using System.Linq;
 using Microsoft.AspNetCore.Authentication.Cookies;
-using System.IdentityModel.Tokens.Jwt;
 using System.Text;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Http;
+using Newtonsoft.Json.Converters;
+using Newtonsoft.Json;
+using System.Text.Encodings.Web;
 
 namespace YA.TenantWorker
 {
     /// <summary>
     /// The main start-up class for the application.
     /// </summary>
-    public class Startup : IStartup
+    public class Startup
     {
         private readonly IConfiguration _config;
-        private readonly IHostingEnvironment _hostingEnvironment;
+        private readonly IWebHostEnvironment _hostingEnvironment;
 
         // controller design generator search for this
         private IConfiguration Configuration { get; }
@@ -60,7 +59,7 @@ namespace YA.TenantWorker
         /// http://docs.asp.net/en/latest/fundamentals/configuration.html</param>
         /// <param name="hostingEnvironment">The environment the application is running under. This can be Development,
         /// Staging or Production by default. See http://docs.asp.net/en/latest/fundamentals/environments.html</param>
-        public Startup(IConfiguration configuration, IHostingEnvironment hostingEnvironment)
+        public Startup(IConfiguration configuration, IWebHostEnvironment hostingEnvironment)
         {
             _config = configuration ?? throw new ArgumentNullException(nameof(configuration));
             _hostingEnvironment = hostingEnvironment ?? throw new ArgumentNullException(nameof(hostingEnvironment));
@@ -73,15 +72,13 @@ namespace YA.TenantWorker
         /// called by the ASP.NET runtime. See
         /// http://blogs.msdn.com/b/webdev/archive/2014/06/17/dependency-injection-in-asp-net-vnext.aspx
         /// </summary>
-        public IServiceProvider ConfigureServices(IServiceCollection services)
+        public void ConfigureServices(IServiceCollection services)
         {
             KeyVaultSecrets secrets = _config.Get<KeyVaultSecrets>();
 
             string connectionString = secrets.TenantWorkerConnStr;
 
             services
-                .AddApplicationInsightsTelemetry(_config)
-                
                 .AddCorrelationIdFluent()
 
                 ////.AddHttpsRedirection(options =>
@@ -113,15 +110,19 @@ namespace YA.TenantWorker
             });
 
             services
-                .AddMvcCore()
-                    .SetCompatibilityVersion(CompatibilityVersion.Version_2_2)
+                .AddMvcCore(options => options.EnableEndpointRouting = false)
+                    .SetCompatibilityVersion(CompatibilityVersion.Version_3_0)
                     .AddApiExplorer()
                     .AddAuthorization(options => options.AddPolicy("MustBeAdministrator", policy => policy.RequireClaim(CustomClaimNames.role,  "Administrator")))
                     .AddDataAnnotations()
-                    .AddJsonFormatters()
+                    .AddNewtonsoftJson(options =>
+                    {
+                        options.SerializerSettings.Converters.Add(new StringEnumConverter());
+                        options.SerializerSettings.DateParseHandling = DateParseHandling.DateTimeOffset;
+                    })
                     .AddCustomJsonOptions(_hostingEnvironment)
                     .AddCustomCors()
-                    .AddCustomMvcOptions(_hostingEnvironment);
+                    .AddCustomMvcOptions();
             services
                 .AddProjectCommands()
                 .AddProjectMappers()
@@ -133,7 +134,7 @@ namespace YA.TenantWorker
                 .AddDbContext<TenantWorkerDbContext>(options =>
                     options.UseSqlServer(connectionString, sqlOptions => 
                         sqlOptions.EnableRetryOnFailure().CommandTimeout(60))
-                    .ConfigureWarnings(x => x.Throw(RelationalEventId.QueryClientEvaluationWarning))
+                    .ConfigureWarnings(x => x.Throw(RelationalEventId.QueryPossibleExceptionWithAggregateOperatorWarning))
                     .EnableSensitiveDataLogging(_hostingEnvironment.IsDevelopment()));
                     //// useful for API-related projects that only read data
                     //// we don't need query tracking if dbcontext is disposed on every request
@@ -188,10 +189,8 @@ namespace YA.TenantWorker
             
             services.AddScoped<ApiRequestFilter>();
 
-            services.AddTransient<IApiRequestManager, ApiRequestManager>();
+            services.AddScoped<IApiRequestManager, ApiRequestManager>();
             services.AddSingleton<ApiRequestMemoryCache>();
-
-            return services.BuildServiceProvider();
         }
 
         /// <summary>
@@ -229,6 +228,9 @@ namespace YA.TenantWorker
                 
                 .UseHttpContextLogging()
 
+                .UseStaticFilesWithCacheControl()
+                .UseRouting()
+
                 .UseCors(CorsPolicyName.AllowAny)
 
                 ////.UseIf(
@@ -238,32 +240,31 @@ namespace YA.TenantWorker
                 ////.UseIf(
                 ////    _hostingEnvironment.IsDevelopment(),
                 ////    x => x.UseDeveloperErrorPages())
-
-                .UseHealthChecks("/status", new HealthCheckOptions()
-                {
-                    ResponseWriter = HealthResponse.WriteResponse
-                })
-
-                // The readiness check uses all registered checks with the 'ready' tag.
-                .UseHealthChecks("/status/ready", new HealthCheckOptions()
-                {
-                    Predicate = (check) => check.Tags.Contains("ready"),
-                    ResponseWriter = HealthResponse.WriteResponse
-                })
-
-                .UseHealthChecks("/status/live", new HealthCheckOptions()
-                {
-                    // Exclude all checks and return a 200-Ok.
-                    Predicate = (_) => false,
-                    ResponseWriter = HealthResponse.WriteResponse
-                })
-
-                .UseStaticFilesWithCacheControl()
-
+                
                 .UseAuthentication()
                 .UseAuthenticationContextLogging()
+                .UseAuthorization()
 
-                .UseMvc()
+                .UseEndpoints(endpoints =>
+                {
+                    endpoints.MapControllers();
+                    endpoints.MapHealthChecks("/status", new HealthCheckOptions()
+                    {
+                        ResponseWriter = HealthResponse.WriteResponse
+                    });
+                    endpoints.MapHealthChecks("/status/ready", new HealthCheckOptions()
+                    {
+                        Predicate = (check) => check.Tags.Contains("ready"),
+                        ResponseWriter = HealthResponse.WriteResponse
+                    });
+                    endpoints.MapHealthChecks("/status/live", new HealthCheckOptions()
+                    {
+                        // Exclude all checks and return a 200-Ok.
+                        Predicate = (_) => false,
+                        ResponseWriter = HealthResponse.WriteResponse
+                    });
+                })
+
                 .UseSwagger()
                 .UseCustomSwaggerUI();
 

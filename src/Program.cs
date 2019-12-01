@@ -1,9 +1,4 @@
-using System;
-using System.Diagnostics;
-using System.IO;
-using System.Reflection;
-using System.Runtime.InteropServices;
-using System.Threading.Tasks;
+using Delobytes.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Azure.KeyVault;
@@ -11,18 +6,24 @@ using Microsoft.Azure.Services.AppAuthentication;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Configuration.AzureKeyVault;
 using Microsoft.Extensions.DependencyInjection;
-using Delobytes.AspNetCore;
-using YA.TenantWorker.Constants;
-using YA.TenantWorker.Options;
+using Microsoft.Extensions.Hosting;
+using Microsoft.IdentityModel.Clients.ActiveDirectory;
 using Serilog;
 using Serilog.Core;
 using Serilog.Events;
 using Serilog.Exceptions;
 using Serilog.Exceptions.Core;
 using Serilog.Exceptions.SqlServer.Destructurers;
-using YA.TenantWorker.Application.Interfaces;
-using Microsoft.IdentityModel.Clients.ActiveDirectory;
+using System;
+using System.Diagnostics;
+using System.IO;
+using System.Reflection;
 using System.Runtime;
+using System.Runtime.InteropServices;
+using System.Threading.Tasks;
+using YA.TenantWorker.Application.Interfaces;
+using YA.TenantWorker.Constants;
+using YA.TenantWorker.Options;
 
 namespace YA.TenantWorker
 {
@@ -58,27 +59,32 @@ namespace YA.TenantWorker
             Directory.CreateDirectory(Path.Combine(RootPath, General.AppDataFolderName));
             NodeId = Node.Id;
 
-            IWebHostBuilder builder = CreateWebHostBuilder(args);
+            IHostBuilder builder = CreateHostBuilder(args);
+            builder.UseDefaultServiceProvider((context, options) =>
+            {
+                options.ValidateScopes = context.HostingEnvironment.IsDevelopment();
+                options.ValidateOnBuild = true;
+            });
 
-            IWebHost webHost;
+            IHost host;
 
             try
             {
-                Console.WriteLine("Building WebHost...");
+                Console.WriteLine("Building Host...");
 
-                webHost = builder.Build();
+                host = builder.Build();
 
-                Console.WriteLine("WebHost built successfully.");
+                Console.WriteLine("Host built successfully.");
             }
             catch (Exception e)
             {
-                Console.WriteLine($"Error building WebHost: {e}.");
+                Console.WriteLine($"Error building Host: {e}.");
                 return 1;
             }
 
             try
             {
-                Log.Logger = BuildLogger(webHost);
+                Log.Logger = BuildLogger(host);
             }
             catch (Exception e)
             {
@@ -88,12 +94,12 @@ namespace YA.TenantWorker
 
             Log.Information("{AppName} v{Version}", AppName, Version);
 
-            IGeoDataService geoService = webHost.Services.GetService<IGeoDataService>();
+            IGeoDataService geoService = host.Services.GetService<IGeoDataService>();
             Country = await geoService.GetCountryCodeAsync();
 
             try
             {
-                await webHost.RunAsync();
+                await host.RunAsync();
                 Log.Information("{AppName} v{Version} has stopped.", AppName, Version);
                 return 0;
             }
@@ -108,9 +114,11 @@ namespace YA.TenantWorker
             }
         }
 
-        private static IWebHostBuilder CreateWebHostBuilder(string[] args)
+        private static IHostBuilder CreateHostBuilder(string[] args)
         {
-            return new WebHostBuilder()
+            return Host.CreateDefaultBuilder(args).ConfigureWebHostDefaults(webBuilder =>
+            {
+                webBuilder
                 .UseIf(
                     x => string.IsNullOrEmpty(x.GetSetting(WebHostDefaults.ContentRootKey)),
                     x => x.UseContentRoot(Directory.GetCurrentDirectory()))
@@ -122,6 +130,7 @@ namespace YA.TenantWorker
                     AddConfiguration(config, hostingContext.HostingEnvironment, args);
 
                     // <##Azure Key Vault
+                    // disable telemetry to speed up the process - https://docs.microsoft.com/en-us/cli/azure/azure-cli-configuration?view=azure-cli-latest#cli-configuration-values-and-environment-variables
                     string keyVaultEndpoint = null;
                     string clientId = Environment.GetEnvironmentVariable("KeyVaultAppClientId");
                     string clientSecret = Environment.GetEnvironmentVariable("KeyVaultAppClientSecret");
@@ -172,7 +181,10 @@ namespace YA.TenantWorker
                 })
                 .UseSerilog()
                 .UseDefaultServiceProvider((context, options) =>
-                    options.ValidateScopes = context.HostingEnvironment.IsDevelopment())
+                {
+                    options.ValidateOnBuild = true;
+                    options.ValidateScopes = context.HostingEnvironment.IsDevelopment();
+                })
                 .UseKestrel(
                     (builderContext, options) =>
                     {
@@ -191,9 +203,10 @@ namespace YA.TenantWorker
                 .UseIIS()
                 .UseShutdownTimeout(TimeSpan.FromSeconds(General.SystemShutdownTimeoutSec))
                 .UseStartup<Startup>();
+            });
         }
 
-        private static IConfigurationBuilder AddConfiguration(IConfigurationBuilder configurationBuilder, IHostingEnvironment hostingEnvironment, string[] args)
+        private static IConfigurationBuilder AddConfiguration(IConfigurationBuilder configurationBuilder, IWebHostEnvironment hostingEnvironment, string[] args)
         {
             configurationBuilder
                 .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
@@ -203,9 +216,6 @@ namespace YA.TenantWorker
                 // (launchSettings.json for development or Application Settings for Azure)
                 .AddEnvironmentVariables()
 
-                // View telemetry results immediately in development and staging environments.
-                .AddApplicationInsightsSettings(developerMode: !hostingEnvironment.IsProduction())
-
                 // Add command line options. These take the highest priority.
                 .AddIf(
                     args != null,
@@ -214,9 +224,9 @@ namespace YA.TenantWorker
             return configurationBuilder;
         }
 
-        private static Logger BuildLogger(IWebHost webHost)
+        private static Logger BuildLogger(IHost host)
         {
-            IConfiguration configuration = webHost.Services.GetRequiredService<IConfiguration>();
+            IConfiguration configuration = host.Services.GetRequiredService<IConfiguration>();
             KeyVaultSecrets secrets = configuration.Get<KeyVaultSecrets>();
 
             LoggerConfiguration loggerConfig = new LoggerConfiguration();

@@ -17,7 +17,7 @@ namespace YA.TenantWorker.Infrastructure.Data
 
         public Task RunQueryAsync(string query, params object[] parameters)
         {
-            return _context.Database.ExecuteSqlCommandAsync(query, parameters);
+            return _context.Database.ExecuteSqlRawAsync(query, parameters);
         }
 
         public void Dispose()

@@ -10,6 +10,7 @@ using Delobytes.AspNetCore;
 using YA.TenantWorker.Constants;
 using YA.TenantWorker.Options;
 using YA.TenantWorker.Application.ActionFilters;
+using Microsoft.Extensions.Hosting;
 
 namespace YA.TenantWorker
 {
@@ -37,26 +38,19 @@ namespace YA.TenantWorker
         /// <summary>
         /// Adds customized JSON serializer settings.
         /// </summary>
-        public static IMvcCoreBuilder AddCustomJsonOptions(this IMvcCoreBuilder builder, IHostingEnvironment hostingEnvironment)
+        public static IMvcCoreBuilder AddCustomJsonOptions(this IMvcCoreBuilder builder, IWebHostEnvironment hostingEnvironment)
         {
             return builder.AddJsonOptions(options =>
                 {
-                    if (hostingEnvironment.IsDevelopment())
+                    if (hostingEnvironment.EnvironmentName == Environments.Development)
                     {
                         // Pretty print the JSON in development for easier debugging.
-                        options.SerializerSettings.Formatting = Formatting.Indented;
+                        options.JsonSerializerOptions.WriteIndented = true;
                     }
-
-                    // Parse dates as DateTimeOffset values by default. You should prefer using DateTimeOffset over
-                    // DateTime everywhere. Not doing so can cause problems with time-zones.
-                    options.SerializerSettings.DateParseHandling = DateParseHandling.DateTimeOffset;
-
-                    // Output enumeration values as strings in JSON.
-                    options.SerializerSettings.Converters.Add(new StringEnumConverter());
                 });
         }
 
-        public static IMvcCoreBuilder AddCustomMvcOptions(this IMvcCoreBuilder builder, IHostingEnvironment hostingEnvironment)
+        public static IMvcCoreBuilder AddCustomMvcOptions(this IMvcCoreBuilder builder)
         {
             return builder.AddMvcOptions(options =>
                 {                    
@@ -73,12 +67,12 @@ namespace YA.TenantWorker
 
                     MediaTypeCollection jsonInputFormatterMediaTypes = options
                         .InputFormatters
-                        .OfType<JsonInputFormatter>()
+                        .OfType<NewtonsoftJsonInputFormatter>()
                         .First()
                         .SupportedMediaTypes;
                     MediaTypeCollection jsonOutputFormatterMediaTypes = options
                         .OutputFormatters
-                        .OfType<JsonOutputFormatter>()
+                        .OfType<NewtonsoftJsonOutputFormatter>()
                         .First()
                         .SupportedMediaTypes;
 

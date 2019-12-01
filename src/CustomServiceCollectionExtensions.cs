@@ -26,6 +26,7 @@ using Swashbuckle.AspNetCore.Swagger;
 using YA.TenantWorker.Constants;
 using YA.TenantWorker.Health.Services;
 using YA.TenantWorker.Health.System;
+using Microsoft.OpenApi.Models;
 
 namespace YA.TenantWorker
 {
@@ -137,14 +138,6 @@ namespace YA.TenantWorker
                 options.Predicate = (check) => check.Tags.Contains("ready");
             });
 
-            // The following workaround permits adding an IHealthCheckPublisher 
-            // instance to the service container when one or more other hosted 
-            // services have already been added to the app. This workaround
-            // won't be required with the release of ASP.NET Core 3.0. For more 
-            // information, see: https://github.com/aspnet/Extensions/issues/639.
-            services.TryAddEnumerable(ServiceDescriptor.Singleton(typeof(IHostedService),
-                typeof(HealthCheckPublisherOptions).Assembly.GetType("Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckPublisherHostedService")));
-
             services.AddSingleton<IHealthCheckPublisher, ReadinessPublisher>();
             
             return services.AddHealthChecks().Services;
@@ -170,9 +163,7 @@ namespace YA.TenantWorker
                     string assemblyProduct = assembly.GetCustomAttribute<AssemblyProductAttribute>().Product;
                     string assemblyDescription = assembly.GetCustomAttribute<AssemblyDescriptionAttribute>().Description;
 
-                    options.DescribeAllEnumsAsStrings();
                     options.DescribeAllParametersInCamelCase();
-                    options.DescribeStringEnumsInCamelCase();
                     options.EnableAnnotations();
 
                     // Add the XML comment file for this assembly, so its contents can be displayed.
@@ -191,31 +182,38 @@ namespace YA.TenantWorker
 
                     foreach (ApiVersionDescription apiVersionDescription in provider.ApiVersionDescriptions)
                     {
-                        Info info = new Info()
+                        OpenApiInfo info = new OpenApiInfo()
                         {
                             Title = assemblyProduct,
                             Description = apiVersionDescription.IsDeprecated
-                                ? $"{assemblyDescription} This API version is deprecated."
+                                ? $"{assemblyDescription} This API version has been deprecated."
                                 : assemblyDescription,
                             Version = apiVersionDescription.ApiVersion.ToString(),
                         };
                         options.SwaggerDoc(apiVersionDescription.GroupName, info);
                     }
 
-                    options.AddSecurityDefinition("Bearer", new ApiKeyScheme
+                    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
                     {
+                        In = ParameterLocation.Header,
                         Description = "JWT Authorization header using the Bearer scheme. Example: \"Authorization: Bearer {token}\"",
                         Name = "Authorization",
-                        In = "header",
-                        Type = "apiKey"
+                        Type = SecuritySchemeType.ApiKey
                     });
 
-                    var security = new Dictionary<string, IEnumerable<string>>
-                    {
-                        { "Bearer", Enumerable.Empty<string>() },
-                    };
-
-                    options.AddSecurityRequirement(security);
+                    options.AddSecurityRequirement(new OpenApiSecurityRequirement {
+                        {
+                            new OpenApiSecurityScheme
+                            {
+                                Reference = new OpenApiReference
+                                {
+                                    Type = ReferenceType.SecurityScheme,
+                                    Id = "Bearer"
+                                }
+                            },
+                            new string[] { }
+                        }
+                    });
                 });
         }
     }
