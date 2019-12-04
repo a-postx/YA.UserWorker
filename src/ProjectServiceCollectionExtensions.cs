@@ -1,15 +1,13 @@
+using Delobytes.Mapper;
 using Microsoft.Extensions.DependencyInjection;
 using YA.TenantWorker.Application.Commands;
-using YA.TenantWorker.Application.Mappers;
-using YA.TenantWorker.Core.Entities;
 using YA.TenantWorker.Application.Interfaces;
-using YA.TenantWorker.Infrastructure.Services;
-using YA.TenantWorker.Application.Models.ViewModels;
+using YA.TenantWorker.Application.Mappers;
 using YA.TenantWorker.Application.Models.SaveModels;
-using Delobytes.Mapper;
-using Microsoft.Extensions.Logging;
-using Microsoft.AspNetCore.Hosting;
+using YA.TenantWorker.Application.Models.ViewModels;
+using YA.TenantWorker.Core.Entities;
 using YA.TenantWorker.Infrastructure.Data;
+using YA.TenantWorker.Infrastructure.Services;
 
 namespace YA.TenantWorker
 {
@@ -60,7 +58,7 @@ namespace YA.TenantWorker
         /// <summary>
         /// Add internal services to the service collection.
         /// </summary>
-        public static IServiceCollection AddProjectServices(this IServiceCollection services, KeyVaultSecrets secrets)
+        public static IServiceCollection AddProjectServices(this IServiceCollection services)
         {
             return services
                 .AddSingleton<IClockService, Clock>()

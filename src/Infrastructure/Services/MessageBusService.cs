@@ -15,7 +15,7 @@ namespace YA.TenantWorker.Infrastructure.Services
     /// <summary>
     /// Hosted service for Message Bus
     /// </summary>
-    public class MessageBusService : IHostedService
+    public class MessageBusService : BackgroundService
     {
         public MessageBusService(ILogger<MessageBusService> logger,
             IConfiguration config,
@@ -36,7 +36,7 @@ namespace YA.TenantWorker.Infrastructure.Services
         private readonly IMessageAuditStore _auditStore;
         private readonly MessageBusServiceHealthCheck _messageBusServiceHealthCheck;
 
-        public async Task StartAsync(CancellationToken cancellationToken)
+        public override async Task StartAsync(CancellationToken cancellationToken)
         {
             _log.LogInformation(nameof(MessageBusService) + " startup service is starting.");
 
@@ -76,7 +76,12 @@ namespace YA.TenantWorker.Infrastructure.Services
             await _busControl.StartAsync(cancellationToken);
         }
 
-        public async Task StopAsync(CancellationToken cancellationToken)
+        protected override Task ExecuteAsync(CancellationToken stoppingToken)
+        {
+            return Task.CompletedTask;
+        }
+
+        public override async Task StopAsync(CancellationToken cancellationToken)
         {
             _log.LogInformation(nameof(MessageBusService) + " startup service is stopping.");
 

@@ -77,7 +77,7 @@ namespace YA.TenantWorker
             KeyVaultSecrets secrets = _config.Get<KeyVaultSecrets>();
 
             string connectionString = secrets.TenantWorkerConnStr;
-
+            
             services
                 .AddCorrelationIdFluent()
 
@@ -123,11 +123,12 @@ namespace YA.TenantWorker
                     .AddCustomJsonOptions(_hostingEnvironment)
                     .AddCustomCors()
                     .AddCustomMvcOptions();
+
             services
                 .AddProjectCommands()
                 .AddProjectMappers()
                 .AddProjectRepositories()
-                .AddProjectServices(secrets);
+                .AddProjectServices();
 
             services
                 .AddEntityFrameworkSqlServer()
@@ -194,8 +195,7 @@ namespace YA.TenantWorker
         }
 
         /// <summary>
-        /// Configures the application and HTTP request pipeline. Configure is called after ConfigureServices is
-        /// called by the ASP.NET runtime.
+        /// Configures the application and HTTP request pipeline. Configure is called after IHost Run() by the ASP.NET runtime.
         /// </summary>
         public void Configure(IApplicationBuilder application)
         {
@@ -240,7 +240,8 @@ namespace YA.TenantWorker
                 ////.UseIf(
                 ////    _hostingEnvironment.IsDevelopment(),
                 ////    x => x.UseDeveloperErrorPages())
-                
+
+                ////.UseHttpsRedirection()
                 .UseAuthentication()
                 .UseAuthenticationContextLogging()
                 .UseAuthorization()

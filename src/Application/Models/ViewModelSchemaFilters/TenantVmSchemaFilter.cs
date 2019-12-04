@@ -14,15 +14,15 @@ namespace YA.TenantWorker.Application.Models.ViewModelSchemaFilters
         {
             Guid tenantId = Guid.NewGuid();
 
-            TenantVm tenant = new TenantVm()
+            TenantVm tenantVm = new TenantVm()
             {
                 TenantId = tenantId,
                 TenantName = "MyCoolTenant",
                 Url = $"/tenants/{tenantId}"
             };
 
-            model.Default = new OpenApiString(JsonConvert.SerializeObject(tenant, Formatting.Indented));
-            model.Example = new OpenApiString(JsonConvert.SerializeObject(tenant, Formatting.Indented));
+            model.Default = new OpenApiString(JsonConvert.SerializeObject(tenantVm, Formatting.Indented));
+            model.Example = new OpenApiString(JsonConvert.SerializeObject(tenantVm, Formatting.Indented));
         }
     }
 }

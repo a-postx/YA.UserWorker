@@ -60,11 +60,6 @@ namespace YA.TenantWorker
             NodeId = Node.Id;
 
             IHostBuilder builder = CreateHostBuilder(args);
-            builder.UseDefaultServiceProvider((context, options) =>
-            {
-                options.ValidateScopes = context.HostingEnvironment.IsDevelopment();
-                options.ValidateOnBuild = true;
-            });
 
             IHost host;
 

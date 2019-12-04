@@ -4,12 +4,9 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.Extensions.DependencyInjection;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
 using Delobytes.AspNetCore;
 using YA.TenantWorker.Constants;
 using YA.TenantWorker.Options;
-using YA.TenantWorker.Application.ActionFilters;
 using Microsoft.Extensions.Hosting;
 
 namespace YA.TenantWorker

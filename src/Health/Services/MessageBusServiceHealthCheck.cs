@@ -12,7 +12,7 @@ using YA.TenantWorker.Infrastructure.Messaging.Test;
 namespace YA.TenantWorker.Health.Services
 {
     /// <summary>
-    /// Regular check (30 sec) for availability of the message bus services.
+    /// Regular check for availability of the message bus services.
     /// </summary>
     public class MessageBusServiceHealthCheck : IHealthCheck
     {
