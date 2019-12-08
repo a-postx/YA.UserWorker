@@ -52,7 +52,7 @@ namespace YA.TenantWorker.Application.Commands
                 Claim[] claims = new[]
                 {
                     new Claim(CustomClaimNames.client_id, "web_app"),
-                    new Claim(CustomClaimNames.tenant_id, user.Tenant.TenantID.ToString()),
+                    new Claim(CustomClaimNames.tid, user.Tenant.TenantID.ToString()),
                     new Claim(JwtRegisteredClaimNames.Sub, user.Username),
                     new Claim(CustomClaimNames.nameidentifier, user.UserID.ToString()),
                     //Ocelot doesn't transform "sub" claim

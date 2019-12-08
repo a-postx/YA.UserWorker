@@ -36,7 +36,7 @@ namespace YA.TenantWorker.Application.Commands
 
         public async Task<IActionResult> ExecuteAsync(CancellationToken cancellationToken = default)
         {
-            Guid tenantId = _actionContextAccessor.ActionContext.HttpContext.User.GetClaimValue<Guid>(CustomClaimNames.tenant_id);
+            Guid tenantId = _actionContextAccessor.ActionContext.HttpContext.User.GetClaimValue<Guid>(CustomClaimNames.tid);
 
             if (tenantId == Guid.Empty)
             {

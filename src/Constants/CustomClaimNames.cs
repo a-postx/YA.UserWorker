@@ -8,7 +8,7 @@ namespace YA.TenantWorker.Constants
     public class CustomClaimNames
     {
         public const string client_id = nameof(client_id);
-        public const string tenant_id = nameof(tenant_id);
+        public const string tid = nameof(tid);
         public const string nameidentifier = nameof(nameidentifier);
         public const string username = nameof(username);
         public const string name = nameof(name);

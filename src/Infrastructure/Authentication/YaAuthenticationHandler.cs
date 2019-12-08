@@ -58,7 +58,7 @@ namespace YA.TenantWorker.Infrastructure.Authentication
                 SecurityToken jsonToken = handler.ReadToken(token);
                 JwtSecurityToken tokenS = handler.ReadToken(token) as JwtSecurityToken;
 
-                string tenant_id = tokenS.Claims.FirstOrDefault(claim => claim.Type == CustomClaimNames.tenant_id)?.Value;
+                string tenant_id = tokenS.Claims.FirstOrDefault(claim => claim.Type == CustomClaimNames.tid)?.Value;
                 string user_id = tokenS.Claims.FirstOrDefault(claim => claim.Type == CustomClaimNames.nameidentifier)?.Value;
                 string username = tokenS.Claims.FirstOrDefault(claim => claim.Type == CustomClaimNames.authsub)?.Value;
                 string name = tokenS.Claims.FirstOrDefault(claim => claim.Type == CustomClaimNames.name)?.Value;
@@ -67,7 +67,7 @@ namespace YA.TenantWorker.Infrastructure.Authentication
 
                 if (tenant_id == null)
                 {
-                    throw new Exception($"Authentication failed: {CustomClaimNames.tenant_id} claim cannot be found.");
+                    throw new Exception($"Authentication failed: {CustomClaimNames.tid} claim cannot be found.");
                 }
                 if (user_id == null)
                 {
@@ -92,7 +92,7 @@ namespace YA.TenantWorker.Infrastructure.Authentication
 
                 ClaimsIdentity userIdentity = new ClaimsIdentity("Bearer", CustomClaimNames.name, CustomClaimNames.role);
 
-                userIdentity.AddClaim(new Claim(CustomClaimNames.tenant_id, tenant_id));
+                userIdentity.AddClaim(new Claim(CustomClaimNames.tid, tenant_id));
                 userIdentity.AddClaim(new Claim(CustomClaimNames.nameidentifier, user_id));
                 userIdentity.AddClaim(new Claim(CustomClaimNames.username, username));
                 userIdentity.AddClaim(new Claim(CustomClaimNames.name, name));
