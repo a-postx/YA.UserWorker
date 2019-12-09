@@ -9,6 +9,9 @@ using Delobytes.AspNetCore;
 using YA.TenantWorker.Constants;
 using YA.TenantWorker.Options;
 using YA.TenantWorker.Infrastructure.Logging.Requests;
+using Serilog;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
 
 namespace YA.TenantWorker
 {
@@ -47,6 +50,22 @@ namespace YA.TenantWorker
             return application;
         }
 
+        /// <summary>
+        /// Uses custom serilog request logging. Adds additional properties to each log.
+        /// See https://github.com/serilog/serilog-aspnetcore.
+        /// </summary>
+        public static IApplicationBuilder UseCustomSerilogRequestLogging(this IApplicationBuilder application) =>
+            application.UseSerilogRequestLogging(
+                options => options.EnrichDiagnosticContext = (diagnosticContext, httpContext) =>
+                {
+                    Endpoint endpoint = httpContext.GetEndpoint();
+                    string routeName = endpoint?.Metadata?.GetMetadata<IRouteNameMetadata>()?.RouteName;
+                    diagnosticContext.Set("RouteName", routeName);
+
+                    diagnosticContext.Set("RequestHost", httpContext.Request.Host.Value);
+                    diagnosticContext.Set("RequestScheme", httpContext.Request.Scheme);
+                });
+
         public static IApplicationBuilder UseCustomSwaggerUI(this IApplicationBuilder application)
         {
             return application.UseSwaggerUI(options =>
@@ -55,6 +74,8 @@ namespace YA.TenantWorker
                     options.DocumentTitle = typeof(Startup).Assembly.GetCustomAttribute<AssemblyProductAttribute>().Product;
                     // Set the Swagger UI to render at '/'.
                     ////options.RoutePrefix = string.Empty;
+                    
+                    options.DisplayOperationId();
                     options.DisplayRequestDuration();
 
                     IApiVersionDescriptionProvider provider = application.ApplicationServices.GetService<IApiVersionDescriptionProvider>();

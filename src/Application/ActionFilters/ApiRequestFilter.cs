@@ -44,13 +44,11 @@ namespace YA.TenantWorker.Application.ActionFilters
                 {
                     if (request != null)
                     {
-                        ApiError requestExistsError = new ApiError(
-                        ApiErrorTypes.Error,
-                        ApiErrorCodes.DUPLICATE_API_CALL,
-                        "Api call is already exist.",
-                        request.ApiRequestID.ToString());
+                        ApiProblemDetails apiError = new ApiProblemDetails("https://tools.ietf.org/html/rfc7231#section-6.5.8", StatusCodes.Status409Conflict,
+                            context.HttpContext.Request.HttpContext.Request.Path.Value, "Api call is already exist.", null, request.ApiRequestID.ToString(),
+                            context.HttpContext.Request.HttpContext.TraceIdentifier);
 
-                        context.Result = new ConflictObjectResult(requestExistsError);
+                        context.Result = new ConflictObjectResult(apiError);
                         return;
                     }
                     else
@@ -77,7 +75,7 @@ namespace YA.TenantWorker.Application.ActionFilters
                 {
                     if (context.Result is ObjectResult objectRequestResult)
                     {
-                        if (objectRequestResult?.Value is ApiError apiError)
+                        if (objectRequestResult?.Value is ApiProblemDetails apiError)
                         {
                             ////if (apiError.Code == ApiErrorCodes.DUPLICATE_API_CALL)
                             ////{

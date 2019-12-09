@@ -27,6 +27,7 @@ using YA.TenantWorker.Constants;
 using YA.TenantWorker.Health.Services;
 using YA.TenantWorker.Health.System;
 using Microsoft.OpenApi.Models;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 
 namespace YA.TenantWorker
 {
@@ -71,6 +72,25 @@ namespace YA.TenantWorker
         }
 
         /// <summary>
+        /// Add cross-origin resource sharing (CORS) services and configures named CORS policies. See
+        /// https://docs.asp.net/en/latest/security/cors.html
+        /// </summary>
+        public static IServiceCollection AddCustomCors(this IServiceCollection services)
+        {
+            return services.AddCors(options =>
+            {
+                // Create named CORS policies here which you can consume using application.UseCors("PolicyName")
+                // or a [EnableCors("PolicyName")] attribute on your controller or action.
+                options.AddPolicy(
+                    CorsPolicyName.AllowAny,
+                    x => x
+                        .AllowAnyOrigin()
+                        .AllowAnyMethod()
+                        .AllowAnyHeader());
+            });
+        }
+
+        /// <summary>
         /// Configures the settings by binding the contents of the appsettings.json file to the specified Plain Old CLR
         /// Objects (POCO) and adding <see cref="IOptions{T}"/> objects to the services collection.
         /// </summary>
@@ -81,26 +101,31 @@ namespace YA.TenantWorker
                 .ConfigureAndValidateSingleton<ApplicationOptions>(configuration)
                 .ConfigureAndValidateSingleton<CompressionOptions>(configuration.GetSection(nameof(ApplicationOptions.Compression)))
                 .ConfigureAndValidateSingleton<ForwardedHeadersOptions>(configuration.GetSection(nameof(ApplicationOptions.ForwardedHeaders)))
-                .ConfigureAndValidateSingleton<CacheProfileOptions>(configuration.GetSection(nameof(ApplicationOptions.CacheProfiles)));
+                .ConfigureAndValidateSingleton<CacheProfileOptions>(configuration.GetSection(nameof(ApplicationOptions.CacheProfiles)))
+                .ConfigureAndValidateSingleton<KestrelServerOptions>(configuration.GetSection(nameof(ApplicationOptions.Kestrel)));
         }
 
         /// <summary>
         /// Adds dynamic response compression to enable GZIP compression of responses. This is turned off for HTTPS
         /// requests by default to avoid the BREACH security vulnerability.
         /// </summary>
-        public static IServiceCollection AddCustomResponseCompression(this IServiceCollection services)
+        public static IServiceCollection AddCustomResponseCompression(this IServiceCollection services, IConfiguration configuration)
         {
             return services
+                .Configure<BrotliCompressionProviderOptions>(options => options.Level = CompressionLevel.Optimal)
+                .Configure<GzipCompressionProviderOptions>(options => options.Level = CompressionLevel.Optimal)
                 .AddResponseCompression(options =>
                     {
                         // Add additional MIME types (other than the built in defaults) to enable GZIP compression for.
-                        IEnumerable<string> customMimeTypes = services
-                                                  .BuildServiceProvider()
-                                                  .GetRequiredService<CompressionOptions>()
-                                                  .MimeTypes ?? Enumerable.Empty<string>();
-                        options.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(customMimeTypes);
-                    })
-                .Configure<GzipCompressionProviderOptions>(options => options.Level = CompressionLevel.Optimal);
+                        IEnumerable<string> customMimeTypes = configuration
+                            .GetSection(nameof(ApplicationOptions.Compression))
+                            .Get<CompressionOptions>()
+                            ?.MimeTypes ?? Enumerable.Empty<string>();
+                        options.MimeTypes = customMimeTypes.Concat(ResponseCompressionDefaults.MimeTypes);
+
+                        options.Providers.Add<BrotliCompressionProvider>();
+                        options.Providers.Add<GzipCompressionProvider>();
+                    });
         }
 
         /// <summary>
@@ -149,7 +174,8 @@ namespace YA.TenantWorker
                 {
                     options.AssumeDefaultVersionWhenUnspecified = true;
                     options.ReportApiVersions = true;
-                });
+                })
+                .AddVersionedApiExplorer(x => x.GroupNameFormat = "'v'VVV"); // Version format: 'v'major[.minor][-status]
         }
 
         /// <summary>
@@ -172,6 +198,7 @@ namespace YA.TenantWorker
                     options.OperationFilter<ApiVersionOperationFilter>();
                     options.OperationFilter<CorrelationIdOperationFilter>();
                     options.OperationFilter<ContentTypeOperationFilter>();
+                    options.OperationFilter<ClaimsOperationFilter>();
                     options.OperationFilter<ForbiddenResponseOperationFilter>();
                     options.OperationFilter<UnauthorizedResponseOperationFilter>();
 

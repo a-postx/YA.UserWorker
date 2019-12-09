@@ -8,87 +8,126 @@ using Delobytes.AspNetCore;
 using YA.TenantWorker.Constants;
 using YA.TenantWorker.Options;
 using Microsoft.Extensions.Hosting;
+using System.Text.Json.Serialization;
+using System.Text.Json;
+using Microsoft.Extensions.Configuration;
+using System;
+using Microsoft.Extensions.Options;
+using System.Text.Encodings.Web;
+using System.Text.Unicode;
+using Microsoft.AspNetCore.JsonPatch;
 
 namespace YA.TenantWorker
 {
     public static class MvcCoreBuilderExtensions
     {
         /// <summary>
-        /// Add cross-origin resource sharing (CORS) services and configures named CORS policies. See
-        /// https://docs.asp.net/en/latest/security/cors.html
-        /// </summary>
-        public static IMvcCoreBuilder AddCustomCors(this IMvcCoreBuilder builder)
-        {
-            return builder.AddCors(options =>
-                {
-                    // Create named CORS policies here which you can consume using application.UseCors("PolicyName")
-                    // or a [EnableCors("PolicyName")] attribute on your controller or action.
-                    options.AddPolicy(
-                        CorsPolicyName.AllowAny,
-                        x => x
-                            .AllowAnyOrigin()
-                            .AllowAnyMethod()
-                            .AllowAnyHeader());
-                });
-        }
-
-        /// <summary>
         /// Adds customized JSON serializer settings.
         /// </summary>
-        public static IMvcCoreBuilder AddCustomJsonOptions(this IMvcCoreBuilder builder, IWebHostEnvironment hostingEnvironment)
+        public static IMvcBuilder AddCustomJsonOptions(this IMvcBuilder builder, IWebHostEnvironment webHostEnvironment)
         {
             return builder.AddJsonOptions(options =>
                 {
-                    if (hostingEnvironment.EnvironmentName == Environments.Development)
+                    var jsonSerializerOptions = options.JsonSerializerOptions;
+                    if (webHostEnvironment.IsDevelopment())
                     {
                         // Pretty print the JSON in development for easier debugging.
-                        options.JsonSerializerOptions.WriteIndented = true;
+                        jsonSerializerOptions.WriteIndented = true;
                     }
+
+                    jsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+                    jsonSerializerOptions.DictionaryKeyPolicy = JsonNamingPolicy.CamelCase;
+                    jsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+                    jsonSerializerOptions.Encoder = JavaScriptEncoder.Create(UnicodeRanges.All);
                 });
         }
 
-        public static IMvcCoreBuilder AddCustomMvcOptions(this IMvcCoreBuilder builder)
+        public static IMvcBuilder AddCustomMvcOptions(this IMvcBuilder builder, IConfiguration configuration)
         {
             return builder.AddMvcOptions(options =>
-                {                    
+                {
                     // Controls how controller actions cache content from the appsettings.json file.
-                    CacheProfileOptions cacheProfileOptions = builder
-                        .Services
-                        .BuildServiceProvider()
-                        .GetRequiredService<CacheProfileOptions>();
-
-                    foreach (KeyValuePair<string, CacheProfile> keyValuePair in cacheProfileOptions)
+                    foreach (var keyValuePair in configuration
+                        .GetSection(nameof(ApplicationOptions.CacheProfiles))
+                        .Get<CacheProfileOptions>())
                     {
                         options.CacheProfiles.Add(keyValuePair);
                     }
 
-                    MediaTypeCollection jsonInputFormatterMediaTypes = options
+                    // Remove plain text (text/plain) output formatter.
+                    options.OutputFormatters.RemoveType<StringOutputFormatter>();
+
+                    // Add support for JSON Patch (application/json-patch+json) by adding an input formatter.
+                    options.InputFormatters.Insert(0, GetJsonPatchInputFormatter());
+
+                    var jsonInputFormatterMediaTypes = options
                         .InputFormatters
-                        .OfType<NewtonsoftJsonInputFormatter>()
+                        .OfType<SystemTextJsonInputFormatter>()
                         .First()
                         .SupportedMediaTypes;
-                    MediaTypeCollection jsonOutputFormatterMediaTypes = options
+                    var jsonOutputFormatterMediaTypes = options
                         .OutputFormatters
-                        .OfType<NewtonsoftJsonOutputFormatter>()
+                        .OfType<SystemTextJsonOutputFormatter>()
                         .First()
                         .SupportedMediaTypes;
+
+                    ////var xmlInputFormatterMediaTypes = options
+                    ////    .InputFormatters
+                    ////    .OfType<XmlDataContractSerializerInputFormatter>()
+                    ////    .First()
+                    ////    .SupportedMediaTypes;
+
+                    ////var xmlOutputFormatterMediaTypes = options
+                    ////    .OutputFormatters
+                    ////    .OfType<XmlDataContractSerializerOutputFormatter>()
+                    ////    .First()
+                    ////    .SupportedMediaTypes;
+
+                    ////// Remove XML text (text/xml) media type from the XML input and output formatters.
+                    ////xmlInputFormatterMediaTypes.Remove("text/xml");
+                    ////xmlOutputFormatterMediaTypes.Remove("text/xml");
+
+                    // Remove JSON text (text/json) media type from the JSON input and output formatters.
+                    jsonInputFormatterMediaTypes.Remove("text/json");
+                    jsonOutputFormatterMediaTypes.Remove("text/json");
+
+                    // Add Problem Details media type (application/problem+json) to the JSON input and output formatters.
+                    // See https://tools.ietf.org/html/rfc7807
+                    jsonOutputFormatterMediaTypes.Insert(0, ContentType.ProblemJson);
+                    //xmlOutputFormatterMediaTypes.Insert(0, ContentType.ProblemXml);
+
+                    // Remove string and stream output formatters. These are not useful for an API serving JSON or XML.
+                    //options.OutputFormatters.RemoveType<StreamOutputFormatter>();
+                    //options.OutputFormatters.RemoveType<StringOutputFormatter>();
 
                     // Add RESTful JSON media type (application/vnd.restful+json) to the JSON input and output formatters.
                     // See http://restfuljson.org/
                     jsonInputFormatterMediaTypes.Insert(0, ContentType.RestfulJson);
                     jsonOutputFormatterMediaTypes.Insert(0, ContentType.RestfulJson);
 
-                    // Add Problem Details media type (application/problem+json) to the JSON input and output formatters.
-                    // See https://tools.ietf.org/html/rfc7807
-                    jsonOutputFormatterMediaTypes.Insert(0, ContentType.ProblemJson);
-
-                    // Remove string and stream output formatters. These are not useful for an API serving JSON or XML.
-                    options.OutputFormatters.RemoveType<StreamOutputFormatter>();
-                    options.OutputFormatters.RemoveType<StringOutputFormatter>();
-
                     // Returns a 406 Not Acceptable if the MIME type in the Accept HTTP header is not valid.
                     options.ReturnHttpNotAcceptable = true;
                 });
+        }
+
+        /// <summary>
+        /// Gets the JSON patch input formatter. The <see cref="JsonPatchDocument{T}"/> does not support the new
+        /// System.Text.Json API's for de-serialization. You must use Newtonsoft.Json instead. See
+        /// https://docs.microsoft.com/en-us/aspnet/core/web-api/jsonpatch?view=aspnetcore-3.0#jsonpatch-addnewtonsoftjson-and-systemtextjson
+        /// </summary>
+        /// <returns>The JSON patch input formatter using Newtonsoft.Json.</returns>
+        private static NewtonsoftJsonPatchInputFormatter GetJsonPatchInputFormatter()
+        {
+            IServiceCollection services = new ServiceCollection()
+                .AddLogging()
+                .AddMvc()
+                .AddNewtonsoftJson()
+                .Services;
+            ServiceProvider serviceProvider = services.BuildServiceProvider();
+            MvcOptions mvcOptions = serviceProvider.GetRequiredService<IOptions<MvcOptions>>().Value;
+            return mvcOptions.InputFormatters
+                .OfType<NewtonsoftJsonPatchInputFormatter>()
+                .First();
         }
     }
 }

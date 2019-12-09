@@ -7,7 +7,6 @@ using MassTransit.RabbitMqTransport;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.EntityFrameworkCore;
@@ -25,19 +24,12 @@ using YA.TenantWorker.Infrastructure.Messaging.Test;
 using YA.TenantWorker.Infrastructure.Authentication;
 using YA.TenantWorker.Infrastructure.Caching;
 using Serilog;
-using IHostingEnvironment = Microsoft.AspNetCore.Hosting.IHostingEnvironment;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.AspNetCore.Identity;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using System.Linq;
 using Microsoft.AspNetCore.Authentication.Cookies;
-using System.Text;
 using Microsoft.AspNetCore.HttpOverrides;
-using Microsoft.AspNetCore.Http;
-using Newtonsoft.Json.Converters;
-using Newtonsoft.Json;
-using System.Text.Encodings.Web;
 
 namespace YA.TenantWorker
 {
@@ -47,7 +39,7 @@ namespace YA.TenantWorker
     public class Startup
     {
         private readonly IConfiguration _config;
-        private readonly IWebHostEnvironment _hostingEnvironment;
+        private readonly IWebHostEnvironment _webHostEnvironment;
 
         // controller design generator search for this
         private IConfiguration Configuration { get; }
@@ -57,12 +49,12 @@ namespace YA.TenantWorker
         /// </summary>
         /// <param name="configuration">The application configuration, where key value pair settings are stored. See
         /// http://docs.asp.net/en/latest/fundamentals/configuration.html</param>
-        /// <param name="hostingEnvironment">The environment the application is running under. This can be Development,
+        /// <param name="webHostEnvironment">The environment the application is running under. This can be Development,
         /// Staging or Production by default. See http://docs.asp.net/en/latest/fundamentals/environments.html</param>
-        public Startup(IConfiguration configuration, IWebHostEnvironment hostingEnvironment)
+        public Startup(IConfiguration configuration, IWebHostEnvironment webHostEnvironment)
         {
             _config = configuration ?? throw new ArgumentNullException(nameof(configuration));
-            _hostingEnvironment = hostingEnvironment ?? throw new ArgumentNullException(nameof(hostingEnvironment));
+            _webHostEnvironment = webHostEnvironment ?? throw new ArgumentNullException(nameof(webHostEnvironment));
 
             Configuration = configuration;
         }
@@ -77,8 +69,10 @@ namespace YA.TenantWorker
             KeyVaultSecrets secrets = _config.Get<KeyVaultSecrets>();
 
             string connectionString = secrets.TenantWorkerConnStr;
+            string instrumentationKey = secrets.AppInsightsInstrumentationKey;
             
             services
+                .AddApplicationInsightsTelemetry(instrumentationKey)
                 .AddCorrelationIdFluent()
 
                 ////.AddHttpsRedirection(options =>
@@ -87,21 +81,18 @@ namespace YA.TenantWorker
                 ////})
 
                 .AddCustomCaching()
+                .AddCustomCors()
                 .AddCustomOptions(_config)
                 .AddCustomRouting()
                 .AddResponseCaching()
-                .AddCustomResponseCompression()
+                .AddCustomResponseCompression(_config)
                 .AddCustomHealthChecks(_config)
                 .AddCustomSwagger()
                 .AddHttpContextAccessor()
 
                 .AddSingleton<IActionContextAccessor, ActionContextAccessor>()
 
-                .AddCustomApiVersioning()
-                .AddVersionedApiExplorer(x =>
-                    {
-                        x.GroupNameFormat = "'v'VVV"; // Version format: 'v'major[.minor][-status]
-                    });
+                .AddCustomApiVersioning();
 
             services.AddAuthenticationCore(o =>
             {
@@ -110,19 +101,14 @@ namespace YA.TenantWorker
             });
 
             services
-                .AddMvcCore(options => options.EnableEndpointRouting = false)
-                    .SetCompatibilityVersion(CompatibilityVersion.Version_3_0)
-                    .AddApiExplorer()
-                    .AddAuthorization(options => options.AddPolicy("MustBeAdministrator", policy => policy.RequireClaim(CustomClaimNames.role,  "Administrator")))
-                    .AddDataAnnotations()
-                    .AddNewtonsoftJson(options =>
-                    {
-                        options.SerializerSettings.Converters.Add(new StringEnumConverter());
-                        options.SerializerSettings.DateParseHandling = DateParseHandling.DateTimeOffset;
-                    })
-                    .AddCustomJsonOptions(_hostingEnvironment)
-                    .AddCustomCors()
-                    .AddCustomMvcOptions();
+                .AddControllers()
+                    .AddCustomJsonOptions(_webHostEnvironment)
+                    // Adds the XML input and output formatter using the DataContractSerializer.
+                    ////.AddXmlDataContractSerializerFormatters()
+                    .AddCustomMvcOptions(_config);
+
+            services
+                .AddAuthorization(options => options.AddPolicy("MustBeAdministrator", policy => policy.RequireClaim(CustomClaimNames.role, "Administrator")));
 
             services
                 .AddProjectCommands()
@@ -136,7 +122,7 @@ namespace YA.TenantWorker
                     options.UseSqlServer(connectionString, sqlOptions => 
                         sqlOptions.EnableRetryOnFailure().CommandTimeout(60))
                     .ConfigureWarnings(x => x.Throw(RelationalEventId.QueryPossibleExceptionWithAggregateOperatorWarning))
-                    .EnableSensitiveDataLogging(_hostingEnvironment.IsDevelopment()));
+                    .EnableSensitiveDataLogging(_webHostEnvironment.IsDevelopment()));
                     //// useful for API-related projects that only read data
                     //// we don't need query tracking if dbcontext is disposed on every request
                     //.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking));
@@ -228,17 +214,18 @@ namespace YA.TenantWorker
                 
                 .UseHttpContextLogging()
 
-                .UseStaticFilesWithCacheControl()
+                
                 .UseRouting()
-
                 .UseCors(CorsPolicyName.AllowAny)
+                .UseStaticFilesWithCacheControl()
+
+                .UseCustomSerilogRequestLogging()
 
                 ////.UseIf(
-                ////    !_hostingEnvironment.IsDevelopment(),
+                ////    !_webHostEnvironment.IsDevelopment(),
                 ////    x => x.UseHsts())
 
-                ////.UseIf(
-                ////    _hostingEnvironment.IsDevelopment(),
+                ////.UseIf(_webHostEnvironment.IsDevelopment(),
                 ////    x => x.UseDeveloperErrorPages())
 
                 ////.UseHttpsRedirection()
@@ -248,22 +235,22 @@ namespace YA.TenantWorker
 
                 .UseEndpoints(endpoints =>
                 {
-                    endpoints.MapControllers();
+                    endpoints.MapControllers().RequireCors(CorsPolicyName.AllowAny);
                     endpoints.MapHealthChecks("/status", new HealthCheckOptions()
                     {
                         ResponseWriter = HealthResponse.WriteResponse
-                    });
+                    }).RequireCors(CorsPolicyName.AllowAny);
                     endpoints.MapHealthChecks("/status/ready", new HealthCheckOptions()
                     {
                         Predicate = (check) => check.Tags.Contains("ready"),
                         ResponseWriter = HealthResponse.WriteResponse
-                    });
+                    }).RequireCors(CorsPolicyName.AllowAny);
                     endpoints.MapHealthChecks("/status/live", new HealthCheckOptions()
                     {
                         // Exclude all checks and return a 200-Ok.
                         Predicate = (_) => false,
                         ResponseWriter = HealthResponse.WriteResponse
-                    });
+                    }).RequireCors(CorsPolicyName.AllowAny);
                 })
 
                 .UseSwagger()

@@ -13,7 +13,8 @@ using Serilog.Core;
 using Serilog.Events;
 using Serilog.Exceptions;
 using Serilog.Exceptions.Core;
-using Serilog.Exceptions.SqlServer.Destructurers;
+using Serilog.Exceptions.EntityFrameworkCore.Destructurers;
+using Serilog.Sinks.ApplicationInsights.Sinks.ApplicationInsights.TelemetryConverters;
 using System;
 using System.Diagnostics;
 using System.IO;
@@ -54,6 +55,8 @@ namespace YA.TenantWorker
         {
             Console.OutputEncoding = System.Text.Encoding.UTF8;
 
+            Activity.DefaultIdFormat = ActivityIdFormat.W3C;
+
             GetEnvironmentInfo();
 
             Directory.CreateDirectory(Path.Combine(RootPath, General.AppDataFolderName));
@@ -79,7 +82,7 @@ namespace YA.TenantWorker
 
             try
             {
-                Log.Logger = BuildLogger(host);
+                Log.Logger = CreateLogger(host);
             }
             catch (Exception e)
             {
@@ -111,75 +114,32 @@ namespace YA.TenantWorker
 
         private static IHostBuilder CreateHostBuilder(string[] args)
         {
-            return Host.CreateDefaultBuilder(args).ConfigureWebHostDefaults(webBuilder =>
-            {
-                webBuilder
-                .UseIf(
-                    x => string.IsNullOrEmpty(x.GetSetting(WebHostDefaults.ContentRootKey)),
-                    x => x.UseContentRoot(Directory.GetCurrentDirectory()))
-                .UseIf(
-                    args != null,
-                    x => x.UseConfiguration(new ConfigurationBuilder().AddCommandLine(args).Build()))
+            IHostBuilder hostBuilder = new HostBuilder().UseContentRoot(Directory.GetCurrentDirectory());
+            hostBuilder
+                .ConfigureHostConfiguration(
+                    configurationBuilder => configurationBuilder
+                        .AddEnvironmentVariables(prefix: "DOTNET_")
+                        .AddIf(
+                            args != null,
+                            x => x.AddCommandLine(args)))
                 .ConfigureAppConfiguration((hostingContext, config) =>
-                {
-                    AddConfiguration(config, hostingContext.HostingEnvironment, args);
-
-                    // <##Azure Key Vault
-                    // disable telemetry to speed up the process - https://docs.microsoft.com/en-us/cli/azure/azure-cli-configuration?view=azure-cli-latest#cli-configuration-values-and-environment-variables
-                    string keyVaultEndpoint = null;
-                    string clientId = Environment.GetEnvironmentVariable("KeyVaultAppClientId");
-                    string clientSecret = Environment.GetEnvironmentVariable("KeyVaultAppClientSecret");
-
-                    if (hostingContext.HostingEnvironment.IsDevelopment())
-                    {
-                        Console.WriteLine("Hosting environment is Development");
-                        keyVaultEndpoint = General.DevelopmentKeyVault;
-
-                        IgnoreInvalidCertificates();
-                    }
-                    else if (hostingContext.HostingEnvironment.IsProduction())
-                    {
-                        Console.WriteLine("Hosting environment is Production");
-                        keyVaultEndpoint = General.ProductionKeyVault;
-                    }
-
-                    if (!string.IsNullOrEmpty(keyVaultEndpoint))
-                    {
-                        KeyVaultClient keyVaultClient;
-
-                        if (!string.IsNullOrEmpty(clientId) && !string.IsNullOrEmpty(clientSecret)) // connect via App Registration
-                        {
-                            keyVaultClient = new KeyVaultClient(async (authority, resource, scope) =>
-                            {
-                                ClientCredential adCredential = new ClientCredential(clientId, clientSecret);
-                                AuthenticationContext authenticationContext = new AuthenticationContext(authority, null);
-                                AuthenticationResult authResult = await authenticationContext.AcquireTokenAsync(resource, adCredential);
-
-                                if (authResult == null)
-                                {
-                                    throw new Exception("Failed to obtain Azure Key Vault JWT token");
-                                }
-
-                                return authResult.AccessToken;
-                            });
-                        }
-                        else // connect via Azure Token Provider
-                        {
-                            AzureServiceTokenProvider azureServiceTokenProvider = new AzureServiceTokenProvider();
-                            keyVaultClient = new KeyVaultClient(
-                                    new KeyVaultClient.AuthenticationCallback(azureServiceTokenProvider.KeyVaultTokenCallback));
-                        }
-
-                        config.AddAzureKeyVault(keyVaultEndpoint, keyVaultClient, new DefaultKeyVaultSecretManager());
-                    }
-                    // Azure Key Vault##>
-                })
+                    AddConfiguration(config, hostingContext.HostingEnvironment, args))
                 .UseSerilog()
-                .UseDefaultServiceProvider((context, options) =>
-                {
-                    options.ValidateOnBuild = true;
-                    options.ValidateScopes = context.HostingEnvironment.IsDevelopment();
-                })
+                .UseDefaultServiceProvider(
+                    (context, options) =>
+                    {
+                        var isDevelopment = context.HostingEnvironment.IsDevelopment();
+                        options.ValidateScopes = isDevelopment;
+                        options.ValidateOnBuild = isDevelopment;
+                    })
+                .ConfigureWebHost(ConfigureWebHostBuilder);
+
+            return hostBuilder;
+        }
+
+        private static void ConfigureWebHostBuilder(IWebHostBuilder webHostBuilder)
+        {
+            webHostBuilder
                 .UseKestrel(
                     (builderContext, options) =>
                     {
@@ -198,28 +158,78 @@ namespace YA.TenantWorker
                 .UseIIS()
                 .UseShutdownTimeout(TimeSpan.FromSeconds(General.SystemShutdownTimeoutSec))
                 .UseStartup<Startup>();
-            });
         }
 
-        private static IConfigurationBuilder AddConfiguration(IConfigurationBuilder configurationBuilder, IWebHostEnvironment hostingEnvironment, string[] args)
+        private static IConfigurationBuilder AddConfiguration(IConfigurationBuilder configurationBuilder, IHostEnvironment hostingEnvironment, string[] args)
         {
             configurationBuilder
                 .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-                .AddJsonFile($"appsettings.{hostingEnvironment.EnvironmentName}.json", optional: true,
-                    reloadOnChange: true)
+                .AddJsonFile($"appsettings.{hostingEnvironment.EnvironmentName}.json", optional: true, reloadOnChange: true)
                 // Add configuration specific to Development, Staging or Production environments
                 // (launchSettings.json for development or Application Settings for Azure)
                 .AddEnvironmentVariables()
+
+                .AddApplicationInsightsSettings(developerMode: !hostingEnvironment.IsProduction())
 
                 // Add command line options. These take the highest priority.
                 .AddIf(
                     args != null,
                     x => x.AddCommandLine(args));
 
+            // <##Azure Key Vault
+            // disable telemetry to speed up the process - https://docs.microsoft.com/en-us/cli/azure/azure-cli-configuration?view=azure-cli-latest#cli-configuration-values-and-environment-variables
+            string keyVaultEndpoint = null;
+            string clientId = Environment.GetEnvironmentVariable("KeyVaultAppClientId");
+            string clientSecret = Environment.GetEnvironmentVariable("KeyVaultAppClientSecret");
+
+            if (hostingEnvironment.IsDevelopment())
+            {
+                Console.WriteLine("Hosting environment is Development");
+                keyVaultEndpoint = General.DevelopmentKeyVault;
+
+                IgnoreInvalidCertificates();
+            }
+            else if (hostingEnvironment.IsProduction())
+            {
+                Console.WriteLine("Hosting environment is Production");
+                keyVaultEndpoint = General.ProductionKeyVault;
+            }
+
+            if (!string.IsNullOrEmpty(keyVaultEndpoint))
+            {
+                KeyVaultClient keyVaultClient;
+
+                if (!string.IsNullOrEmpty(clientId) && !string.IsNullOrEmpty(clientSecret)) // connect via App Registration
+                {
+                    keyVaultClient = new KeyVaultClient(async (authority, resource, scope) =>
+                    {
+                        ClientCredential adCredential = new ClientCredential(clientId, clientSecret);
+                        AuthenticationContext authenticationContext = new AuthenticationContext(authority, null);
+                        AuthenticationResult authResult = await authenticationContext.AcquireTokenAsync(resource, adCredential);
+
+                        if (authResult == null)
+                        {
+                            throw new Exception("Failed to obtain Azure Key Vault JWT token");
+                        }
+
+                        return authResult.AccessToken;
+                    });
+                }
+                else // connect via Azure Token Provider
+                {
+                    AzureServiceTokenProvider azureServiceTokenProvider = new AzureServiceTokenProvider();
+                    keyVaultClient = new KeyVaultClient(
+                            new KeyVaultClient.AuthenticationCallback(azureServiceTokenProvider.KeyVaultTokenCallback));
+                }
+
+                configurationBuilder.AddAzureKeyVault(keyVaultEndpoint, keyVaultClient, new DefaultKeyVaultSecretManager());
+            }
+            // Azure Key Vault##>
+
             return configurationBuilder;
         }
 
-        private static Logger BuildLogger(IHost host)
+        private static Logger CreateLogger(IHost host)
         {
             IConfiguration configuration = host.Services.GetRequiredService<IConfiguration>();
             KeyVaultSecrets secrets = configuration.Get<KeyVaultSecrets>();
@@ -245,7 +255,7 @@ namespace YA.TenantWorker
 
             if (!string.IsNullOrEmpty(secrets.AppInsightsInstrumentationKey))
             {
-                loggerConfig.WriteTo.ApplicationInsightsTraces(secrets.AppInsightsInstrumentationKey, LogEventLevel.Debug);
+                loggerConfig.WriteTo.ApplicationInsights(secrets.AppInsightsInstrumentationKey, new TraceTelemetryConverter(), LogEventLevel.Debug);
             }
 
             if (!string.IsNullOrEmpty(secrets.LogzioToken))
@@ -293,7 +303,8 @@ namespace YA.TenantWorker
             //Azure App Service add > 20 headers
             limits.MaxRequestHeaderCount = sourceLimits.MaxRequestHeaderCount;
             limits.MaxRequestHeadersTotalSize = sourceLimits.MaxRequestHeadersTotalSize;
-            limits.MaxRequestLineSize = sourceLimits.MaxRequestLineSize;
+            //https://github.com/aspnet/AspNetCore/issues/12614
+            limits.MaxRequestLineSize = sourceLimits.MaxRequestLineSize - 10;
             limits.MaxResponseBufferSize = sourceLimits.MaxResponseBufferSize;
             limits.MinRequestBodyDataRate = sourceLimits.MinRequestBodyDataRate;
             limits.MinResponseDataRate = sourceLimits.MinResponseDataRate;

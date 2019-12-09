@@ -13,6 +13,7 @@ using YA.TenantWorker.Application.Models.ViewModels;
 using YA.TenantWorker.Application.Models.ValueObjects;
 using YA.TenantWorker.Constants;
 using Microsoft.AspNetCore.Authorization;
+using YA.TenantWorker.Application.Models.Dto;
 
 namespace YA.TenantWorker.Controllers
 {
@@ -21,18 +22,18 @@ namespace YA.TenantWorker.Controllers
     /// </summary>
     [Route("[controller]")]
     [ApiController]
-    [ApiVersion("1.0")]
+    [ApiVersion(ApiVersionName.V1)]
     [Authorize]
     [ServiceFilter(typeof(ApiRequestFilter))]
     [SwaggerResponse(StatusCodes.Status403Forbidden)]
-    [SwaggerResponse(StatusCodes.Status500InternalServerError, HttpCodeMessages.Code500ErrorMessage, typeof(ApiError))]
+    [SwaggerResponse(StatusCodes.Status500InternalServerError, HttpCodeMessages.Code500ErrorMessage, typeof(ApiProblemDetails))]
     public class TenantsController : ControllerBase
     {
         /// <summary>
         /// Return Allow HTTP header with allowed HTTP methods.
         /// </summary>
         /// <returns>200 OK response.</returns>
-        [HttpOptions]
+        [HttpOptions(Name = RouteNames.OptionsTenants)]
         [SwaggerResponse(StatusCodes.Status200OK, "Allowed HTTP methods.")]
         public IActionResult Options()
         {
@@ -49,7 +50,7 @@ namespace YA.TenantWorker.Controllers
         /// Return Allow HTTP header with allowed HTTP methods for current tenant.
         /// </summary>
         /// <returns>200 OK response.</returns>
-        [HttpOptions("tenant")]
+        [HttpOptions("tenant", Name = RouteNames.OptionsTenant)]
         [SwaggerResponse(StatusCodes.Status200OK, "Allowed HTTP methods.")]
         [SwaggerResponse(StatusCodes.Status404NotFound, "Tenant could not be found.")]
         public IActionResult OptionsTenant()
@@ -78,7 +79,8 @@ namespace YA.TenantWorker.Controllers
         [SwaggerResponse(StatusCodes.Status200OK, "Current tenant.", typeof(TenantVm))]
         [SwaggerResponse(StatusCodes.Status304NotModified, "The tenant has not changed since the date given in the If-Modified-Since HTTP header.")]
         [SwaggerResponse(StatusCodes.Status404NotFound, "Current tenant could not be found.")]
-        [SwaggerResponse(StatusCodes.Status409Conflict, "Duplicate request.", typeof(ApiError))]
+        [SwaggerResponse(StatusCodes.Status406NotAcceptable, "The MIME type in the Accept HTTP header is not acceptable.", typeof(ProblemDetails))]
+        [SwaggerResponse(StatusCodes.Status409Conflict, "Duplicate request.", typeof(ApiProblemDetails))]
         public Task<IActionResult> GetTenant([FromServices] IGetTenantCommand command, CancellationToken cancellationToken)
         {
             return command.ExecuteAsync(cancellationToken);
@@ -97,9 +99,10 @@ namespace YA.TenantWorker.Controllers
         [HttpHead("", Name = RouteNames.HeadTenantPage)]
         [Authorize(Policy = "MustBeAdministrator")]
         [SwaggerResponse(StatusCodes.Status200OK, "Collection of tenants for the specified page.", typeof(PaginatedResult<TenantVm>))]
-        [SwaggerResponse(StatusCodes.Status400BadRequest, "Page request parameters are invalid.")]
-        [SwaggerResponse(StatusCodes.Status404NotFound, "Page with the specified page number was not found.")]
-        [SwaggerResponse(StatusCodes.Status409Conflict, "Duplicate request.", typeof(ApiError))]
+        [SwaggerResponse(StatusCodes.Status400BadRequest, "Page request parameters are invalid.", typeof(ProblemDetails))]
+        [SwaggerResponse(StatusCodes.Status404NotFound, "Page with the specified page number was not found.", typeof(ProblemDetails))]
+        [SwaggerResponse(StatusCodes.Status406NotAcceptable, "The MIME type in the Accept HTTP header is not acceptable.", typeof(ProblemDetails))]
+        [SwaggerResponse(StatusCodes.Status409Conflict, "Duplicate request.", typeof(ApiProblemDetails))]
         public Task<IActionResult> GetTenantPage(
             [FromServices] IGetTenantPageCommand command,
             [FromQuery] PageOptions pageOptions,
@@ -119,8 +122,10 @@ namespace YA.TenantWorker.Controllers
         /// or 409 Conflict if the request is a duplicate.</returns>
         [HttpPost("", Name = RouteNames.PostTenant)]
         [SwaggerResponse(StatusCodes.Status201Created, "Tenant was created.", typeof(TenantVm))]
-        [SwaggerResponse(StatusCodes.Status400BadRequest, "Request is invalid.")]
-        [SwaggerResponse(StatusCodes.Status409Conflict, "Duplicate request.", typeof(ApiError))]
+        [SwaggerResponse(StatusCodes.Status400BadRequest, "Request is invalid.", typeof(ProblemDetails))]
+        [SwaggerResponse(StatusCodes.Status406NotAcceptable, "The MIME type in the Accept HTTP header is not acceptable.", typeof(ProblemDetails))]
+        [SwaggerResponse(StatusCodes.Status409Conflict, "Duplicate request.", typeof(ApiProblemDetails))]        
+        [SwaggerResponse(StatusCodes.Status415UnsupportedMediaType, "The MIME type in the Content-Type HTTP header is unsupported.", typeof(ProblemDetails))]
         public Task<IActionResult> PostTenant(
             [FromServices] IPostTenantCommand command,
             [FromBody] TenantSm tenantSm,
@@ -140,9 +145,11 @@ namespace YA.TenantWorker.Controllers
         /// or 409 Conflict if the request is a duplicate.</returns>
         [HttpPatch("tenant", Name = RouteNames.PatchTenant)]
         [SwaggerResponse(StatusCodes.Status200OK, "Patched current tenant.", typeof(TenantVm))]
-        [SwaggerResponse(StatusCodes.Status400BadRequest, "Patch document is invalid.")]
+        [SwaggerResponse(StatusCodes.Status400BadRequest, "Patch document is invalid.", typeof(ProblemDetails))]
         [SwaggerResponse(StatusCodes.Status404NotFound, "Tenant could not be found.")]
-        [SwaggerResponse(StatusCodes.Status409Conflict, "Duplicate request.", typeof(ApiError))]
+        [SwaggerResponse(StatusCodes.Status406NotAcceptable, "The MIME type in the Accept HTTP header is not acceptable.", typeof(ProblemDetails))]
+        [SwaggerResponse(StatusCodes.Status409Conflict, "Duplicate request.", typeof(ApiProblemDetails))]
+        [SwaggerResponse(StatusCodes.Status415UnsupportedMediaType, "The MIME type in the Content-Type HTTP header is unsupported.", typeof(ProblemDetails))]
         public Task<IActionResult> PatchTenant(
             [FromServices] IPatchTenantCommand command,
             [FromBody] JsonPatchDocument<TenantSm> patch,
@@ -164,7 +171,7 @@ namespace YA.TenantWorker.Controllers
         [Authorize(Policy = "MustBeAdministrator")]
         [SwaggerResponse(StatusCodes.Status204NoContent, "Tenant with the specified unique identifier was deleted.")]
         [SwaggerResponse(StatusCodes.Status404NotFound, "Tenant with the specified unique identifier was not found.")]
-        [SwaggerResponse(StatusCodes.Status409Conflict, "Duplicate request.", typeof(ApiError))]
+        [SwaggerResponse(StatusCodes.Status409Conflict, "Duplicate request.", typeof(ApiProblemDetails))]
         public Task<IActionResult> DeleteTenant(
             [FromServices] IDeleteTenantCommand command,
             Guid tenantId,

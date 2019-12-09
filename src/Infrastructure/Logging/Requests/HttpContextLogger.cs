@@ -1,16 +1,18 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using CorrelationId;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json;
 using Serilog;
 using Serilog.Context;
 using YA.TenantWorker.Application.Enums;
 using YA.TenantWorker.Application.Models.Dto;
-using YA.TenantWorker.Application.Models.ValueObjects;
 using YA.TenantWorker.Constants;
 
 namespace YA.TenantWorker.Infrastructure.Logging.Requests
@@ -27,7 +29,7 @@ namespace YA.TenantWorker.Infrastructure.Logging.Requests
 
         readonly RequestDelegate _next;
 
-        public async Task InvokeAsync(HttpContext httpContext, ICorrelationContextAccessor correlationContextAccessor)
+        public async Task InvokeAsync(HttpContext httpContext, IHostEnvironment env, ICorrelationContextAccessor correlationContextAccessor)
         {
             HttpContext context = httpContext ?? throw new ArgumentNullException(nameof(httpContext));
             
@@ -64,17 +66,26 @@ namespace YA.TenantWorker.Infrastructure.Logging.Requests
                 catch (Exception ex)
                 {
                     string errorMessage = ex.Message;
-                    Log.Error(ex, "{ErrorMessage}", errorMessage);
+                    Log.Error(ex.Demystify(), "{ErrorMessage}", errorMessage);
 
-                    ApiError unknownError = new ApiError(
-                        ApiErrorTypes.Exception,
-                        ApiErrorCodes.INTERNAL_SERVER_ERROR,
-                        errorMessage,
-                        correlationContextAccessor.CorrelationContext.CorrelationId);
+                    ApiProblemDetails unknownError;
+
+                    if (env.IsDevelopment())
+                    {
+                        unknownError = new ApiProblemDetails("https://tools.ietf.org/html/rfc7231#section-6.6.1", StatusCodes.Status500InternalServerError,
+                            context.Request.HttpContext.Request.Path, errorMessage, ex.Demystify().StackTrace, correlationContextAccessor.CorrelationContext.CorrelationId,
+                            context.Request.HttpContext.TraceIdentifier);
+                    }
+                    else
+                    {
+                        unknownError = new ApiProblemDetails("https://tools.ietf.org/html/rfc7231#section-6.6.1", StatusCodes.Status500InternalServerError,
+                            context.Request.HttpContext.Request.Path, errorMessage, null, correlationContextAccessor.CorrelationContext.CorrelationId,
+                            context.Request.HttpContext.TraceIdentifier);
+                    }
 
                     string errorResponseBody = JsonConvert.SerializeObject(unknownError);
-                    context.Response.ContentType = "application/json";
-                    context.Response.StatusCode = 500;
+                    context.Response.ContentType = "application/problem+json";
+                    context.Response.StatusCode = StatusCodes.Status500InternalServerError;
 
                     await context.Response.WriteAsync(errorResponseBody);
                 }
@@ -83,11 +94,11 @@ namespace YA.TenantWorker.Infrastructure.Logging.Requests
                 string responseBody = await new StreamReader(context.Response.Body).ReadToEndAsync();
                 context.Response.Body.Seek(0, SeekOrigin.Begin);
 
-                if (responseBody.Contains("traceId"))
+                if (Enumerable.Range(400, 599).Contains(context.Response.StatusCode) && responseBody.Contains("traceId", StringComparison.InvariantCultureIgnoreCase))
                 {
                     LogContext.PushProperty(Logs.TraceId, GetTraceId(responseBody));
                 }
-                
+
                 string endResponseBody = (responseBody.Length > General.MaxLogFieldLength) ?
                     responseBody.Substring(0, General.MaxLogFieldLength) : responseBody;
 
@@ -101,8 +112,8 @@ namespace YA.TenantWorker.Infrastructure.Logging.Requests
 
         private static string GetTraceId(string problemDetails)
         {
-            Rfc7807ProblemDetails problem = JsonConvert.DeserializeObject<Rfc7807ProblemDetails>(problemDetails);
-            return problem.TraceId;
+            ApiProblemDetails problem = JsonConvert.DeserializeObject<ApiProblemDetails>(problemDetails);
+            return problem.TraceId?.ToString();
         }
     }
 }

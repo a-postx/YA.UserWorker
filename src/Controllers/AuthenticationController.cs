@@ -6,8 +6,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using YA.TenantWorker.Application.ActionFilters;
 using YA.TenantWorker.Application.Commands;
+using YA.TenantWorker.Application.Models.Dto;
 using YA.TenantWorker.Application.Models.SaveModels;
-using YA.TenantWorker.Application.Models.ValueObjects;
 using YA.TenantWorker.Application.Models.ViewModels;
 using YA.TenantWorker.Constants;
 
@@ -15,7 +15,7 @@ namespace YA.TenantWorker.Controllers
 {
     [Route("[controller]")]
     [ApiController]
-    [ApiVersion("1.0")]
+    [ApiVersion(ApiVersionName.V1)]
     [ServiceFilter(typeof(ApiRequestFilter))]
     public class AuthenticationController : Controller
     {
@@ -32,7 +32,7 @@ namespace YA.TenantWorker.Controllers
         [HttpPost("", Name = RouteNames.GetToken)]
         [SwaggerResponse(StatusCodes.Status200OK, "Token has been created.", typeof(TokenVm))]
         [SwaggerResponse(StatusCodes.Status400BadRequest, "Request is invalid.")]
-        [SwaggerResponse(StatusCodes.Status409Conflict, "Duplicate request.", typeof(ApiError))]
+        [SwaggerResponse(StatusCodes.Status409Conflict, "Duplicate request.", typeof(ApiProblemDetails))]
         public Task<IActionResult> GetToken(
             [FromServices] IAuthenticateCommand command,
             [FromBody] CredentialsSm credentials,

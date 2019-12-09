@@ -42,7 +42,7 @@ namespace YA.TenantWorker.Application.Commands
             {
                 return new BadRequestResult();
             }
-
+            
             Tenant tenant = await _dbContext.GetEntityAsync<Tenant>(e => e.TenantID == tenantId, cancellationToken);
 
             if (tenant == null)
