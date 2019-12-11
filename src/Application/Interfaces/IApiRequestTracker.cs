@@ -7,7 +7,7 @@ using YA.TenantWorker.Core.Entities;
 
 namespace YA.TenantWorker.Application.Interfaces
 {
-    public interface IApiRequestManager
+    public interface IApiRequestTracker
     {
         Task<(bool created, ApiRequest request)> GetOrCreateRequestAsync(Guid correlationId, string method, CancellationToken cancellationToken);
         Task SetResultAsync(ApiRequest request, ApiRequestResult requestResult, CancellationToken cancellationToken);

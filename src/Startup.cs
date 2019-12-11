@@ -103,12 +103,11 @@ namespace YA.TenantWorker
             services
                 .AddControllers()
                     .AddCustomJsonOptions(_webHostEnvironment)
-                    // Adds the XML input and output formatter using the DataContractSerializer.
                     ////.AddXmlDataContractSerializerFormatters()
                     .AddCustomMvcOptions(_config);
 
             services
-                .AddAuthorization(options => options.AddPolicy("MustBeAdministrator", policy => policy.RequireClaim(CustomClaimNames.role, "Administrator")));
+                .AddAuthorizationCore(options => options.AddPolicy("MustBeAdministrator", policy => policy.RequireClaim(CustomClaimNames.role, "Administrator")));
 
             services
                 .AddProjectCommands()
@@ -176,7 +175,7 @@ namespace YA.TenantWorker
             
             services.AddScoped<ApiRequestFilter>();
 
-            services.AddScoped<IApiRequestManager, ApiRequestManager>();
+            services.AddScoped<IApiRequestTracker, ApiRequestTracker>();
             services.AddSingleton<ApiRequestMemoryCache>();
         }
 
@@ -213,7 +212,6 @@ namespace YA.TenantWorker
                 .UseResponseCompression()
                 
                 .UseHttpContextLogging()
-
                 
                 .UseRouting()
                 .UseCors(CorsPolicyName.AllowAny)

@@ -10,16 +10,20 @@ using YA.TenantWorker.Core.Entities;
 
 namespace YA.TenantWorker.Infrastructure.Caching
 {
-    public class ApiRequestManager : IApiRequestManager
+    /// <summary>
+    /// Track API request state.
+    /// TODO: change store to a high write throughput one (Redis, Mongo etc.) or leave just in-memory caching
+    /// </summary>
+    public class ApiRequestTracker : IApiRequestTracker
     {
-        public ApiRequestManager(ILogger<ApiRequestManager> logger, ApiRequestMemoryCache apiRequestCache, ITenantWorkerDbContext workerDbContext)
+        public ApiRequestTracker(ILogger<ApiRequestTracker> logger, ApiRequestMemoryCache apiRequestCache, ITenantWorkerDbContext workerDbContext)
         {
             _log = logger ?? throw new ArgumentNullException(nameof(logger));
             _apiRequestCache = apiRequestCache ?? throw new ArgumentNullException(nameof(apiRequestCache));
             _dbContext = workerDbContext ?? throw new ArgumentNullException(nameof(workerDbContext));
         }
 
-        private readonly ILogger<ApiRequestManager> _log;
+        private readonly ILogger<ApiRequestTracker> _log;
         private readonly ApiRequestMemoryCache _apiRequestCache;
         private readonly ITenantWorkerDbContext _dbContext;
         

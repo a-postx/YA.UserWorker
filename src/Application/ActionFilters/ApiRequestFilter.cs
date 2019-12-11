@@ -10,20 +10,22 @@ using System.Threading.Tasks;
 using YA.TenantWorker.Application.Enums;
 using YA.TenantWorker.Application.Interfaces;
 using YA.TenantWorker.Application.Models.Dto;
-using YA.TenantWorker.Application.Models.ValueObjects;
 using YA.TenantWorker.Constants;
 using YA.TenantWorker.Core.Entities;
 
 namespace YA.TenantWorker.Application.ActionFilters
 {
+    /// <summary>
+    /// Idempotency filter: saves request and result to return the same result in case of duplicate request.
+    /// </summary>
     public sealed class ApiRequestFilter : ActionFilterAttribute
     {
-        public ApiRequestFilter(IApiRequestManager apiRequestManager)
+        public ApiRequestFilter(IApiRequestTracker apiRequestTracker)
         {
-            _apiRequestManager = apiRequestManager ?? throw new ArgumentNullException(nameof(apiRequestManager));
+            _apiRequestTracker = apiRequestTracker ?? throw new ArgumentNullException(nameof(apiRequestTracker));
         }
 
-        private readonly IApiRequestManager _apiRequestManager;
+        private readonly IApiRequestTracker _apiRequestTracker;
 
         public override async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
         {
@@ -108,7 +110,7 @@ namespace YA.TenantWorker.Application.ActionFilters
                                 Body = JToken.Parse(JsonConvert.SerializeObject(objectRequestResult.Value)).ToString(Formatting.None)
                             };
 
-                            await _apiRequestManager.SetResultAsync(request, problemResult, cts.Token);
+                            await _apiRequestTracker.SetResultAsync(request, problemResult, cts.Token);
                         }   
                     }
                     else
@@ -120,7 +122,7 @@ namespace YA.TenantWorker.Application.ActionFilters
                                 StatusCode = okResult.StatusCode
                             };
 
-                            await _apiRequestManager.SetResultAsync(request, result, cts.Token);
+                            await _apiRequestTracker.SetResultAsync(request, result, cts.Token);
                         }
                     }
                 }
@@ -133,7 +135,7 @@ namespace YA.TenantWorker.Application.ActionFilters
         {
             Guid correlationId = headers.GetCorrelationId(General.CorrelationIdHeader);
 
-            return (correlationId == Guid.Empty) ? (false, null) : await _apiRequestManager
+            return (correlationId == Guid.Empty) ? (false, null) : await _apiRequestTracker
                 .GetOrCreateRequestAsync(correlationId, method, cancellationToken);
         }
     }

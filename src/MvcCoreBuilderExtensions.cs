@@ -1,21 +1,20 @@
-using System.Collections.Generic;
-using System.Linq;
+using Delobytes.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Formatters;
-using Microsoft.Extensions.DependencyInjection;
-using Delobytes.AspNetCore;
-using YA.TenantWorker.Constants;
-using YA.TenantWorker.Options;
-using Microsoft.Extensions.Hosting;
-using System.Text.Json.Serialization;
-using System.Text.Json;
 using Microsoft.Extensions.Configuration;
-using System;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
+using System.Linq;
 using System.Text.Encodings.Web;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Text.Unicode;
-using Microsoft.AspNetCore.JsonPatch;
+using YA.TenantWorker.Options;
 
 namespace YA.TenantWorker
 {
@@ -27,87 +26,106 @@ namespace YA.TenantWorker
         public static IMvcBuilder AddCustomJsonOptions(this IMvcBuilder builder, IWebHostEnvironment webHostEnvironment)
         {
             return builder.AddJsonOptions(options =>
+            {
+                JsonSerializerOptions jsonSerializerOptions = options.JsonSerializerOptions;
+                if (webHostEnvironment.IsDevelopment())
                 {
-                    var jsonSerializerOptions = options.JsonSerializerOptions;
-                    if (webHostEnvironment.IsDevelopment())
-                    {
-                        // Pretty print the JSON in development for easier debugging.
-                        jsonSerializerOptions.WriteIndented = true;
-                    }
+                    // Pretty print the JSON in development for easier debugging.
+                    jsonSerializerOptions.WriteIndented = true;
+                }
 
-                    jsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
-                    jsonSerializerOptions.DictionaryKeyPolicy = JsonNamingPolicy.CamelCase;
-                    jsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
-                    jsonSerializerOptions.Encoder = JavaScriptEncoder.Create(UnicodeRanges.All);
-                });
+                jsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+                jsonSerializerOptions.DictionaryKeyPolicy = JsonNamingPolicy.CamelCase;
+                jsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+                jsonSerializerOptions.Encoder = JavaScriptEncoder.Create(UnicodeRanges.All);
+            });
         }
 
         public static IMvcBuilder AddCustomMvcOptions(this IMvcBuilder builder, IConfiguration configuration)
         {
             return builder.AddMvcOptions(options =>
+            {
+                // Controls how controller actions cache content from the appsettings.json file.
+                foreach (var keyValuePair in configuration
+                    .GetSection(nameof(ApplicationOptions.CacheProfiles))
+                    .Get<CacheProfileOptions>())
                 {
-                    // Controls how controller actions cache content from the appsettings.json file.
-                    foreach (var keyValuePair in configuration
-                        .GetSection(nameof(ApplicationOptions.CacheProfiles))
-                        .Get<CacheProfileOptions>())
-                    {
-                        options.CacheProfiles.Add(keyValuePair);
-                    }
+                    options.CacheProfiles.Add(keyValuePair);
+                }
 
-                    // Remove plain text (text/plain) output formatter.
-                    options.OutputFormatters.RemoveType<StringOutputFormatter>();
+                // Remove plain text (text/plain) output formatter.
+                options.OutputFormatters.RemoveType<StringOutputFormatter>();
 
-                    // Add support for JSON Patch (application/json-patch+json) by adding an input formatter.
-                    options.InputFormatters.Insert(0, GetJsonPatchInputFormatter());
+                ////MediaTypeCollection xmlInputFormatterMediaTypes = options
+                ////    .InputFormatters
+                ////    .OfType<XmlDataContractSerializerInputFormatter>()
+                ////    .First()
+                ////    .SupportedMediaTypes;
 
-                    var jsonInputFormatterMediaTypes = options
+                ////MediaTypeCollection xmlOutputFormatterMediaTypes = options
+                ////    .OutputFormatters
+                ////    .OfType<XmlDataContractSerializerOutputFormatter>()
+                ////    .First()
+                ////    .SupportedMediaTypes;
+
+                ////// Remove XML text (text/xml) media type from the XML input and output formatters.
+                ////xmlInputFormatterMediaTypes.Remove("text/xml");
+                ////xmlOutputFormatterMediaTypes.Remove("text/xml");
+
+
+                // Configure System.Text JSON.
+                MediaTypeCollection jsonSystemInputFormatterMediaTypes = options
                         .InputFormatters
                         .OfType<SystemTextJsonInputFormatter>()
                         .First()
                         .SupportedMediaTypes;
-                    var jsonOutputFormatterMediaTypes = options
-                        .OutputFormatters
-                        .OfType<SystemTextJsonOutputFormatter>()
+                MediaTypeCollection jsonSystemOutputFormatterMediaTypes = options
+                    .OutputFormatters
+                    .OfType<SystemTextJsonOutputFormatter>()
+                    .First()
+                    .SupportedMediaTypes;
+
+                // Remove JSON text (text/json) media type from the system JSON input and output formatters.
+                jsonSystemInputFormatterMediaTypes.Remove("text/json");
+                jsonSystemOutputFormatterMediaTypes.Remove("text/json");
+
+                // Add Problem Details media type (application/problem+json) to the JSON input and output formatters.
+                // See https://tools.ietf.org/html/rfc7807
+                jsonSystemOutputFormatterMediaTypes.Insert(0, ContentType.ProblemJson);
+                //xmlOutputFormatterMediaTypes.Insert(0, ContentType.ProblemXml);
+
+                // Add RESTful JSON media type (application/vnd.restful+json) to the JSON input and output formatters.
+                // See http://restfuljson.org/
+                jsonSystemInputFormatterMediaTypes.Insert(0, ContentType.RestfulJson);
+                jsonSystemOutputFormatterMediaTypes.Insert(0, ContentType.RestfulJson);
+
+
+                // Add support for Newtonsoft JSON Patch (application/json-patch+json), configure formatters and make Newtonsoft default.
+                options.InputFormatters.Insert(0, GetJsonPatchInputFormatter());
+                options.InputFormatters.Insert(0, GetJsonInputFormatter());
+                options.OutputFormatters.Insert(0, GetJsonOutputFormatter());
+
+                MediaTypeCollection jsonNewtonsoftInputFormatterMediaTypes = options
+                        .InputFormatters
+                        .OfType<NewtonsoftJsonInputFormatter>()
                         .First()
                         .SupportedMediaTypes;
+                MediaTypeCollection jsonNewtonsoftOutputFormatterMediaTypes = options
+                    .OutputFormatters
+                    .OfType<NewtonsoftJsonOutputFormatter>()
+                    .First()
+                    .SupportedMediaTypes;
 
-                    ////var xmlInputFormatterMediaTypes = options
-                    ////    .InputFormatters
-                    ////    .OfType<XmlDataContractSerializerInputFormatter>()
-                    ////    .First()
-                    ////    .SupportedMediaTypes;
+                jsonNewtonsoftInputFormatterMediaTypes.Remove("text/json");
+                jsonNewtonsoftOutputFormatterMediaTypes.Remove("text/json");
 
-                    ////var xmlOutputFormatterMediaTypes = options
-                    ////    .OutputFormatters
-                    ////    .OfType<XmlDataContractSerializerOutputFormatter>()
-                    ////    .First()
-                    ////    .SupportedMediaTypes;
+                jsonNewtonsoftOutputFormatterMediaTypes.Insert(0, ContentType.ProblemJson);
+                jsonNewtonsoftInputFormatterMediaTypes.Insert(0, ContentType.RestfulJson);
+                jsonNewtonsoftOutputFormatterMediaTypes.Insert(0, ContentType.RestfulJson);
 
-                    ////// Remove XML text (text/xml) media type from the XML input and output formatters.
-                    ////xmlInputFormatterMediaTypes.Remove("text/xml");
-                    ////xmlOutputFormatterMediaTypes.Remove("text/xml");
-
-                    // Remove JSON text (text/json) media type from the JSON input and output formatters.
-                    jsonInputFormatterMediaTypes.Remove("text/json");
-                    jsonOutputFormatterMediaTypes.Remove("text/json");
-
-                    // Add Problem Details media type (application/problem+json) to the JSON input and output formatters.
-                    // See https://tools.ietf.org/html/rfc7807
-                    jsonOutputFormatterMediaTypes.Insert(0, ContentType.ProblemJson);
-                    //xmlOutputFormatterMediaTypes.Insert(0, ContentType.ProblemXml);
-
-                    // Remove string and stream output formatters. These are not useful for an API serving JSON or XML.
-                    //options.OutputFormatters.RemoveType<StreamOutputFormatter>();
-                    //options.OutputFormatters.RemoveType<StringOutputFormatter>();
-
-                    // Add RESTful JSON media type (application/vnd.restful+json) to the JSON input and output formatters.
-                    // See http://restfuljson.org/
-                    jsonInputFormatterMediaTypes.Insert(0, ContentType.RestfulJson);
-                    jsonOutputFormatterMediaTypes.Insert(0, ContentType.RestfulJson);
-
-                    // Returns a 406 Not Acceptable if the MIME type in the Accept HTTP header is not valid.
-                    options.ReturnHttpNotAcceptable = true;
-                });
+                // Returns a 406 Not Acceptable if the MIME type in the Accept HTTP header is not valid.
+                options.ReturnHttpNotAcceptable = true;
+            });
         }
 
         /// <summary>
@@ -121,13 +139,53 @@ namespace YA.TenantWorker
             IServiceCollection services = new ServiceCollection()
                 .AddLogging()
                 .AddMvc()
-                .AddNewtonsoftJson()
+                .AddNewtonsoftJson(options =>
+                {
+                    options.SerializerSettings.Converters.Add(new StringEnumConverter());
+                    options.SerializerSettings.DateParseHandling = DateParseHandling.DateTimeOffset;
+                })
                 .Services;
             ServiceProvider serviceProvider = services.BuildServiceProvider();
             MvcOptions mvcOptions = serviceProvider.GetRequiredService<IOptions<MvcOptions>>().Value;
             return mvcOptions.InputFormatters
                 .OfType<NewtonsoftJsonPatchInputFormatter>()
                 .First();
+        }
+
+        private static NewtonsoftJsonInputFormatter GetJsonInputFormatter()
+        {
+            IServiceCollection services = new ServiceCollection()
+                .AddLogging()
+                .AddMvc()
+                .AddNewtonsoftJson(options =>
+                {
+                    options.SerializerSettings.Converters.Add(new StringEnumConverter());
+                    options.SerializerSettings.DateParseHandling = DateParseHandling.DateTimeOffset;
+                })
+                .Services;
+            ServiceProvider serviceProvider = services.BuildServiceProvider();
+            MvcOptions mvcOptions = serviceProvider.GetRequiredService<IOptions<MvcOptions>>().Value;
+            return mvcOptions.InputFormatters
+                .OfType<NewtonsoftJsonInputFormatter>()
+                .Last();
+        }
+
+        private static NewtonsoftJsonOutputFormatter GetJsonOutputFormatter()
+        {
+            IServiceCollection services = new ServiceCollection()
+                .AddLogging()
+                .AddMvc()
+                .AddNewtonsoftJson(options =>
+                {
+                    options.SerializerSettings.Converters.Add(new StringEnumConverter());
+                    options.SerializerSettings.DateParseHandling = DateParseHandling.DateTimeOffset;
+                })
+                .Services;
+            ServiceProvider serviceProvider = services.BuildServiceProvider();
+            MvcOptions mvcOptions = serviceProvider.GetRequiredService<IOptions<MvcOptions>>().Value;
+            return mvcOptions.OutputFormatters
+                .OfType<NewtonsoftJsonOutputFormatter>()
+                .Last();
         }
     }
 }

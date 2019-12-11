@@ -54,8 +54,9 @@ namespace YA.TenantWorker
         /// Uses custom serilog request logging. Adds additional properties to each log.
         /// See https://github.com/serilog/serilog-aspnetcore.
         /// </summary>
-        public static IApplicationBuilder UseCustomSerilogRequestLogging(this IApplicationBuilder application) =>
-            application.UseSerilogRequestLogging(
+        public static IApplicationBuilder UseCustomSerilogRequestLogging(this IApplicationBuilder application)
+        {
+            return application.UseSerilogRequestLogging(
                 options => options.EnrichDiagnosticContext = (diagnosticContext, httpContext) =>
                 {
                     Endpoint endpoint = httpContext.GetEndpoint();
@@ -65,6 +66,7 @@ namespace YA.TenantWorker
                     diagnosticContext.Set("RequestHost", httpContext.Request.Host.Value);
                     diagnosticContext.Set("RequestScheme", httpContext.Request.Scheme);
                 });
+        }
 
         public static IApplicationBuilder UseCustomSwaggerUI(this IApplicationBuilder application)
         {

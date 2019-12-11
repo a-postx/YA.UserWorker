@@ -54,7 +54,6 @@ namespace YA.TenantWorker
         public static async Task<int> Main(string[] args)
         {
             Console.OutputEncoding = System.Text.Encoding.UTF8;
-
             Activity.DefaultIdFormat = ActivityIdFormat.W3C;
 
             GetEnvironmentInfo();
