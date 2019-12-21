@@ -16,21 +16,19 @@ namespace YA.TenantWorker.Infrastructure.Authentication
 {
     public class YaAuthenticationHandler : IAuthenticationHandler
     {
-        public YaAuthenticationHandler(ILogger<YaAuthenticationHandler> logger)
+        public YaAuthenticationHandler(ILogger<YaAuthenticationHandler> logger, IHttpContextAccessor httpContextAccessor)
         {
             _log = logger ?? throw new ArgumentNullException(nameof(logger));
+            _httpContextAccessor = httpContextAccessor ?? throw new ArgumentNullException(nameof(httpContextAccessor));
         }
 
         private readonly ILogger<YaAuthenticationHandler> _log;
+        private readonly IHttpContextAccessor _httpContextAccessor;
         private AuthenticationScheme _scheme;
-        //убрать поле контекста, если появится многопоточность
-        private HttpContext _context;
         private RequestHeaders _headers;
 
         public Task InitializeAsync(AuthenticationScheme scheme, HttpContext context)
         {
-            _context = context;
-
             RequestHeaders headers = context.Request.GetTypedHeaders();
 
             if (scheme != null && headers != null)
@@ -120,13 +118,15 @@ namespace YA.TenantWorker.Infrastructure.Authentication
 
         public Task ChallengeAsync(AuthenticationProperties properties)
         {
-            _context.Response.Redirect("/authentication");
+            HttpContext context = _httpContextAccessor.HttpContext;
+            context.Response.Redirect("/authentication");
             return Task.CompletedTask;
         }
 
         public Task ForbidAsync(AuthenticationProperties properties)
         {
-            _context.Response.StatusCode = StatusCodes.Status403Forbidden;
+            HttpContext context = _httpContextAccessor.HttpContext;
+            context.Response.StatusCode = StatusCodes.Status403Forbidden;
             return Task.CompletedTask;
         }
     }
