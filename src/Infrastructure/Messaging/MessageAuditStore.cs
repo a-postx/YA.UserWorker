@@ -28,7 +28,7 @@ namespace YA.TenantWorker.Infrastructure.Messaging
                 savedMessage = savedMessage.Substring(0, General.MaxLogFieldLength);
             }
 
-            //CorrelationId being overwritten if exist
+            //CorrelationID being overwritten if exist
             _log.LogInformation("{LogType}{MessageBusContextType}{MessageBusDestinationAddress}{MessageBusSourceAddress}{CorrelationId}{MessageBusConversationId}{MessageBusMessage}",
                 LogTypes.MessageBusMessage.ToString(), metadata.ContextType, metadata.DestinationAddress, metadata.SourceAddress,
                 metadata.CorrelationId, metadata.ConversationId, savedMessage);

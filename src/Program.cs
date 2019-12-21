@@ -38,15 +38,10 @@ namespace YA.TenantWorker
 
     public class Program
     {
-        internal static readonly string AppName = Assembly.GetEntryAssembly().GetName().Name;
-        internal static readonly Version Version = Assembly.GetEntryAssembly().GetName().Version;
+        internal static readonly string AppName = Assembly.GetEntryAssembly()?.GetName().Name;
+        internal static readonly Version Version = Assembly.GetEntryAssembly()?.GetName().Version;
         internal static readonly string RootPath = Path.GetDirectoryName(typeof(Program).Assembly.Location);
-        internal static readonly int ProcessId = Process.GetCurrentProcess().Id;
-        internal static readonly string ProcessName = Process.GetCurrentProcess().ProcessName;
-        internal static readonly string MachineName = Environment.MachineName;
-        internal static readonly string UserName = Environment.UserName;
 
-        internal static string NodeId { get; private set; }
         internal static Countries Country { get; private set; }        
         internal static OsPlatforms OsPlatform { get; private set; }
         internal static string DotNetVersion { get; private set; }
@@ -59,7 +54,7 @@ namespace YA.TenantWorker
             GetEnvironmentInfo();
 
             Directory.CreateDirectory(Path.Combine(RootPath, General.AppDataFolderName));
-            NodeId = Node.Id;
+
 
             IHostBuilder builder = CreateHostBuilder(args);
 
@@ -127,7 +122,7 @@ namespace YA.TenantWorker
                 .UseDefaultServiceProvider(
                     (context, options) =>
                     {
-                        var isDevelopment = context.HostingEnvironment.IsDevelopment();
+                        bool isDevelopment = context.HostingEnvironment.IsDevelopment();
                         options.ValidateScopes = isDevelopment;
                         options.ValidateOnBuild = isDevelopment;
                     })
@@ -230,7 +225,9 @@ namespace YA.TenantWorker
 
         private static Logger CreateLogger(IHost host)
         {
+            IHostEnvironment hostEnv = host.Services.GetRequiredService<IHostEnvironment>();
             IConfiguration configuration = host.Services.GetRequiredService<IConfiguration>();
+
             KeyVaultSecrets secrets = configuration.Get<KeyVaultSecrets>();
 
             LoggerConfiguration loggerConfig = new LoggerConfiguration();
@@ -239,11 +236,12 @@ namespace YA.TenantWorker
                 .ReadFrom.Configuration(configuration)
                 .Enrich.WithProperty("AppName", AppName)
                 .Enrich.WithProperty("Version", Version.ToString())
-                .Enrich.WithProperty("NodeId", NodeId)
-                .Enrich.WithProperty("ProcessId", ProcessId)
-                .Enrich.WithProperty("ProcessName", ProcessName)
-                .Enrich.WithProperty("MachineName", MachineName)
-                .Enrich.WithProperty("EnvironmentUserName", UserName)
+                .Enrich.WithProperty("NodeId", Node.Id)
+                .Enrich.WithProperty("ProcessId", Process.GetCurrentProcess().Id)
+                .Enrich.WithProperty("ProcessName", Process.GetCurrentProcess().ProcessName)
+                .Enrich.WithProperty("MachineName", Environment.MachineName)
+                .Enrich.WithProperty("EnvironmentName", hostEnv.EnvironmentName)
+                .Enrich.WithProperty("EnvironmentUserName", Environment.UserName)
                 .Enrich.WithProperty("OSPlatform", OsPlatform.ToString())
                 .Enrich.FromMassTransitMessage()
                 .Enrich.FromCustomMbEvent()
@@ -331,9 +329,9 @@ namespace YA.TenantWorker
         // See: https://github.com/dotnet/BenchmarkDotNet/issues/448#issuecomment-308424100
         private static string GetNetCoreVersion()
         {
-            var assembly = typeof(GCSettings).Assembly;
-            var assemblyPath = assembly.CodeBase.Split(new[] { '/', '\\' }, StringSplitOptions.RemoveEmptyEntries);
-            var netCoreAppIndex = Array.IndexOf(assemblyPath, "Microsoft.NETCore.App");
+            Assembly assembly = typeof(GCSettings).Assembly;
+            string[] assemblyPath = assembly.CodeBase.Split(new[] { '/', '\\' }, StringSplitOptions.RemoveEmptyEntries);
+            int netCoreAppIndex = Array.IndexOf(assemblyPath, "Microsoft.NETCore.App");
             return netCoreAppIndex > 0 && netCoreAppIndex < assemblyPath.Length - 2
                 ? assemblyPath[netCoreAppIndex + 1]
                 : null;

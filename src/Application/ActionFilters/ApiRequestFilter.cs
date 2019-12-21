@@ -44,20 +44,12 @@ namespace YA.TenantWorker.Application.ActionFilters
 
                 if (!requestCreated)
                 {
-                    if (request != null)
-                    {
-                        ApiProblemDetails apiError = new ApiProblemDetails("https://tools.ietf.org/html/rfc7231#section-6.5.8", StatusCodes.Status409Conflict,
-                            context.HttpContext.Request.HttpContext.Request.Path.Value, "Api call is already exist.", null, request.ApiRequestID.ToString(),
-                            context.HttpContext.Request.HttpContext.TraceIdentifier);
+                    ApiProblemDetails apiError = new ApiProblemDetails("https://tools.ietf.org/html/rfc7231#section-6.5.8", StatusCodes.Status409Conflict,
+                        context.HttpContext.Request.HttpContext.Request.Path.Value, "Api call is already exist.", null, request.ApiRequestID.ToString(),
+                        context.HttpContext.Request.HttpContext.TraceIdentifier);
 
-                        context.Result = new ConflictObjectResult(apiError);
-                        return;
-                    }
-                    else
-                    {
-                        context.Result = new BadRequestResult();
-                        return;
-                    }
+                    context.Result = new ConflictObjectResult(apiError);
+                    return;
                 }
             }
 
@@ -75,10 +67,9 @@ namespace YA.TenantWorker.Application.ActionFilters
 
                 if (request != null)
                 {
-                    if (context.Result is ObjectResult objectRequestResult)
+                    switch (context.Result)
                     {
-                        if (objectRequestResult?.Value is ApiProblemDetails apiError)
-                        {
+                        case ObjectResult objectRequestResult when objectRequestResult.Value is ApiProblemDetails apiError:
                             ////if (apiError.Code == ApiErrorCodes.DUPLICATE_API_CALL)
                             ////{
                             ////    if (request.ResponseBody != null)
@@ -101,8 +92,8 @@ namespace YA.TenantWorker.Application.ActionFilters
                             ////        }
                             ////    }
                             ////}
-                        }
-                        else
+                            break;
+                        case ObjectResult objectRequestResult:
                         {
                             ApiRequestResult problemResult = new ApiRequestResult
                             {
@@ -111,11 +102,9 @@ namespace YA.TenantWorker.Application.ActionFilters
                             };
 
                             await _apiRequestTracker.SetResultAsync(request, problemResult, cts.Token);
-                        }   
-                    }
-                    else
-                    {
-                        if (context.Result is OkResult okResult)
+                            break;
+                        }
+                        case OkResult okResult:
                         {
                             ApiRequestResult result = new ApiRequestResult
                             {
@@ -123,6 +112,7 @@ namespace YA.TenantWorker.Application.ActionFilters
                             };
 
                             await _apiRequestTracker.SetResultAsync(request, result, cts.Token);
+                            break;
                         }
                     }
                 }

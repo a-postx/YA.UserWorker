@@ -8,7 +8,5 @@ namespace YA.TenantWorker.Application.Commands
         {
 
         }
-
-        public Tenant Tenant { get; set; }
     }
 }

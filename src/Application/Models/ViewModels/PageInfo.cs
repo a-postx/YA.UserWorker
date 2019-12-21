@@ -49,7 +49,7 @@ namespace YA.TenantWorker.Application.Models.ViewModels
         /// <returns>The Link HTTP header value.</returns>
         public string ToLinkHttpHeaderValue()
         {
-            var values = new List<string>(4);
+            List<string> values = new List<string>(4);
 
             if (HasNextPage && NextPageUrl != null)
             {

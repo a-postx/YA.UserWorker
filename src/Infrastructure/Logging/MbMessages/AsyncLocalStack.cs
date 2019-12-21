@@ -72,17 +72,17 @@ namespace YA.TenantWorker.Infrastructure.Logging.MbMessages
         /// </summary>
         class PopWhenDisposed : IDisposable
         {
-            bool disposed;
+            bool _disposed;
 
             /// <summary>
             /// Disposes of the instance.
             /// </summary>
             public void Dispose()
             {
-                if (disposed == false)
+                if (_disposed == false)
                 {
                     Pop();
-                    disposed = true;
+                    _disposed = true;
                 }
             }
         }

@@ -37,14 +37,14 @@ namespace YA.TenantWorker.Health.Services
 
             try
             {
-                Stopwatch mbSW = new Stopwatch();
-                mbSW.Start();
+                Stopwatch mbSw = new Stopwatch();
+                mbSw.Start();
 
                 response = await _bus.Request<ITenantWorkerTestRequestV1, ITenantWorkerTestResponseV1>(new { TimeStamp = now }, cancellationToken);
 
-                mbSW.Stop();
+                mbSw.Stop();
                 
-                healthData.Add("Delay, msec", mbSW.ElapsedMilliseconds);
+                healthData.Add("Delay, msec", mbSw.ElapsedMilliseconds);
             }
             catch (Exception e)
             {

@@ -14,7 +14,7 @@ namespace YA.TenantWorker.Infrastructure.Caching
             SetOptions(options);
         }
 
-        private static MemoryCacheEntryOptions _cacheOptions = new MemoryCacheEntryOptions()
+        private static readonly MemoryCacheEntryOptions _cacheOptions = new MemoryCacheEntryOptions()
                     .SetSize(1)
                     .SetPriority(CacheItemPriority.High)
                     .SetSlidingExpiration(TimeSpan.FromSeconds(General.ApiRequestCacheSlidingExpirationSec))

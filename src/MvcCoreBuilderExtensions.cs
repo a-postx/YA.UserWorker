@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Delobytes.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.JsonPatch;
@@ -46,7 +47,7 @@ namespace YA.TenantWorker
             return builder.AddMvcOptions(options =>
             {
                 // Controls how controller actions cache content from the appsettings.json file.
-                foreach (var keyValuePair in configuration
+                foreach (KeyValuePair<string, CacheProfile> keyValuePair in configuration
                     .GetSection(nameof(ApplicationOptions.CacheProfiles))
                     .Get<CacheProfileOptions>())
                 {

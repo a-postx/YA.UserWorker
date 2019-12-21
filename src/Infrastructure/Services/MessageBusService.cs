@@ -38,7 +38,7 @@ namespace YA.TenantWorker.Infrastructure.Services
 
         public override async Task StartAsync(CancellationToken cancellationToken)
         {
-            _log.LogInformation(nameof(MessageBusService) + " startup service is starting.");
+            _log.LogInformation(nameof(MessageBusService) + " background service is starting...");
 
             KeyVaultSecrets secrets = _config.Get<KeyVaultSecrets>();
 
@@ -54,7 +54,7 @@ namespace YA.TenantWorker.Infrastructure.Services
                 }
                 catch (Exception e)
                 {
-                    _log.LogError(nameof(MessageBusService) + " startup service has failed: {Exception}", e);
+                    _log.LogError(nameof(MessageBusService) + " background service check has failed: {Exception}", e);
                 }
 
                 if (result)
@@ -62,11 +62,11 @@ namespace YA.TenantWorker.Infrastructure.Services
                     success = true;
                     _messageBusServiceHealthCheck.MessageBusStartupTaskCompleted = true;
 
-                    _log.LogInformation(nameof(MessageBusService) + " startup service has started.");
+                    _log.LogInformation(nameof(MessageBusService) + " background service check succeeded.");
                 }
                 else
                 {
-                    await Task.Delay(General.StartupServiceCheckRetryIntervalMs);
+                    await Task.Delay(General.StartupServiceCheckRetryIntervalMs, cancellationToken);
                 }
             }
 
@@ -74,8 +74,11 @@ namespace YA.TenantWorker.Infrastructure.Services
             _busControl.ConnectConsumeAuditObserver(_auditStore, c => c.Exclude(typeof(ITenantWorkerTestRequestV1), typeof(ITenantWorkerTestResponseV1)));
 
             await _busControl.StartAsync(cancellationToken);
+
+            _log.LogInformation(nameof(MessageBusService) + " background service has started.");
         }
 
+        //не выполняется, сервис находится как IHostedService
         protected override Task ExecuteAsync(CancellationToken stoppingToken)
         {
             return Task.CompletedTask;
@@ -83,9 +86,11 @@ namespace YA.TenantWorker.Infrastructure.Services
 
         public override async Task StopAsync(CancellationToken cancellationToken)
         {
-            _log.LogInformation(nameof(MessageBusService) + " startup service is stopping.");
+            _log.LogInformation(nameof(MessageBusService) + " background service is stopping...");
 
             await _busControl.StopAsync(cancellationToken);
+
+            _log.LogInformation(nameof(MessageBusService) + " background service gracefully stopped.");
         }
     }
 }

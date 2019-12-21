@@ -1,5 +1,4 @@
-﻿using System;
-using Delobytes.AspNetCore;
+﻿using Delobytes.AspNetCore;
 
 namespace YA.TenantWorker.Application.Commands
 {

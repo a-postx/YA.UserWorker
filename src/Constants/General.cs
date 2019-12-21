@@ -14,7 +14,6 @@
         /// </summary>
         public const string DefaultSqlModelDateTimeFunction = "GETUTCDATE()";
         public const int MessageBusServiceHealthPort = 5672;
-        public const int MessageBusServiceHealthReconnectDelayMsec = 15000;
         public const string MessageBusServiceHealthCheckName = "message_bus_service";
         public const string SqlDatabaseHealthCheckName = "sql_database";
         public const string ForwardedForHeader = "X-Original-For";

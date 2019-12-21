@@ -14,10 +14,8 @@ namespace YA.TenantWorker.Health
             IEnumerable<string> tags = null,
             int? thresholdInMBytes = null)
         {
-            // Register a check of type GCInfo.
             builder.AddCheck<MemoryHealthCheck>(name, failureStatus ?? HealthStatus.Degraded, tags);
 
-            // Configure named options to pass the threshold into the check.
             if (thresholdInMBytes.HasValue)
             {
                 builder.Services.Configure<MemoryCheckOptions>(name, options =>

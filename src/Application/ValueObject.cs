@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 
 namespace YA.TenantWorker.Application
@@ -30,23 +29,26 @@ namespace YA.TenantWorker.Application
             }
 
             ValueObject other = (ValueObject)obj;
-            IEnumerator<object> thisValues = GetAtomicValues().GetEnumerator();
-            IEnumerator<object> otherValues = other.GetAtomicValues().GetEnumerator();
-            while (thisValues.MoveNext() && otherValues.MoveNext())
-            {
-                if (thisValues.Current is null ^
-                    otherValues.Current is null)
-                {
-                    return false;
-                }
 
-                if (thisValues.Current != null &&
-                    !thisValues.Current.Equals(otherValues.Current))
+            using (IEnumerator<object> thisValues = GetAtomicValues().GetEnumerator())
+            using (IEnumerator<object> otherValues = other.GetAtomicValues().GetEnumerator())
+            {
+                while (thisValues.MoveNext() && otherValues.MoveNext())
                 {
-                    return false;
+                    if (thisValues.Current is null ^
+                        otherValues.Current is null)
+                    {
+                        return false;
+                    }
+
+                    if (thisValues.Current != null &&
+                        !thisValues.Current.Equals(otherValues.Current))
+                    {
+                        return false;
+                    }
                 }
+                return !thisValues.MoveNext() && !otherValues.MoveNext();
             }
-            return !thisValues.MoveNext() && !otherValues.MoveNext();
         }
 
         public override int GetHashCode()

@@ -1,10 +1,9 @@
-﻿using Swashbuckle.AspNetCore.Swagger;
+﻿using Microsoft.OpenApi.Any;
+using Microsoft.OpenApi.Models;
+using Newtonsoft.Json;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using System;
-using Microsoft.OpenApi.Models;
-using Microsoft.OpenApi.Any;
 using YA.TenantWorker.Application.Models.SaveModels;
-using Newtonsoft.Json;
 
 namespace YA.TenantWorker.Application.Models.ViewModelSchemaFilters
 {

@@ -69,17 +69,7 @@ namespace YA.TenantWorker.Application.Commands
                 SigningCredentials creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
                 DateTime expiry = DateTime.Now.AddDays(Convert.ToInt32(360));
 
-                bool gotGwTargetValue = _actionContextAccessor.ActionContext.HttpContext
-                    .Request.Headers.TryGetValue("Gateway-Base-Url", out StringValues gwTargetValue);
-
-                JwtSecurityToken token = new JwtSecurityToken(
-                    "https://localhost:7453",
-                    "YATenantWorker",
-                    claims,
-                    DateTime.Now,
-                    expires: expiry,
-                    signingCredentials: creds
-                );
+                JwtSecurityToken token = new JwtSecurityToken("https://localhost:7453", "YATenantWorker", claims, DateTime.Now, expiry, creds);
 
                 string wToken = new JwtSecurityTokenHandler().WriteToken(token);
 

@@ -1,8 +1,5 @@
-﻿using System;
-using System.Linq;
-using System.Reflection;
-using Microsoft.EntityFrameworkCore;
-using YA.TenantWorker.Constants;
+﻿using Microsoft.EntityFrameworkCore;
+using System;
 using YA.TenantWorker.Core.Entities;
 
 namespace YA.TenantWorker.Infrastructure.Data

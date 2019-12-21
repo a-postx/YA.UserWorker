@@ -208,7 +208,7 @@ namespace YA.TenantWorker.Infrastructure.Data
 
         public async Task<int> GetEntitiesCountAsync<T>(CancellationToken cancellationToken) where T : class
         {
-            return await Set<T>().CountAsync();
+            return await Set<T>().CountAsync(cancellationToken);
         }
 
         public Task<List<T>> GetTenantEntitiesPaged<T>(Expression<Func<T, bool>> wherePredicate, int? first, DateTimeOffset? createdAfter, DateTimeOffset? createdBefore, CancellationToken cancellationToken) where T : class, ITenantEntity, IAuditedEntityBase, IRowVersionedEntity

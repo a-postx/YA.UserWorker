@@ -5,7 +5,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using CorrelationId;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json;
@@ -35,12 +34,11 @@ namespace YA.TenantWorker.Infrastructure.Logging.Requests
             
             LogContext.PushProperty(Logs.LogType, LogTypes.BackendApiRequest.ToString());
 
-            string initialRequestBody = "";
             httpContext.Request.EnableBuffering();
             Stream body = httpContext.Request.Body;
             byte[] buffer = new byte[Convert.ToInt32(httpContext.Request.ContentLength)];
             await httpContext.Request.Body.ReadAsync(buffer, 0, buffer.Length);
-            initialRequestBody = Encoding.UTF8.GetString(buffer);
+            string initialRequestBody = Encoding.UTF8.GetString(buffer);
             body.Seek(0, SeekOrigin.Begin);
             httpContext.Request.Body = body;
 
@@ -96,7 +94,8 @@ namespace YA.TenantWorker.Infrastructure.Logging.Requests
 
                 if (Enumerable.Range(400, 599).Contains(context.Response.StatusCode) && responseBody.Contains("traceId", StringComparison.InvariantCultureIgnoreCase))
                 {
-                    LogContext.PushProperty(Logs.TraceId, GetTraceId(responseBody));
+                    ApiProblemDetails problem = JsonConvert.DeserializeObject<ApiProblemDetails>(responseBody);
+                    LogContext.PushProperty(Logs.TraceId, problem.TraceId);
                 }
 
                 string endResponseBody = (responseBody.Length > General.MaxLogFieldLength) ?
@@ -108,12 +107,6 @@ namespace YA.TenantWorker.Infrastructure.Logging.Requests
 
                 await responseBodyMemoryStream.CopyToAsync(originalResponseBodyReference);
             }
-        }
-
-        private static string GetTraceId(string problemDetails)
-        {
-            ApiProblemDetails problem = JsonConvert.DeserializeObject<ApiProblemDetails>(problemDetails);
-            return problem.TraceId?.ToString();
         }
     }
 }

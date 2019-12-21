@@ -19,6 +19,7 @@
     <Copyright>Copyright © Delobytes 2019. All rights Reserved</Copyright>
     <PackageId>YA.TenantWorker</PackageId>
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+    <UserSecretsId>dbf95a25-628c-4098-9e1f-317618f9d6ed</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>

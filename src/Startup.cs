@@ -23,7 +23,6 @@ using YA.TenantWorker.Infrastructure.Data;
 using YA.TenantWorker.Infrastructure.Messaging.Test;
 using YA.TenantWorker.Infrastructure.Authentication;
 using YA.TenantWorker.Infrastructure.Caching;
-using Serilog;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.AspNetCore.Identity;
 using System.Collections.Generic;
@@ -186,11 +185,10 @@ namespace YA.TenantWorker
         {
             application
                 // Pass a GUID in X-Correlation-ID HTTP header to set the HttpContext.TraceIdentifier.
-                // UpdateTraceIdentifier must be false due to a bug. See https://github.com/aspnet/AspNetCore/issues/5144
                 .UseCorrelationId(new CorrelationIdOptions {
                     Header = General.CorrelationIdHeader,
                     IncludeInResponse = false,
-                    UpdateTraceIdentifier = false,
+                    UpdateTraceIdentifier = true,
                     UseGuidForCorrelationId = false
                     })
                 .UseCorrelationIdContextLogging()

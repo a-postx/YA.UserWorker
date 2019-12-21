@@ -25,11 +25,11 @@ namespace YA.TenantWorker.Infrastructure.Caching
 
                 _cache.Set(key, newItem, cacheEntryOptions);
 
-                return (!appEventExists, newItem);
+                return (true, newItem);
             }
             else
             {
-                return (!appEventExists, cacheEntry);
+                return (false, cacheEntry);
             }
         }
 

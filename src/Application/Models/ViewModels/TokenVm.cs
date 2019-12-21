@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
-namespace YA.TenantWorker.Application.Models.ViewModels
+﻿namespace YA.TenantWorker.Application.Models.ViewModels
 {
     public class TokenVm
     {

@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using System;
 
 namespace YA.TenantWorker.Application.Models.Dto
 {
@@ -12,11 +11,11 @@ namespace YA.TenantWorker.Application.Models.Dto
             Instance = instance;
             Title = title;
             Detail = detail;
-            CorrelationID = correlationId;
+            CorrelationId = correlationId;
             TraceId = traceId;
         }
 
-        public string CorrelationID { get; private set; }
-        public string TraceId { get; private set; }        
+        public string CorrelationId { get; private set; }
+        public string TraceId { get; private set; }
     }
 }

@@ -8,7 +8,7 @@ using YA.TenantWorker.Constants;
 namespace YA.TenantWorker.Infrastructure.Logging.Requests
 {
     /// <summary>
-    /// CorrelationID context logging middleware. 
+    /// CorrelationId context logging middleware. 
     /// </summary>
     public class CorrelationIdContextLogger
     {

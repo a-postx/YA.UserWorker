@@ -34,8 +34,8 @@ namespace YA.TenantWorker.Health.System
 
             IPAddress ipAddress = IPAddress.Parse(opts.InternetHost);
 
-            Stopwatch discoverySW = new Stopwatch();
-            discoverySW.Start();            
+            Stopwatch discoverySw = new Stopwatch();
+            discoverySw.Start();            
 
             try
             {
@@ -46,9 +46,9 @@ namespace YA.TenantWorker.Health.System
                 _log.LogError("Error checking health for Network: {Exception}", e);
             }
 
-            discoverySW.Stop();
+            discoverySw.Stop();
 
-            int networkLatencyValue = (int)discoverySW.ElapsedMilliseconds;
+            int networkLatencyValue = (int)discoverySw.ElapsedMilliseconds;
 
             Dictionary<string, object> data = new Dictionary<string, object>
             {
