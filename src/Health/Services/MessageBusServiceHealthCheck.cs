@@ -35,21 +35,27 @@ namespace YA.TenantWorker.Health.Services
             Response<ITenantWorkerTestResponseV1> response = null;
             Dictionary<string, object> healthData = new Dictionary<string, object>();
 
+            Stopwatch mbSw = new Stopwatch();
+            mbSw.Start();
+
             try
             {
-                Stopwatch mbSw = new Stopwatch();
-                mbSw.Start();
-
-                response = await _bus.Request<ITenantWorkerTestRequestV1, ITenantWorkerTestResponseV1>(new { TimeStamp = now }, cancellationToken);
-
-                mbSw.Stop();
-                
-                healthData.Add("Delay, msec", mbSw.ElapsedMilliseconds);
+                response = await _bus.Request<ITenantWorkerTestRequestV1, ITenantWorkerTestResponseV1>(
+                    new {TimeStamp = now}, cancellationToken);
+            }
+            catch (RequestException ex)
+            {
+                healthData.Add("Exception", ex.Message);
             }
             catch (Exception e)
             {
                 _log.LogError("Error checking health for Message Bus: {Exception}", e);
                 healthData.Add("Exception", e.Message);
+            }
+            finally
+            {
+                mbSw.Stop();
+                healthData.Add("Delay, msec", mbSw.ElapsedMilliseconds);
             }
 
             if (MessageBusStartupTaskCompleted && response?.Message?.GotIt == now)

@@ -33,7 +33,7 @@
     <PackageReference Include="AspNetCore.HealthChecks.SqlServer" Version="3.0.0" />
     <PackageReference Include="Ben.Demystifier" Version="0.1.4" />
     <PackageReference Include="CorrelationId" Version="2.1.0" />
-    <PackageReference Include="Delobytes.AspNetCore" Version="1.4.1" />
+    <PackageReference Include="Delobytes.AspNetCore" Version="1.4.2" />
     <PackageReference Include="Delobytes.AspNetCore.Swagger" Version="2.0.0" />
     <PackageReference Include="Delobytes.Mapper" Version="1.1.0" />
     <PackageReference Include="MassTransit.Extensions.DependencyInjection" Version="5.5.5" />

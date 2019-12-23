@@ -1,6 +1,13 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using System;
 using YA.TenantWorker.Core.Entities;
+using System;
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Linq.Expressions;
+using System.Reflection;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using Microsoft.EntityFrameworkCore.Query;
 
 namespace YA.TenantWorker.Infrastructure.Data
 {

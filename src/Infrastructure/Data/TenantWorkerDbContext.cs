@@ -11,6 +11,9 @@ using YA.TenantWorker.Infrastructure.Data.Configurations;
 using YA.TenantWorker.Core.Entities;
 using YA.TenantWorker.Application.Interfaces;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
+using System.Reflection;
+using System.IO;
+using Microsoft.Extensions.DependencyModel;
 
 namespace YA.TenantWorker.Infrastructure.Data
 {
