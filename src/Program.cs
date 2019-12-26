@@ -216,6 +216,10 @@ namespace YA.TenantWorker
 
                 configurationBuilder.AddAzureKeyVault(keyVaultEndpoint, keyVaultClient, new DefaultKeyVaultSecretManager());
             }
+            else
+            {
+                throw new Exception("Secrets storage endpoint cannot be found.");
+            }
             // Azure Key Vault##>
 
             return configurationBuilder;
