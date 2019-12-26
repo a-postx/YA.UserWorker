@@ -15,7 +15,7 @@ using Microsoft.AspNetCore.Routing;
 
 namespace YA.TenantWorker
 {
-    public static class ApplicationBuilderExtensions
+    internal static class ApplicationBuilderExtensions
     {
         public static IApplicationBuilder UseDeveloperErrorPages(this IApplicationBuilder application)
         {
@@ -62,7 +62,6 @@ namespace YA.TenantWorker
                     Endpoint endpoint = httpContext.GetEndpoint();
                     string routeName = endpoint?.Metadata?.GetMetadata<IRouteNameMetadata>()?.RouteName;
                     diagnosticContext.Set("RouteName", routeName);
-
                     diagnosticContext.Set("RequestHost", httpContext.Request.Host.Value);
                     diagnosticContext.Set("RequestScheme", httpContext.Request.Scheme);
                 });

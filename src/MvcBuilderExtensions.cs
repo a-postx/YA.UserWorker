@@ -19,7 +19,7 @@ using YA.TenantWorker.Options;
 
 namespace YA.TenantWorker
 {
-    public static class MvcCoreBuilderExtensions
+    internal static class MvcBuilderExtensions
     {
         /// <summary>
         /// Adds customized JSON serializer settings.

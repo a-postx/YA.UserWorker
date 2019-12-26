@@ -20,7 +20,7 @@ namespace YA.TenantWorker.Infrastructure.Caching
                     .SetSlidingExpiration(TimeSpan.FromSeconds(General.ApiRequestCacheSlidingExpirationSec))
                     .SetAbsoluteExpiration(TimeSpan.FromSeconds(General.ApiRequestCacheAbsoluteExpirationSec));            
 
-        public async Task<(bool created, ApiRequest request)> GetOrCreate(object key, Func<Task<ApiRequest>> createItem)
+        public async Task<(bool created, ApiRequest request)> GetOrCreateAsync(object key, Func<Task<ApiRequest>> createItem)
         {
             (bool created, ApiRequest request) result = await base.GetOrCreateAsync(key, createItem, _cacheOptions);
             return result;

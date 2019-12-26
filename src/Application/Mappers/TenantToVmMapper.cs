@@ -42,7 +42,7 @@ namespace YA.TenantWorker.Application.Mappers
 
             //property name of anonymous route value object must correspond to controller http route values
             //destination.Url = _linkGenerator.GetUriByRouteValues(_httpContextAccessor.HttpContext, RouteNames.GetTenant, new { tenantId });
-            destination.Url = _linkGenerator.GetUriByAction(_httpContextAccessor.HttpContext);
+            destination.Url = new Uri(_linkGenerator.GetUriByAction(_httpContextAccessor.HttpContext));
             
             ////var hhh = _linkGenerator.GetUriByName(_httpContextAccessor.HttpContext, RouteNames.GetTenant, new { tenantId });
             ////bool gotGwHost = _httpContextAccessor.HttpContext.Request.Headers.TryGetValue("Gateway-Base-Url", out StringValues baseUrl);

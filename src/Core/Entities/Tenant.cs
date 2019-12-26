@@ -8,7 +8,7 @@ namespace YA.TenantWorker.Core.Entities
         System = 0,
         Custom = 1
     }
-    public class Tenant : IAuditedEntityBase, IRowVersionedEntity
+    public class Tenant : IRowVersionedEntity, IAuditedEntityBase
     {
         public Guid TenantID { get; set; }
         public TenantTypes TenantType { get; set; }

@@ -36,7 +36,7 @@ namespace YA.TenantWorker
         OSX = 4
     }
 
-    public class Program
+    public static class Program
     {
         internal static readonly string AppName = Assembly.GetEntryAssembly()?.GetName().Name;
         internal static readonly Version Version = Assembly.GetEntryAssembly()?.GetName().Version;
@@ -179,14 +179,12 @@ namespace YA.TenantWorker
             if (hostingEnvironment.IsDevelopment())
             {
                 Console.WriteLine("Hosting environment is Development");
-                keyVaultEndpoint = General.DevelopmentKeyVault;
-
-                IgnoreInvalidCertificates();
+                keyVaultEndpoint = Environment.GetEnvironmentVariable("KeyVaultDevelopment");
             }
             else if (hostingEnvironment.IsProduction())
             {
                 Console.WriteLine("Hosting environment is Production");
-                keyVaultEndpoint = General.ProductionKeyVault;
+                keyVaultEndpoint = Environment.GetEnvironmentVariable("KeyVaultProduction");
             }
 
             if (!string.IsNullOrEmpty(keyVaultEndpoint))

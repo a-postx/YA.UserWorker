@@ -2,13 +2,13 @@
 using Microsoft.AspNetCore.Routing;
 using System;
 using System.Collections.Generic;
-using YA.TenantWorker.Application.Models.ViewModels;
 
-namespace YA.TenantWorker.Application.Models.ValueObjects
+namespace YA.TenantWorker.Application.Models.ViewModels
 {
     public class PaginatedResult<T> : ValueObject where T : class
     {
-        public PaginatedResult(LinkGenerator linkGenerator, PageOptions pageOptions, bool hasNextPage, bool hasPreviousPage, int totalCount, string startCursor, string endCursor, HttpContext context, string routeName, List<T> items)
+        public PaginatedResult(LinkGenerator linkGenerator, PageOptions pageOptions, bool hasNextPage, bool hasPreviousPage,
+            int totalCount, string startCursor, string endCursor, HttpContext context, string routeName, List<T> items)
         {
             if (linkGenerator == null)
             {
@@ -30,7 +30,7 @@ namespace YA.TenantWorker.Application.Models.ValueObjects
                 throw new ArgumentNullException(nameof(routeName));
             }
 
-            Items = items ?? throw new ArgumentNullException(nameof(items));
+            Items = items ?? new List<T>();
             PageInfo = new PageInfo()
             {
                 Count = items.Count,

@@ -32,7 +32,7 @@ namespace YA.TenantWorker
     /// <summary>
     /// <see cref="IServiceCollection"/> extension methods which extend ASP.NET Core services.
     /// </summary>
-    public static class CustomServiceCollectionExtensions
+    internal static class CustomServiceCollectionExtensions
     {
         public static IServiceCollection AddCorrelationIdFluent(this IServiceCollection services)
         {

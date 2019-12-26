@@ -9,6 +9,11 @@ namespace YA.TenantWorker.Options
     /// </summary>
     public class ApplicationOptions
     {
+        public ApplicationOptions()
+        {
+            CacheProfiles = new CacheProfileOptions();
+        }
+
         [Required]
         public CacheProfileOptions CacheProfiles { get; set; }
 

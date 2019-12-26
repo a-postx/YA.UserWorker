@@ -1,62 +1,58 @@
-using System.Collections.Generic;
+using System;
 using System.Linq;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
-using Swashbuckle.AspNetCore.Swagger;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace YA.TenantWorker.OperationFilters
 {
     /// <summary>
-    /// Adds a Swashbuckle API version filter to all available operations.
+    /// An Open API operation filter used to document the implicit API version parameter.
     /// </summary>
+    /// <remarks>This <see cref="IOperationFilter"/> is only required due to bugs in the <see cref="SwaggerGenerator"/>.
+    /// Once they are fixed and published, this class can be removed. See:
+    /// - https://github.com/domaindrivendev/Swashbuckle.AspNetCore/issues/412
+    /// - https://github.com/domaindrivendev/Swashbuckle.AspNetCore/pull/413</remarks>
     public class ApiVersionOperationFilter : IOperationFilter
     {
         public void Apply(OpenApiOperation operation, OperationFilterContext context)
         {
-            ApiVersion apiVersion = context.ApiDescription.GetApiVersion();
+            if (operation is null)
+            {
+                throw new ArgumentNullException(nameof(operation));
+            }
 
-            if (apiVersion == null)
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            ApiDescription apiDescription = context.ApiDescription;
+            operation.Deprecated |= apiDescription.IsDeprecated();
+
+            if (operation.Parameters is null)
             {
                 return;
             }
 
-            IList<OpenApiParameter> parameters = operation.Parameters;
-
-            if (parameters == null)
+            foreach (OpenApiParameter parameter in operation.Parameters)
             {
-                operation.Parameters = parameters = new List<OpenApiParameter>();
-            }
+                ApiParameterDescription description = apiDescription.ParameterDescriptions
+                    .First(x => string.Equals(x.Name, parameter.Name, StringComparison.OrdinalIgnoreCase));
 
-            OpenApiParameter parameter = parameters.FirstOrDefault(p => p.Name == "api-version");
-
-            if (parameter == null)
-            {
-                parameter = new OpenApiParameter()
+                if (parameter.Description is null)
                 {
-                    Name = "api-version",
-                    Required = true,
-                    In = ParameterLocation.Query,
-                    Schema = new OpenApiSchema
-                    {
-                        Default = new OpenApiString(apiVersion.ToString()),
-                        Type = "string"
-                    },
-                };
-                parameters.Add(parameter);
-            }
-            else if (parameter is OpenApiParameter pathParameter)
-            {
-                pathParameter.Schema = new OpenApiSchema
-                {
-                    Default = new OpenApiString(apiVersion.ToString()),
-                    Type = "string"
-                };
-            }
+                    parameter.Description = description.ModelMetadata?.Description;
+                }
 
-            parameter.Description = "The requested API version";
+                if (parameter.Schema.Default is null && description.DefaultValue != null)
+                {
+                    parameter.Schema.Default = new OpenApiString(description.DefaultValue.ToString());
+                }
+
+                parameter.Required |= description.IsRequired;
+            }
         }
     }
 }

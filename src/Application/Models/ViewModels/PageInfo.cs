@@ -5,6 +5,11 @@ namespace YA.TenantWorker.Application.Models.ViewModels
 {
     public class PageInfo
     {
+        private const string NextLinkItem = "next";
+        private const string PreviousLinkItem = "previous";
+        private const string FirstLinkItem = "first";
+        private const string LastLinkItem = "last";
+
         /// <summary>
         /// Gets or sets the count of items.
         /// </summary>
@@ -53,22 +58,22 @@ namespace YA.TenantWorker.Application.Models.ViewModels
 
             if (HasNextPage && NextPageUrl != null)
             {
-                values.Add(GetLinkValueItem("next", NextPageUrl));
+                values.Add(GetLinkValueItem(NextLinkItem, NextPageUrl));
             }
 
             if (HasPreviousPage && PreviousPageUrl != null)
             {
-                values.Add(GetLinkValueItem("previous", PreviousPageUrl));
+                values.Add(GetLinkValueItem(PreviousLinkItem, PreviousPageUrl));
             }
 
             if (FirstPageUrl != null)
             {
-                values.Add(GetLinkValueItem("first", FirstPageUrl));
+                values.Add(GetLinkValueItem(FirstLinkItem, FirstPageUrl));
             }
 
             if (LastPageUrl != null)
             {
-                values.Add(GetLinkValueItem("last", LastPageUrl));
+                values.Add(GetLinkValueItem(LastLinkItem, LastPageUrl));
             }
 
             return string.Join(", ", values);

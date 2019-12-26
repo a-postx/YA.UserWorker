@@ -1,13 +1,10 @@
 ﻿using System;
-using YA.TenantWorker.Application.Models.ViewModelSchemaFilters;
-using Swashbuckle.AspNetCore.Annotations;
 
 namespace YA.TenantWorker.Application.Models.ViewModels
 {
     /// <summary>
     /// Tenant view model.
     /// </summary>
-    [SwaggerSchemaFilter(typeof(TenantVmSchemaFilter))]
     public class TenantVm
     {
         /// <summary>
@@ -23,6 +20,6 @@ namespace YA.TenantWorker.Application.Models.ViewModels
         /// <summary>
         /// URL used to retrieve the resource conforming to REST'ful JSON http://restfuljson.org/.
         /// </summary>
-        public string Url { get; set; }
+        public Uri Url { get; set; }
     }
 }

@@ -2,7 +2,7 @@
 
 namespace YA.TenantWorker.Core.Entities
 {
-    public class User : ITenantEntity, IRowVersionedEntity, IAuditedEntityBase
+    public class User : ITenantEntity, IAuditedEntityBase, IRowVersionedEntity
     {
         public virtual Tenant Tenant { get; set; }
         public Guid UserID { get; set; }        

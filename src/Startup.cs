@@ -234,18 +234,18 @@ namespace YA.TenantWorker
                     endpoints.MapControllers().RequireCors(CorsPolicyName.AllowAny);
                     endpoints.MapHealthChecks("/status", new HealthCheckOptions()
                     {
-                        ResponseWriter = HealthResponse.WriteResponse
+                        ResponseWriter = HealthResponse.WriteResponseAsync
                     }).RequireCors(CorsPolicyName.AllowAny);
                     endpoints.MapHealthChecks("/status/ready", new HealthCheckOptions()
                     {
                         Predicate = (check) => check.Tags.Contains("ready"),
-                        ResponseWriter = HealthResponse.WriteResponse
+                        ResponseWriter = HealthResponse.WriteResponseAsync
                     }).RequireCors(CorsPolicyName.AllowAny);
                     endpoints.MapHealthChecks("/status/live", new HealthCheckOptions()
                     {
                         // Exclude all checks and return a 200-Ok.
                         Predicate = (_) => false,
-                        ResponseWriter = HealthResponse.WriteResponse
+                        ResponseWriter = HealthResponse.WriteResponseAsync
                     }).RequireCors(CorsPolicyName.AllowAny);
                 })
 

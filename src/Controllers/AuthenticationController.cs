@@ -33,7 +33,7 @@ namespace YA.TenantWorker.Controllers
         [SwaggerResponse(StatusCodes.Status200OK, "Token has been created.", typeof(TokenVm))]
         [SwaggerResponse(StatusCodes.Status400BadRequest, "Request is invalid.")]
         [SwaggerResponse(StatusCodes.Status409Conflict, "Duplicate request.", typeof(ApiProblemDetails))]
-        public Task<IActionResult> GetToken(
+        public Task<IActionResult> GetTokenAsync(
             [FromServices] IAuthenticateCommand command,
             [FromBody] CredentialsSm credentials,
             CancellationToken cancellationToken)

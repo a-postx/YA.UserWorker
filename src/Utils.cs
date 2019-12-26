@@ -141,6 +141,16 @@ namespace YA.TenantWorker
 
         public static IEnumerable<T> If<T>(this IEnumerable<T> enumerable, bool condition, Func<IEnumerable<T>, IEnumerable<T>> action)
         {
+            if (enumerable is null)
+            {
+                throw new ArgumentNullException(nameof(enumerable));
+            }
+
+            if (action is null)
+            {
+                throw new ArgumentNullException(nameof(action));
+            }
+
             if (condition)
             {
                 return action(enumerable);
@@ -151,6 +161,16 @@ namespace YA.TenantWorker
 
         public static async Task<IEnumerable<T>> IfAsync<T>(this IEnumerable<T> enumerable, bool condition, Func<IEnumerable<T>, Task<IEnumerable<T>>> action)
         {
+            if (enumerable is null)
+            {
+                throw new ArgumentNullException(nameof(enumerable));
+            }
+
+            if (action is null)
+            {
+                throw new ArgumentNullException(nameof(action));
+            }
+
             if (condition)
             {
                 return await action(enumerable);
@@ -161,6 +181,16 @@ namespace YA.TenantWorker
 
         public static IQueryable<T> If<T>(this IQueryable<T> enumerable, bool condition, Func<IQueryable<T>, IQueryable<T>> action)
         {
+            if (enumerable is null)
+            {
+                throw new ArgumentNullException(nameof(enumerable));
+            }
+
+            if (action is null)
+            {
+                throw new ArgumentNullException(nameof(action));
+            }
+
             if (condition)
             {
                 return action(enumerable);
@@ -171,6 +201,16 @@ namespace YA.TenantWorker
 
         public static async Task<IQueryable<T>> IfAsync<T>(this IQueryable<T> enumerable, bool condition, Func<IQueryable<T>, Task<IQueryable<T>>> action)
         {
+            if (enumerable is null)
+            {
+                throw new ArgumentNullException(nameof(enumerable));
+            }
+
+            if (action is null)
+            {
+                throw new ArgumentNullException(nameof(action));
+            }
+
             if (condition)
             {
                 return await action(enumerable);

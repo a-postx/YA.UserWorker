@@ -10,7 +10,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using YA.TenantWorker.Application.Interfaces;
 using YA.TenantWorker.Application.Models.ViewModels;
-using YA.TenantWorker.Application.Models.ValueObjects;
 using YA.TenantWorker.Constants;
 using YA.TenantWorker.Core.Entities;
 
@@ -46,19 +45,19 @@ namespace YA.TenantWorker.Application.Commands
             DateTimeOffset? createdBefore = Cursor.FromCursor<DateTimeOffset?>(pageOptions.Before);
 
             Task<List<Tenant>> getItemsTask = _dbContext
-                .GetEntitiesPagedTask<Tenant>(pageOptions.First, pageOptions.Last, createdAfter, createdBefore, cancellationToken);
+                .GetEntitiesPagedTaskAsync<Tenant>(pageOptions.First, pageOptions.Last, createdAfter, createdBefore, cancellationToken);
             Task<bool> getHasNextPageTask = _dbContext
-                .GetHasNextPage<Tenant>(pageOptions.First, createdAfter, createdBefore, cancellationToken);
+                .GetHasNextPageAsync<Tenant>(pageOptions.First, createdAfter, createdBefore, cancellationToken);
             Task<bool> getHasPreviousPageTask = _dbContext
-                .GetHasPreviousPage<Tenant>(pageOptions.Last, createdAfter, createdBefore, cancellationToken);
+                .GetHasPreviousPageAsync<Tenant>(pageOptions.Last, createdAfter, createdBefore, cancellationToken);
             Task<int> totalCountTask = _dbContext.GetEntitiesCountAsync<Tenant>(cancellationToken);
 
             await Task.WhenAll(getItemsTask, getHasNextPageTask, getHasPreviousPageTask, totalCountTask);
 
-            List<Tenant> items = getItemsTask.Result;
-            bool hasNextPage = getHasNextPageTask.Result;
-            bool hasPreviousPage = getHasPreviousPageTask.Result;
-            int totalCount = totalCountTask.Result;
+            List<Tenant> items = await getItemsTask;
+            bool hasNextPage = await getHasNextPageTask;
+            bool hasPreviousPage = await getHasPreviousPageTask;
+            int totalCount = await totalCountTask;
 
             if (items == null)
             {

@@ -18,7 +18,7 @@ namespace YA.TenantWorker.Health
         /// </summary>
         /// <returns>A 200 OK response.</returns>
         [SwaggerResponse(StatusCodes.Status200OK, "Write response in JSON format.")]
-        public static Task WriteResponse(HttpContext httpContext, HealthReport result)
+        public static Task WriteResponseAsync(HttpContext httpContext, HealthReport result)
         {
             httpContext.Response.ContentType = "application/json";
 

@@ -40,8 +40,7 @@ namespace YA.TenantWorker.Health.Services
 
             try
             {
-                response = await _bus.Request<ITenantWorkerTestRequestV1, ITenantWorkerTestResponseV1>(
-                    new {TimeStamp = now}, cancellationToken);
+                response = await _bus.Request<ITenantWorkerTestRequestV1, ITenantWorkerTestResponseV1>(new {TimeStamp = now}, cancellationToken);
             }
             catch (RequestException ex)
             {

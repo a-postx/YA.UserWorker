@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace YA.TenantWorker.Core.Entities
 {
-    public class PricingTier : IAuditedEntityBase, IRowVersionedEntity
+    public class PricingTier : IRowVersionedEntity, IAuditedEntityBase
     {
         public Guid PricingTierID { get; set; }
         public string Title { get; set; }
