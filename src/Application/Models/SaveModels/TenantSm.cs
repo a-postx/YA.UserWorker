@@ -1,10 +1,13 @@
-﻿using System;
+﻿using Swashbuckle.AspNetCore.Annotations;
+using System;
+using YA.TenantWorker.Application.Models.ViewModelSchemaFilters;
 
 namespace YA.TenantWorker.Application.Models.SaveModels
 {
     /// <summary>
     /// Tenant model from external API call.
     /// </summary>
+    [SwaggerSchemaFilter(typeof(TenantSmSchemaFilter))]
     public class TenantSm
     {
         /// <summary>
