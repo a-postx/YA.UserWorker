@@ -7,8 +7,8 @@ namespace YA.TenantWorker.Application.Interfaces
 {
     public interface IMessageBus
     {
-        Task CreateTenantV1(Guid correlationId, Guid tenantId, TenantSm tenantSm, CancellationToken cancellationToken);
-        Task DeleteTenantV1(Guid correlationId, Guid tenantId, TenantSm tenantSm, CancellationToken cancellationToken);
-        Task UpdateTenantV1(Guid correlationId, Guid tenantId, TenantSm tenantSm, CancellationToken cancellationToken);
+        Task CreateTenantV1Async(Guid correlationId, Guid tenantId, TenantSm tenantSm, CancellationToken cancellationToken);
+        Task DeleteTenantV1Async(Guid correlationId, Guid tenantId, TenantSm tenantSm, CancellationToken cancellationToken);
+        Task UpdateTenantV1Async(Guid correlationId, Guid tenantId, TenantSm tenantSm, CancellationToken cancellationToken);
     }
 }

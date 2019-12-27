@@ -49,7 +49,7 @@ namespace YA.TenantWorker.Application.Commands
             _dbContext.DeleteTenant(tenant);
             await _dbContext.ApplyChangesAsync(cancellationToken);
 
-            await _messageBus.DeleteTenantV1(correlationId, tenant.TenantID, new TenantSm { TenantId = tenant.TenantID, TenantName = tenant.TenantName }, cancellationToken);
+            await _messageBus.DeleteTenantV1Async(correlationId, tenant.TenantID, new TenantSm { TenantId = tenant.TenantID, TenantName = tenant.TenantName }, cancellationToken);
 
             return new NoContentResult();
         }
