@@ -1,13 +1,12 @@
+using Amazon;
+using Amazon.Extensions.NETCore.Setup;
+using Amazon.Runtime;
 using Delobytes.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
-using Microsoft.Azure.KeyVault;
-using Microsoft.Azure.Services.AppAuthentication;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Configuration.AzureKeyVault;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.IdentityModel.Clients.ActiveDirectory;
 using Serilog;
 using Serilog.Core;
 using Serilog.Events;
@@ -170,57 +169,26 @@ namespace YA.TenantWorker
                     args != null,
                     x => x.AddCommandLine(args));
 
-            // <##Azure Key Vault
-            // disable telemetry to speed up the process - https://docs.microsoft.com/en-us/cli/azure/azure-cli-configuration?view=azure-cli-latest#cli-configuration-values-and-environment-variables
-            string keyVaultEndpoint = null;
-            string clientId = Environment.GetEnvironmentVariable("KeyVaultAppClientId");
-            string clientSecret = Environment.GetEnvironmentVariable("KeyVaultAppClientSecret");
+            Console.WriteLine("Hosting environment is " + hostingEnvironment.EnvironmentName);
 
-            if (hostingEnvironment.IsDevelopment())
+            IConfigurationRoot tempConfig = new ConfigurationBuilder()
+                .AddJsonFile("appsettings.json")
+                .Build();
+
+            AWSCredentials credentials = new BasicAWSCredentials(Environment.GetEnvironmentVariable("AWS_ACCESS_KEY_ID"), Environment.GetEnvironmentVariable("AWS_SECRET_ACCESS_KEY"));
+            AWSOptions awsOptions = new AWSOptions()
             {
-                Console.WriteLine("Hosting environment is Development");
-                keyVaultEndpoint = Environment.GetEnvironmentVariable("KeyVaultDevelopment");
-            }
-            else if (hostingEnvironment.IsProduction())
+                Credentials = credentials,
+                Region = RegionEndpoint.GetBySystemName(tempConfig.GetValue<string>("AWS:Region"))
+            };
+
+            configurationBuilder.AddSystemsManager(config =>
             {
-                Console.WriteLine("Hosting environment is Production");
-                keyVaultEndpoint = Environment.GetEnvironmentVariable("KeyVaultProduction");
-            }
-
-            if (!string.IsNullOrEmpty(keyVaultEndpoint))
-            {
-                KeyVaultClient keyVaultClient;
-
-                if (!string.IsNullOrEmpty(clientId) && !string.IsNullOrEmpty(clientSecret)) // connect via App Registration
-                {
-                    keyVaultClient = new KeyVaultClient(async (authority, resource, scope) =>
-                    {
-                        ClientCredential adCredential = new ClientCredential(clientId, clientSecret);
-                        AuthenticationContext authenticationContext = new AuthenticationContext(authority, null);
-                        AuthenticationResult authResult = await authenticationContext.AcquireTokenAsync(resource, adCredential);
-
-                        if (authResult == null)
-                        {
-                            throw new Exception("Failed to obtain Azure Key Vault JWT token");
-                        }
-
-                        return authResult.AccessToken;
-                    });
-                }
-                else // connect via Azure Token Provider
-                {
-                    AzureServiceTokenProvider azureServiceTokenProvider = new AzureServiceTokenProvider();
-                    keyVaultClient = new KeyVaultClient(
-                            new KeyVaultClient.AuthenticationCallback(azureServiceTokenProvider.KeyVaultTokenCallback));
-                }
-
-                configurationBuilder.AddAzureKeyVault(keyVaultEndpoint, keyVaultClient, new DefaultKeyVaultSecretManager());
-            }
-            else
-            {
-                throw new Exception("Secrets storage endpoint cannot be found.");
-            }
-            // Azure Key Vault##>
+                config.AwsOptions = awsOptions;
+                config.Optional = false;
+                config.Path = hostingEnvironment.IsProduction() ? "/production" : "/development";
+                config.ReloadAfter = new TimeSpan(24, 0, 0);
+            });
 
             return configurationBuilder;
         }
@@ -230,7 +198,7 @@ namespace YA.TenantWorker
             IHostEnvironment hostEnv = host.Services.GetRequiredService<IHostEnvironment>();
             IConfiguration configuration = host.Services.GetRequiredService<IConfiguration>();
 
-            KeyVaultSecrets secrets = configuration.Get<KeyVaultSecrets>();
+            AppSecrets secrets = configuration.Get<AppSecrets>();
 
             LoggerConfiguration loggerConfig = new LoggerConfiguration();
 

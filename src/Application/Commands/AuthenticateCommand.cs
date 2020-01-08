@@ -43,7 +43,7 @@ namespace YA.TenantWorker.Application.Commands
                 return new BadRequestResult();
             }
 
-            KeyVaultSecrets secrets = _config.Get<KeyVaultSecrets>();
+            AppSecrets secrets = _config.Get<AppSecrets>();
 
             User user = await _dbContext.GetEntityWithTenantAsync<User>(u => u.Username == credentials.Username && u.Password == credentials.Password, cancellationToken);
 

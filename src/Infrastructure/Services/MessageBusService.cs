@@ -40,7 +40,7 @@ namespace YA.TenantWorker.Infrastructure.Services
         {
             _log.LogInformation(nameof(MessageBusService) + " background service is starting...");
 
-            KeyVaultSecrets secrets = _config.Get<KeyVaultSecrets>();
+            AppSecrets secrets = _config.Get<AppSecrets>();
 
             bool success = false;
 

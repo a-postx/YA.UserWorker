@@ -147,7 +147,7 @@ namespace YA.TenantWorker
                     .AddGenericHealthCheck<UptimeHealthCheck>("uptime")
                     .AddMemoryHealthCheck("memory")
                     //system components regular checks
-                    .AddSqlServer(configuration.GetValue<string>(nameof(KeyVaultSecrets.TenantWorkerConnStr)),
+                    .AddSqlServer(configuration.GetValue<string>(nameof(AppSecrets.TenantWorkerConnStr)),
                         "SELECT 1;", General.SqlDatabaseHealthCheckName, HealthStatus.Unhealthy, new string[] { "ready" })
                     .AddGenericHealthCheck<MessageBusServiceHealthCheck>(General.MessageBusServiceHealthCheckName, HealthStatus.Degraded, new[] { "ready" });
                     // Ping is not available on Azure Web Apps

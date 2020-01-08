@@ -1,6 +1,6 @@
 ﻿namespace YA.TenantWorker
 {
-    public class KeyVaultSecrets
+    public class AppSecrets
     {
         public string LogzioToken { get; set; }
         public string AppInsightsInstrumentationKey { get; set; }

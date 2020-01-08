@@ -65,7 +65,7 @@ namespace YA.TenantWorker
         /// </summary>
         public void ConfigureServices(IServiceCollection services)
         {
-            KeyVaultSecrets secrets = _config.Get<KeyVaultSecrets>();
+            AppSecrets secrets = _config.Get<AppSecrets>();
 
             string connectionString = secrets.TenantWorkerConnStr;
             string instrumentationKey = secrets.AppInsightsInstrumentationKey;
