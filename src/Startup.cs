@@ -29,6 +29,9 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.HttpOverrides;
+using YA.TenantWorker.Infrastructure.Logging.MbMessages;
+using Amazon.Extensions.NETCore.Setup;
+using Microsoft.ApplicationInsights.AspNetCore.Extensions;
 
 namespace YA.TenantWorker
 {
@@ -65,13 +68,23 @@ namespace YA.TenantWorker
         /// </summary>
         public void ConfigureServices(IServiceCollection services)
         {
+            AWSOptions awsOptions = _config.GetAWSOptions();
+            services.AddDefaultAWSOptions(awsOptions);
+
             AppSecrets secrets = _config.Get<AppSecrets>();
 
-            string connectionString = secrets.TenantWorkerConnStr;
-            string instrumentationKey = secrets.AppInsightsInstrumentationKey;
+            if (!string.IsNullOrEmpty(secrets.AppInsightsInstrumentationKey))
+            {
+                ApplicationInsightsServiceOptions options = new ApplicationInsightsServiceOptions
+                {
+                    DeveloperMode = _webHostEnvironment.IsDevelopment(),
+                    InstrumentationKey = secrets.AppInsightsInstrumentationKey
+                };
+
+                services.AddApplicationInsightsTelemetry(options);
+            }
             
             services
-                .AddApplicationInsightsTelemetry(instrumentationKey)
                 .AddCorrelationIdFluent()
 
                 ////.AddHttpsRedirection(options =>
@@ -117,7 +130,7 @@ namespace YA.TenantWorker
             services
                 .AddEntityFrameworkSqlServer()
                 .AddDbContext<TenantWorkerDbContext>(options =>
-                    options.UseSqlServer(connectionString, sqlOptions => 
+                    options.UseSqlServer(secrets.TenantWorkerConnStr, sqlOptions => 
                         sqlOptions.EnableRetryOnFailure().CommandTimeout(60))
                     .ConfigureWarnings(x => x.Throw(RelationalEventId.QueryPossibleExceptionWithAggregateOperatorWarning))
                     .EnableSensitiveDataLogging(_webHostEnvironment.IsDevelopment()));

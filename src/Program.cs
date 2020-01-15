@@ -162,8 +162,6 @@ namespace YA.TenantWorker
                 // (launchSettings.json for development or Application Settings for Azure)
                 .AddEnvironmentVariables()
 
-                .AddApplicationInsightsSettings(developerMode: !hostingEnvironment.IsProduction())
-
                 // Add command line options. These take the highest priority.
                 .AddIf(
                     args != null,

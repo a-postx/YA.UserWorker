@@ -1,4 +1,5 @@
-﻿using Delobytes.AspNetCore;
+﻿using CorrelationId;
+using Delobytes.AspNetCore;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
@@ -20,11 +21,13 @@ namespace YA.TenantWorker.Application.ActionFilters
     /// </summary>
     public sealed class ApiRequestFilter : ActionFilterAttribute
     {
-        public ApiRequestFilter(IApiRequestTracker apiRequestTracker)
+        public ApiRequestFilter(IApiRequestTracker apiRequestTracker, ICorrelationContextAccessor correlationContextAccessor)
         {
+            _correlationContextAccessor = correlationContextAccessor ?? throw new ArgumentNullException(nameof(correlationContextAccessor));
             _apiRequestTracker = apiRequestTracker ?? throw new ArgumentNullException(nameof(apiRequestTracker));
         }
 
+        private readonly ICorrelationContextAccessor _correlationContextAccessor;
         private readonly IApiRequestTracker _apiRequestTracker;
 
         public override async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
@@ -32,23 +35,24 @@ namespace YA.TenantWorker.Application.ActionFilters
             using (CancellationTokenSource cts = new CancellationTokenSource())
             {
                 string method = context.HttpContext.Request.Method;
-                IHeaderDictionary headers = context.HttpContext.Request.Headers;
 
-                (bool requestCreated, ApiRequest request) = await GetOrCreateRequestAsync(headers, method, cts.Token);
+                if (Guid.TryParse(_correlationContextAccessor.CorrelationContext.CorrelationId, out Guid correlationId))
+                {
+                    (bool requestCreated, ApiRequest request) = await _apiRequestTracker.GetOrCreateRequestAsync(correlationId, method, cts.Token);
 
-                if (request == null)
+                    if (!requestCreated)
+                    {
+                        ApiProblemDetails apiError = new ApiProblemDetails("https://tools.ietf.org/html/rfc7231#section-6.5.8", StatusCodes.Status409Conflict,
+                                context.HttpContext.Request.HttpContext.Request.Path.Value, "Api call is already exist.", null, request.ApiRequestID.ToString(),
+                                context.HttpContext.Request.HttpContext.TraceIdentifier);
+
+                        context.Result = new ConflictObjectResult(apiError);
+                        return;
+                    }
+                }
+                else
                 {
                     context.Result = new BadRequestResult();
-                    return;
-                }
-
-                if (!requestCreated)
-                {
-                    ApiProblemDetails apiError = new ApiProblemDetails("https://tools.ietf.org/html/rfc7231#section-6.5.8", StatusCodes.Status409Conflict,
-                        context.HttpContext.Request.HttpContext.Request.Path.Value, "Api call is already exist.", null, request.ApiRequestID.ToString(),
-                        context.HttpContext.Request.HttpContext.TraceIdentifier);
-
-                    context.Result = new ConflictObjectResult(apiError);
                     return;
                 }
             }
@@ -61,72 +65,66 @@ namespace YA.TenantWorker.Application.ActionFilters
             using (CancellationTokenSource cts = new CancellationTokenSource())
             {
                 string method = context.HttpContext.Request.Method;
-                IHeaderDictionary headers = context.HttpContext.Request.Headers;
 
-                (bool requestCreated, ApiRequest request) = await GetOrCreateRequestAsync(headers, method, cts.Token);
-
-                if (request != null)
+                if (Guid.TryParse(_correlationContextAccessor.CorrelationContext.CorrelationId, out Guid correlationId))
                 {
-                    switch (context.Result)
+                    (bool requestCreated, ApiRequest request) = await _apiRequestTracker.GetOrCreateRequestAsync(correlationId, method, cts.Token);
+
+                    if (request != null)
                     {
-                        case ObjectResult objectRequestResult when objectRequestResult.Value is ApiProblemDetails apiError:
-                            ////if (apiError.Code == ApiErrorCodes.DUPLICATE_API_CALL)
-                            ////{
-                            ////    if (request.ResponseBody != null)
-                            ////    {
-                            ////        try
-                            ////        {
-                            ////            JToken token = JToken.Parse(request.ResponseBody);
-                            ////            JObject json = JObject.Parse((string)token);
-
-                            ////            ObjectResult previousResult = new ObjectResult(json)
-                            ////            {
-                            ////                StatusCode = request.ResponseStatusCode
-                            ////            };
-
-                            ////            context.Result = previousResult;
-                            ////        }
-                            ////        catch (JsonReaderException)
-                            ////        {
-                            ////            //ignore object parsing exception as we return ApiError object in this case
-                            ////        }
-                            ////    }
-                            ////}
-                            break;
-                        case ObjectResult objectRequestResult:
+                        switch (context.Result)
                         {
-                            ApiRequestResult problemResult = new ApiRequestResult
-                            {
-                                StatusCode = objectRequestResult.StatusCode,
-                                Body = JToken.Parse(JsonConvert.SerializeObject(objectRequestResult.Value)).ToString(Formatting.None)
-                            };
+                            case ObjectResult objectRequestResult when objectRequestResult.Value is ApiProblemDetails apiError:
+                                ////if (apiError.Code == ApiErrorCodes.DUPLICATE_API_CALL)
+                                ////{
+                                ////    if (request.ResponseBody != null)
+                                ////    {
+                                ////        try
+                                ////        {
+                                ////            JToken token = JToken.Parse(request.ResponseBody);
+                                ////            JObject json = JObject.Parse((string)token);
 
-                            await _apiRequestTracker.SetResultAsync(request, problemResult, cts.Token);
-                            break;
-                        }
-                        case OkResult okResult:
-                        {
-                            ApiRequestResult result = new ApiRequestResult
-                            {
-                                StatusCode = okResult.StatusCode
-                            };
+                                ////            ObjectResult previousResult = new ObjectResult(json)
+                                ////            {
+                                ////                StatusCode = request.ResponseStatusCode
+                                ////            };
 
-                            await _apiRequestTracker.SetResultAsync(request, result, cts.Token);
-                            break;
+                                ////            context.Result = previousResult;
+                                ////        }
+                                ////        catch (JsonReaderException)
+                                ////        {
+                                ////            //ignore object parsing exception as we return ApiError object in this case
+                                ////        }
+                                ////    }
+                                ////}
+                                break;
+                            case ObjectResult objectRequestResult:
+                                {
+                                    ApiRequestResult apiRequestResult = new ApiRequestResult
+                                    {
+                                        StatusCode = objectRequestResult.StatusCode,
+                                        Body = JToken.Parse(JsonConvert.SerializeObject(objectRequestResult.Value)).ToString(Formatting.None)
+                                    };
+
+                                    await _apiRequestTracker.SetResultAsync(request, apiRequestResult, cts.Token);
+                                    break;
+                                }
+                            case OkResult okResult:
+                                {
+                                    ApiRequestResult result = new ApiRequestResult
+                                    {
+                                        StatusCode = okResult.StatusCode
+                                    };
+
+                                    await _apiRequestTracker.SetResultAsync(request, result, cts.Token);
+                                    break;
+                                }
                         }
                     }
                 }
             }
 
             await next.Invoke();
-        }
-
-        private async Task<(bool requestCreated, ApiRequest request)> GetOrCreateRequestAsync(IHeaderDictionary headers, string method, CancellationToken cancellationToken)
-        {
-            Guid correlationId = headers.GetCorrelationId(General.CorrelationIdHeader);
-
-            return (correlationId == Guid.Empty) ? (false, null) : await _apiRequestTracker
-                .GetOrCreateRequestAsync(correlationId, method, cancellationToken);
         }
     }
 }

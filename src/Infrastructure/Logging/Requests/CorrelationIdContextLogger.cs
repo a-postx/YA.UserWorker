@@ -23,9 +23,7 @@ namespace YA.TenantWorker.Infrastructure.Logging.Requests
         {
             HttpContext context = httpContext ?? throw new ArgumentNullException(nameof(httpContext));
 
-            string correlationId = correlationContextAccessor.CorrelationContext.CorrelationId;
-
-            if (!string.IsNullOrEmpty(correlationId))
+            if (Guid.TryParse(correlationContextAccessor.CorrelationContext.CorrelationId, out Guid correlationId))
             {
                 using (logger.BeginScopeWith((Logs.CorrelationId, correlationId)))
                 {
