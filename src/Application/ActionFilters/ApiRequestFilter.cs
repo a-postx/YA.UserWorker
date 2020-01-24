@@ -17,7 +17,7 @@ using YA.TenantWorker.Core.Entities;
 namespace YA.TenantWorker.Application.ActionFilters
 {
     /// <summary>
-    /// Idempotency filter: saves request and result to return the same result in case of duplicate request.
+    /// Idempotency filter: saves request and result to return the same result in case of a duplicate request.
     /// </summary>
     public sealed class ApiRequestFilter : ActionFilterAttribute
     {

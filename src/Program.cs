@@ -4,6 +4,7 @@ using Amazon.Runtime;
 using Delobytes.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -23,6 +24,7 @@ using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using YA.TenantWorker.Application.Interfaces;
 using YA.TenantWorker.Constants;
+using YA.TenantWorker.Infrastructure.Data;
 using YA.TenantWorker.Options;
 
 namespace YA.TenantWorker
@@ -70,6 +72,33 @@ namespace YA.TenantWorker
             catch (Exception e)
             {
                 Console.WriteLine($"Error building Host: {e}.");
+                return 1;
+            }
+
+            try
+            {
+                //automigration - ok for dev, use SQL scripts for prod
+                using (IServiceScope scope = host.Services.CreateScope())
+                {
+                    TenantWorkerDbContext dbContext = scope.ServiceProvider.GetService<TenantWorkerDbContext>();
+
+                    if (dbContext.Database.GetPendingMigrations().GetEnumerator().MoveNext())
+                    {
+                        Console.WriteLine("Applying database migrations...");
+
+                        dbContext.Database.Migrate();
+
+                        Console.WriteLine("Database migrations applied successfully.");
+                    }
+                    else
+                    {
+                        Console.WriteLine("No database migrations needed.");
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"Error applying database migration: {e}.");
                 return 1;
             }
 

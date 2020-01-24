@@ -71,6 +71,11 @@ namespace YA.TenantWorker
             AWSOptions awsOptions = _config.GetAWSOptions();
             services.AddDefaultAWSOptions(awsOptions);
 
+            services.Configure<HostOptions>(option =>
+            {
+                option.ShutdownTimeout = TimeSpan.FromSeconds(General.SystemShutdownTimeoutSec);
+            });
+
             AppSecrets secrets = _config.Get<AppSecrets>();
 
             if (!string.IsNullOrEmpty(secrets.AppInsightsInstrumentationKey))
@@ -264,17 +269,6 @@ namespace YA.TenantWorker
 
                 .UseSwagger()
                 .UseCustomSwaggerUI();
-
-            //automigration - dangerous, use SQL scripts instead
-            using (IServiceScope scope = application.ApplicationServices.GetRequiredService<IServiceScopeFactory>().CreateScope())
-            {
-                TenantWorkerDbContext dbContext = scope.ServiceProvider.GetService<TenantWorkerDbContext>();
-
-                if (dbContext.Database.GetPendingMigrations().GetEnumerator().MoveNext())
-                {
-                    dbContext.Database.Migrate();
-                }
-            }
         }
     }
 }
