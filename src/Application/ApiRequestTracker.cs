@@ -8,7 +8,7 @@ using YA.TenantWorker.Application.Interfaces;
 using YA.TenantWorker.Application.Models.Dto;
 using YA.TenantWorker.Core.Entities;
 
-namespace YA.TenantWorker.Infrastructure.Caching
+namespace YA.TenantWorker.Application
 {
     /// <summary>
     /// Track API request state.
@@ -16,7 +16,7 @@ namespace YA.TenantWorker.Infrastructure.Caching
     /// </summary>
     public class ApiRequestTracker : IApiRequestTracker
     {
-        public ApiRequestTracker(ILogger<ApiRequestTracker> logger, ApiRequestMemoryCache apiRequestCache, ITenantWorkerDbContext workerDbContext)
+        public ApiRequestTracker(ILogger<ApiRequestTracker> logger, IApiRequestMemoryCache apiRequestCache, ITenantWorkerDbContext workerDbContext)
         {
             _log = logger ?? throw new ArgumentNullException(nameof(logger));
             _apiRequestCache = apiRequestCache ?? throw new ArgumentNullException(nameof(apiRequestCache));
@@ -24,7 +24,7 @@ namespace YA.TenantWorker.Infrastructure.Caching
         }
 
         private readonly ILogger<ApiRequestTracker> _log;
-        private readonly ApiRequestMemoryCache _apiRequestCache;
+        private readonly IApiRequestMemoryCache _apiRequestCache;
         private readonly ITenantWorkerDbContext _dbContext;
         
         public async Task<(bool created, ApiRequest request)> GetOrCreateRequestAsync(Guid correlationId, string method, CancellationToken cancellationToken)
@@ -39,7 +39,7 @@ namespace YA.TenantWorker.Infrastructure.Caching
             {
                 if (request != null)
                 {
-                    _apiRequestCache.Add(request);
+                    _apiRequestCache.Add(request, request.ApiRequestID);
                     return (false, request);
                 }
                 else
@@ -49,7 +49,7 @@ namespace YA.TenantWorker.Infrastructure.Caching
                     ApiRequest createdRequest = await _dbContext.CreateAndReturnEntityAsync(newApiRequest, cancellationToken);
                     await _dbContext.ApplyChangesAsync(cancellationToken);
 
-                    _apiRequestCache.Add(newApiRequest);
+                    _apiRequestCache.Add(newApiRequest, newApiRequest.ApiRequestID);
 
                     return (true, createdRequest);
                 }
@@ -58,7 +58,7 @@ namespace YA.TenantWorker.Infrastructure.Caching
 
         private async Task<(bool requestFoundInCache, ApiRequest request)> GetFromCacheOrDbAsync(Guid correlationId, CancellationToken cancellationToken)
         {
-            ApiRequest requestFromCache = _apiRequestCache.GetApiRequestFromCache(correlationId);
+            ApiRequest requestFromCache = _apiRequestCache.GetApiRequestFromCache<ApiRequest>(correlationId);
                 
             if (requestFromCache == null)
             {
@@ -89,7 +89,7 @@ namespace YA.TenantWorker.Infrastructure.Caching
             request.SetResponseBody((result.Body != null) ? JToken.Parse(JsonConvert.SerializeObject(result.Body)).ToString(Formatting.Indented) : null);
             await _dbContext.ApplyChangesAsync(cancellationToken);
 
-            _apiRequestCache.Update(request);
+            _apiRequestCache.Update(request, request.ApiRequestID);
         }
     }
 }

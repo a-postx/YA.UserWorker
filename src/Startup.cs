@@ -32,6 +32,8 @@ using Microsoft.AspNetCore.HttpOverrides;
 using YA.TenantWorker.Infrastructure.Logging.MbMessages;
 using Amazon.Extensions.NETCore.Setup;
 using Microsoft.ApplicationInsights.AspNetCore.Extensions;
+using YA.TenantWorker.Application;
+using YA.TenantWorker.Core.Entities;
 
 namespace YA.TenantWorker
 {
@@ -193,7 +195,7 @@ namespace YA.TenantWorker
             services.AddScoped<ApiRequestFilter>();
 
             services.AddScoped<IApiRequestTracker, ApiRequestTracker>();
-            services.AddSingleton<ApiRequestMemoryCache>();
+            services.AddSingleton<IApiRequestMemoryCache, ApiRequestMemoryCache>();
         }
 
         /// <summary>

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -135,7 +136,7 @@ namespace YA.TenantWorker
 
         public static bool LogException(this ILogger logger, Exception ex, params (string key, object value)[] stateKeys)
         {
-            logger.Log(LogLevel.Error, 0, stateKeys.ToDictionary(x => x.key, x => x.value), ex, (s, e) => "Unhandled exception occured.");
+            logger.Log(LogLevel.Error, 0, stateKeys.ToDictionary(x => x.key, x => x.value), ex.Demystify(), (s, e) => "Unhandled exception occured.");
             return true;
         }
 
