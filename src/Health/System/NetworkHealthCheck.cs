@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using YA.Common;
 
 namespace YA.TenantWorker.Health.System
 {

@@ -6,6 +6,7 @@ using MassTransit.Audit;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using YA.Common;
 using YA.TenantWorker.Constants;
 using YA.TenantWorker.Health.Services;
 using YA.TenantWorker.Infrastructure.Messaging.Test;
@@ -50,7 +51,7 @@ namespace YA.TenantWorker.Infrastructure.Services
 
                 try
                 {
-                    result = await Utils.CheckTcpConnectionAsync(secrets.MessageBusHost, General.MessageBusServiceHealthPort);
+                    result = await NetTools.CheckTcpConnectionAsync(secrets.MessageBusHost, General.MessageBusServiceHealthPort);
                 }
                 catch (Exception e)
                 {

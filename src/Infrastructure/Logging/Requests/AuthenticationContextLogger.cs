@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Threading.Tasks;
+using YA.Common;
 using YA.TenantWorker.Constants;
 
 namespace YA.TenantWorker.Infrastructure.Logging.Requests

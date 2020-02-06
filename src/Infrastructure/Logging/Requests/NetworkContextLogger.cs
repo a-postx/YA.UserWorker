@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 using System;
 using System.Threading.Tasks;
+using YA.Common;
 using YA.TenantWorker.Constants;
 
 namespace YA.TenantWorker.Infrastructure.Logging.Requests

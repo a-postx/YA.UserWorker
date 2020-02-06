@@ -3,6 +3,7 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using YA.Common;
 using YA.TenantWorker.Application.Interfaces;
 using YA.TenantWorker.Constants;
 
@@ -47,7 +48,7 @@ namespace YA.TenantWorker.Infrastructure.Services
 
             try
             {
-                using (HttpClient client = Utils.GetHttpClient(General.AppHttpUserAgent))
+                using (HttpClient client = NetTools.GetHttpClient(General.AppHttpUserAgent))
                 {
                     client.BaseAddress = new Uri(ProviderUrl);
 
