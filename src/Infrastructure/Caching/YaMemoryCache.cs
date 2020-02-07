@@ -15,9 +15,9 @@ namespace YA.TenantWorker.Infrastructure.Caching
 
         public async Task<(bool created, T type)> GetOrCreateAsync<T>(object key, Func<Task<T>> createItem, MemoryCacheEntryOptions options) where T : class
         {
-            bool appEventExists = _cache.TryGetValue(key, out T cacheEntry);
+            bool itemExists = _cache.TryGetValue(key, out T cacheEntry);
 
-            if (!appEventExists)
+            if (!itemExists)
             {
                 T newItem = await createItem();
 

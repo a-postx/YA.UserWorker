@@ -52,7 +52,8 @@ namespace YA.TenantWorker
             Console.OutputEncoding = System.Text.Encoding.UTF8;
             Activity.DefaultIdFormat = ActivityIdFormat.W3C;
 
-            GetEnvironmentInfo();
+            OsPlatform = GetOs();
+            DotNetVersion = GetNetCoreVersion();
 
             Directory.CreateDirectory(Path.Combine(RootPath, General.AppDataFolderName));
 
@@ -305,49 +306,35 @@ namespace YA.TenantWorker
             limits.RequestHeadersTimeout = sourceLimits.RequestHeadersTimeout;
         }
 
-        private static void GetEnvironmentInfo()
-        {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                OsPlatform = OsPlatforms.Windows;
-            }
-            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-            {
-                OsPlatform = OsPlatforms.Linux;
-            }
-            else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-            {
-                OsPlatform = OsPlatforms.OSX;
-            }
-
-            DotNetVersion = GetNetCoreVersion();
-        }
-
         // See: https://github.com/dotnet/BenchmarkDotNet/issues/448#issuecomment-308424100
         private static string GetNetCoreVersion()
         {
-            Assembly assembly = typeof(GCSettings).Assembly;
-            string[] assemblyPath = assembly.CodeBase.Split(new[] { '/', '\\' }, StringSplitOptions.RemoveEmptyEntries);
-            int netCoreAppIndex = Array.IndexOf(assemblyPath, "Microsoft.NETCore.App");
+            var assembly = typeof(GCSettings).Assembly;
+            var assemblyPath = assembly.CodeBase.Split(new[] { '/', '\\' }, StringSplitOptions.RemoveEmptyEntries);
+            var netCoreAppIndex = Array.IndexOf(assemblyPath, "Microsoft.NETCore.App");
             return netCoreAppIndex > 0 && netCoreAppIndex < assemblyPath.Length - 2
                 ? assemblyPath[netCoreAppIndex + 1]
                 : null;
         }
 
-        private static void IgnoreInvalidCertificates()
+        private static OsPlatforms GetOs()
         {
-            System.Net.ServicePointManager.ServerCertificateValidationCallback =
-            (sender, certificate, chain, sslPolicyErrors) =>
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                switch (sslPolicyErrors)
-                {
-                    case System.Net.Security.SslPolicyErrors.RemoteCertificateChainErrors:
-                    case System.Net.Security.SslPolicyErrors.RemoteCertificateNameMismatch:
-                    case System.Net.Security.SslPolicyErrors.RemoteCertificateNotAvailable:
-                        break;
-                }
-                return true;
-            };
+                return OsPlatforms.Windows;
+            }
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            {
+                return OsPlatforms.Linux;
+            }
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                return OsPlatforms.OSX;
+            }
+            else
+            {
+                return OsPlatforms.Unknown;
+            }
         }
     }
 }

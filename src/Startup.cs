@@ -34,6 +34,7 @@ using Amazon.Extensions.NETCore.Setup;
 using Microsoft.ApplicationInsights.AspNetCore.Extensions;
 using YA.TenantWorker.Application;
 using YA.TenantWorker.Core.Entities;
+using System.Text;
 
 namespace YA.TenantWorker
 {
@@ -266,6 +267,10 @@ namespace YA.TenantWorker
                         // Exclude all checks and return a 200-Ok.
                         Predicate = (_) => false,
                         ResponseWriter = HealthResponse.WriteResponseAsync
+                    }).RequireCors(CorsPolicyName.AllowAny);
+                    endpoints.MapGet("/nodeid", async (context) =>
+                    {
+                        await context.Response.BodyWriter.WriteAsync(Encoding.UTF8.GetBytes(Node.Id));
                     }).RequireCors(CorsPolicyName.AllowAny);
                 })
 
