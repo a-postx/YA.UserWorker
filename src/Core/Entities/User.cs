@@ -2,10 +2,10 @@
 
 namespace YA.TenantWorker.Core.Entities
 {
-    public class User : ITenantEntity, IAuditedEntityBase, IRowVersionedEntity
+    public class User : ITenantEntity, IAuditedEntityBase, IRowVersionedEntity, ISoftDeleteEntity
     {
         public virtual Tenant Tenant { get; set; }
-        public Guid UserID { get; set; }        
+        public Guid UserID { get; set; }
         public string Username { get; set; }
         public string Password { get; set; }
         public string FirstName { get; set; }

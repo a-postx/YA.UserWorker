@@ -12,6 +12,8 @@ using YA.TenantWorker.Core.Entities;
 using YA.TenantWorker.Application.Interfaces;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using YA.Common;
+using Microsoft.EntityFrameworkCore.Metadata;
+using System.Reflection;
 
 namespace YA.TenantWorker.Infrastructure.Data
 {
@@ -31,6 +33,9 @@ namespace YA.TenantWorker.Infrastructure.Data
 
         public IDbContextTransaction GetCurrentTransaction() => _currentTransaction;
         public bool HasActiveTransaction => _currentTransaction != null;
+        private bool IsSoftDeleteFilterEnabled => true;
+
+        private static MethodInfo ConfigureGlobalFiltersMethodInfo = typeof(TenantWorkerDbContext).GetMethod(nameof(ConfigureGlobalFilters), BindingFlags.Instance | BindingFlags.NonPublic);
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -40,8 +45,16 @@ namespace YA.TenantWorker.Infrastructure.Data
             modelBuilder.ApplyConfiguration(new PricingTierConfiguration());
 
             modelBuilder.Seed();
+
+            foreach (var entityType in modelBuilder.Model.GetEntityTypes())
+            {
+                ConfigureGlobalFiltersMethodInfo
+                    .MakeGenericMethod(entityType.ClrType)
+                    .Invoke(this, new object[] { modelBuilder, entityType });
+            }
         }
 
+        #region Generics
         private void DeleteItem<T>(T item) where T : class
         {
             Set<T>().Remove(item);
@@ -296,6 +309,7 @@ namespace YA.TenantWorker.Infrastructure.Data
         {
             return await Set<T>().Where(wherePredicate).CountAsync(cancellationToken);
         }
+        #endregion
 
         #region Tenants
         public void DeleteTenant(Tenant tenant)
@@ -309,73 +323,122 @@ namespace YA.TenantWorker.Infrastructure.Data
         }
         #endregion
 
-        private void ApplyAuditedValues()
+        #region Filtering
+        private void ConfigureGlobalFilters<TEntity>(ModelBuilder modelBuilder, IMutableEntityType entityType) where TEntity : class
         {
-            DateTime currentDateTime = DateTime.UtcNow;
-            List<EntityEntry> entries = ChangeTracker.Entries().ToList();
-
-            List<EntityEntry> updatedEntries = entries.Where(e => e.Entity is IAuditedEntityBase && e.State == EntityState.Modified).ToList();
-
-            updatedEntries.ForEach(e =>
+            if (entityType.BaseType == null && ShouldFilterEntity<TEntity>(entityType))
             {
-                ((IAuditedEntityBase)e.Entity).LastModifiedDateTime = currentDateTime;
-            });
+                Expression<Func<TEntity, bool>> filterExpression = CreateFilterExpression<TEntity>();
+
+                if (filterExpression != null)
+                {
+                    if (entityType.IsKeyless)
+                    {
+                        modelBuilder.Entity<TEntity>().HasQueryFilter(filterExpression);
+                    }
+                    else
+                    {
+                        modelBuilder.Entity<TEntity>().HasQueryFilter(filterExpression);
+                    }
+                }
+            }
+        }
+
+        private bool ShouldFilterEntity<TEntity>(IMutableEntityType entityType) where TEntity : class
+        {
+            if (typeof(ISoftDeleteEntity).IsAssignableFrom(typeof(TEntity)))
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        protected virtual Expression<Func<TEntity, bool>> CreateFilterExpression<TEntity>() where TEntity : class
+        {
+            Expression<Func<TEntity, bool>> expression = null;
+
+            if (typeof(ISoftDeleteEntity).IsAssignableFrom(typeof(TEntity)))
+            {
+                Expression<Func<TEntity, bool>> softDeleteFilter = e => !IsSoftDeleteFilterEnabled || !((ISoftDeleteEntity)e).IsDeleted;
+                expression = expression == null ? softDeleteFilter : CombineExpressions(expression, softDeleteFilter);
+            }
+
+            return expression;
+        }
+
+        private Expression<Func<T, bool>> CombineExpressions<T>(Expression<Func<T, bool>> expression1, Expression<Func<T, bool>> expression2)
+        {
+            return ExpressionCombiner.Combine(expression1, expression2);
+        }
+        #endregion
+
+        #region Saving
+        private void ApplySavingConcepts()
+        {
+            foreach (var entry in ChangeTracker.Entries().ToList())
+            {
+                if (entry.State != EntityState.Modified && entry.CheckOwnedEntityChange())
+                {
+                    Entry(entry.Entity).State = EntityState.Modified;
+                }
+
+                ApplySavingConcepts(entry);
+            }
+        }
+
+        private void ApplySavingConcepts(EntityEntry entry)
+        {
+            switch (entry.State)
+            {
+                case EntityState.Added:
+                    ApplyAbpConceptsForAddedEntity(entry);
+                    break;
+                case EntityState.Modified:
+                    ApplyAbpConceptsForModifiedEntity(entry);
+                    break;
+            }
+        }
+
+        private void ApplyAbpConceptsForAddedEntity(EntityEntry entry)
+        {
+            SetCreationAuditProperties(entry.Entity);
+        }
+
+        private void ApplyAbpConceptsForModifiedEntity(EntityEntry entry)
+        {
+            SetModificationAuditProperties(entry.Entity);
+        }
+
+        public static void SetCreationAuditProperties(object entityAsObj)
+        {
+            if (entityAsObj is IAuditedEntityBase)
+            {
+                IAuditedEntityBase auditedEntity = entityAsObj.As<IAuditedEntityBase>();
+                auditedEntity.LastModifiedDateTime = DateTime.UtcNow;
+            }
+        }
+
+        public static void SetModificationAuditProperties(object entityAsObj)
+        {
+            if (entityAsObj is IAuditedEntityBase)
+            {
+                entityAsObj.As<IAuditedEntityBase>().LastModifiedDateTime = DateTime.UtcNow;
+            }
         }
 
         public int ApplyChanges()
         {
-            ApplyAuditedValues();
-
+            ApplySavingConcepts();
             return base.SaveChanges();
         }
 
         public async Task<int> ApplyChangesAsync(CancellationToken cancellationToken)
         {
-            ApplyAuditedValues();
-
-            int result = 0;
-
-            bool saved = false;
-
-            while (!saved)
-            {
-                try
-                {
-                    // Attempt to save changes to the database
-                    result = await base.SaveChangesAsync(cancellationToken);
-                    saved = true;
-                }
-                catch (DbUpdateConcurrencyException ex)
-                {
-                    foreach (var entry in ex.Entries)
-                    {
-                        if (entry.Entity is Tenant)
-                        {
-                            var proposedValues = entry.CurrentValues;
-                            var databaseValues = entry.GetDatabaseValues();
-
-                            foreach (var property in proposedValues.Properties)
-                            {
-                                var proposedValue = proposedValues[property];
-                                var databaseValue = databaseValues[property];
-
-                                // TODO: decide which value should be written to database
-                                proposedValues[property] = proposedValue;
-                            }
-
-                            // Refresh original values to bypass next concurrency check
-                            entry.OriginalValues.SetValues(databaseValues);
-                        }
-                        else
-                        {
-                            throw new NotSupportedException("Don't know how to handle concurrency conflicts for " + entry.Metadata.Name);
-                        }
-                    }
-                }
-            }
-
-            return result;
+            ApplySavingConcepts();
+            return await base.SaveChangesAsync(cancellationToken);
         }
+        #endregion
 
         internal async Task RunQueryAsync(string sqlQuery)
         {
