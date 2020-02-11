@@ -1,21 +1,17 @@
-﻿using System;
-using System.Threading;
-using System.Threading.Tasks;
-using MassTransit;
+﻿using MassTransit;
+using MbCommands;
 using MbEvents;
 using Microsoft.Extensions.Logging;
-using YA.TenantWorker.Application.Models.SaveModels;
+using System;
+using System.Threading;
+using System.Threading.Tasks;
 using YA.TenantWorker.Application.Interfaces;
+using YA.TenantWorker.Application.Models.Dto;
+using YA.TenantWorker.Application.Models.SaveModels;
 using YA.TenantWorker.Infrastructure.Messaging.Messages;
 
 namespace YA.TenantWorker.Infrastructure.Messaging
 {
-    public enum MbOperationStatuses
-    {
-        Success = 1,
-        Error = 2
-    }
-
     public class MessageBus : IMessageBus
     {
         public MessageBus(ILogger<MessageBus> logger,
@@ -44,6 +40,11 @@ namespace YA.TenantWorker.Infrastructure.Messaging
         public async Task UpdateTenantV1Async(Guid correlationId, Guid tenantId, TenantSm tenantSm, CancellationToken cancellationToken)
         {
             await _publishEndpoint.Publish<IUpdateTenantV1>(new UpdateTenantV1(correlationId, tenantId, tenantSm), cancellationToken);
+        }
+
+        public async Task SendPricingTierV1Async(Guid correlationId, Guid tenantId, PricingTierTm pricingTierTm, CancellationToken cancellationToken)
+        {
+            await _publishEndpoint.Publish<ISendPricingTierV1>(new SendPricingTierV1(correlationId, tenantId, pricingTierTm), cancellationToken);
         }
     }
 }

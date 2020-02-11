@@ -1,8 +1,10 @@
 using Delobytes.Mapper;
 using Microsoft.Extensions.DependencyInjection;
+using YA.TenantWorker.Application;
 using YA.TenantWorker.Application.Commands;
 using YA.TenantWorker.Application.Interfaces;
 using YA.TenantWorker.Application.Mappers;
+using YA.TenantWorker.Application.Models.Dto;
 using YA.TenantWorker.Application.Models.SaveModels;
 using YA.TenantWorker.Application.Models.ViewModels;
 using YA.TenantWorker.Core.Entities;
@@ -36,6 +38,15 @@ namespace YA.TenantWorker
         }
 
         /// <summary>
+        /// Add project domain components to the service collection.
+        /// </summary>
+        public static IServiceCollection AddProjectComponents(this IServiceCollection services)
+        {
+            return services
+                .AddScoped<ITenantManager, TenantManager>();
+        }
+
+        /// <summary>
         /// Add project mappers to the service collection.
         /// </summary>
         public static IServiceCollection AddProjectMappers(this IServiceCollection services)
@@ -43,7 +54,8 @@ namespace YA.TenantWorker
             return services
                 .AddSingleton<IMapper<TenantSm, Tenant>, TenantToSmMapper>()
                 .AddSingleton<IMapper<Tenant, TenantSm>, TenantToSmMapper>()
-                .AddSingleton<IMapper<Tenant, TenantVm>, TenantToVmMapper>();
+                .AddSingleton<IMapper<Tenant, TenantVm>, TenantToVmMapper>()
+                .AddSingleton<IMapper<PricingTier, PricingTierTm>, PricingTierToTmMapper>();
         }
 
         /// <summary>

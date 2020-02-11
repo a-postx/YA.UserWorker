@@ -1,13 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using YA.TenantWorker.Core.Entities;
 using System;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Reflection;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
-using Microsoft.EntityFrameworkCore.Query;
+using YA.TenantWorker.Core.Entities;
 
 namespace YA.TenantWorker.Infrastructure.Data
 {
@@ -15,28 +8,57 @@ namespace YA.TenantWorker.Infrastructure.Data
     {
         public static void Seed(this ModelBuilder modelBuilder)
         {
-            Guid seedPricingTierId = Guid.Parse("00000000-0000-0000-0000-000000000003");
+            Guid freePricingTierId = Guid.Parse("00000000-0000-0000-0000-000000000003");
+            Guid paidPricingTierId = Guid.Parse("00000000-0000-0000-0000-000000000013");
 
             modelBuilder.Entity<PricingTier>().HasData(
                 new PricingTier
                 {
-                    PricingTierID = seedPricingTierId,
+                    PricingTierID = freePricingTierId,
                     Title = "Бесплатный",
-                    Description = "Бесплатно для всех."
+                    Description = "Бесплатно для всех.",
+                    HasTrial = false,
+                    MaxUsers = 1,
+                    MaxVkCommunities = 1,
+                    MaxVkCommunitySize = 1000,
+                    MaxScheduledTasks = 0
+                },
+                new PricingTier
+                {
+                    PricingTierID = paidPricingTierId,
+                    Title = "Платный",
+                    Description = "За денежки.",
+                    HasTrial = true,
+                    TrialPeriod = TimeSpan.FromDays(15),
+                    MaxUsers = 1,
+                    MaxVkCommunities = 1,
+                    MaxVkCommunitySize = 10000,
+                    MaxScheduledTasks = 1
                 }
             );
 
-            Guid seedTenantId = Guid.Parse("00000000-0000-0000-0000-000000000001");
+            Guid seedFreeTenantId = Guid.Parse("00000000-0000-0000-0000-000000000001");
+            Guid seedPaidTenantId = Guid.Parse("00000000-0000-0000-0000-000000000002");
 
             modelBuilder.Entity<Tenant>().HasData(
                 new
                 {
-                    TenantID = seedTenantId,
+                    TenantID = seedFreeTenantId,
                     TenantName = "Прохожий",
-                    PricingTierID = seedPricingTierId,
+                    PricingTierID = freePricingTierId,
+                    PricingTierActivatedDateTime = DateTime.UtcNow,
                     TenantType = TenantTypes.Custom,
                     IsActive = true,
-                    IsTrial = false,
+                    IsReadOnly = false
+                },
+                new
+                {
+                    TenantID = seedPaidTenantId,
+                    TenantName = "Уважаемый",
+                    PricingTierID = paidPricingTierId,
+                    PricingTierActivatedDateTime = DateTime.UtcNow,
+                    TenantType = TenantTypes.Custom,
+                    IsActive = true,
                     IsReadOnly = false
                 }
             );
@@ -48,7 +70,7 @@ namespace YA.TenantWorker.Infrastructure.Data
                 new
                 {
                     UserID = seedAdminId,
-                    TenantID = seedTenantId,
+                    TenantID = seedFreeTenantId,
                     Username = "admin@ya.ru",
                     Password = "123",
                     FirstName = "My",
@@ -64,7 +86,7 @@ namespace YA.TenantWorker.Infrastructure.Data
                 new
                 {
                     UserID = seedUserId,
-                    TenantID = seedTenantId,
+                    TenantID = seedFreeTenantId,
                     Username = "user@ya.ru",
                     Password = "123",
                     FirstName = "My",

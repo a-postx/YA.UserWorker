@@ -12,8 +12,6 @@ namespace YA.TenantWorker.Infrastructure.Data.Configurations
         {
             modelBuilder.HasKey(m => new { m.UserID });
 
-            modelBuilder.HasQueryFilter(f => !f.IsDeleted);
-
             modelBuilder.Property(p => p.CreatedDateTime)
                 .HasDefaultValueSql(General.DefaultSqlModelDateTimeFunction)
                 .ValueGeneratedOnAdd()

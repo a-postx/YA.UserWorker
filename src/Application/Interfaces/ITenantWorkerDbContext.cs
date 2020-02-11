@@ -11,6 +11,7 @@ namespace YA.TenantWorker.Application.Interfaces
     {
         void DeleteTenant(Tenant tenant);
         void UpdateTenant(Tenant tenant);
+        Task<Tenant> GetTenantWithPricingTierAsync(Expression<Func<Tenant, bool>> predicate, CancellationToken cancellationToken);
 
         Task CreateEntityAsync<T>(T item, CancellationToken cancellationToken) where T : class;
         Task<T> CreateAndReturnEntityAsync<T>(T item, CancellationToken cancellationToken) where T : class;

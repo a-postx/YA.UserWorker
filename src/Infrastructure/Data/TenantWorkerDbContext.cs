@@ -225,13 +225,13 @@ namespace YA.TenantWorker.Infrastructure.Data
             return await Set<T>().CountAsync(cancellationToken);
         }
 
-        public Task<List<T>> GetTenantEntitiesPagedAsync<T>(Expression<Func<T, bool>> wherePredicate, int? first, DateTimeOffset? createdAfter, DateTimeOffset? createdBefore, CancellationToken cancellationToken) where T : class, ITenantEntity, IAuditedEntityBase, IRowVersionedEntity
+        public async Task<List<T>> GetTenantEntitiesPagedAsync<T>(Expression<Func<T, bool>> wherePredicate, int? first, DateTimeOffset? createdAfter, DateTimeOffset? createdBefore, CancellationToken cancellationToken) where T : class, ITenantEntity, IAuditedEntityBase, IRowVersionedEntity
         {
-            return Task.FromResult(Set<T>().Where(wherePredicate).OrderBy(t => t.tstamp)
+            return await Set<T>().Where(wherePredicate).OrderBy(t => t.tstamp)
                 .If(createdAfter.HasValue, x => x.Where(y => y.CreatedDateTime > createdAfter.Value))
                 .If(createdBefore.HasValue, x => x.Where(y => y.CreatedDateTime < createdBefore.Value))
                 .If(first.HasValue, x => x.Take(first.Value))
-                .ToList());
+                .ToListAsync();
         }
 
         public Task<List<T>> GetTenantEntitiesPagedReverseAsync<T>(Expression<Func<T, bool>> wherePredicate, int? last, DateTimeOffset? createdAfter, DateTimeOffset? createdBefore, CancellationToken cancellationToken) where T : class, ITenantEntity, IAuditedEntityBase, IRowVersionedEntity
@@ -244,12 +244,12 @@ namespace YA.TenantWorker.Infrastructure.Data
                 .ToList());
         }
 
-        public Task<bool> GetTenantEntitiesPagedHasNextPageAsync<T>(Expression<Func<T, bool>> wherePredicate, int? first, DateTimeOffset? createdAfter, CancellationToken cancellationToken) where T : class, ITenantEntity, IAuditedEntityBase, IRowVersionedEntity
+        public async Task<bool> GetTenantEntitiesPagedHasNextPageAsync<T>(Expression<Func<T, bool>> wherePredicate, int? first, DateTimeOffset? createdAfter, CancellationToken cancellationToken) where T : class, ITenantEntity, IAuditedEntityBase, IRowVersionedEntity
         {
-            return Task.FromResult(Set<T>().Where(wherePredicate).OrderBy(t => t.tstamp)
+            return await Set<T>().Where(wherePredicate).OrderBy(t => t.tstamp)
                 .If(createdAfter.HasValue, x => x.Where(y => y.CreatedDateTime > createdAfter.Value))
                 .Skip(first.Value)
-                .Any());
+                .AnyAsync();
         }
 
         public Task<bool> GetTenantEntitiesPagedHasPreviousPageAsync<T>(Expression<Func<T, bool>> wherePredicate, int? last, DateTimeOffset? createdBefore, CancellationToken cancellationToken) where T : class, ITenantEntity, IAuditedEntityBase, IRowVersionedEntity
@@ -320,6 +320,11 @@ namespace YA.TenantWorker.Infrastructure.Data
         public void UpdateTenant(Tenant tenant)
         {
             UpdateItem(tenant);
+        }
+
+        public async Task<Tenant> GetTenantWithPricingTierAsync(Expression<Func<Tenant, bool>> predicate, CancellationToken cancellationToken)
+        {
+            return await Set<Tenant>().Include(nameof(PricingTier)).SingleOrDefaultAsync(predicate, cancellationToken);
         }
         #endregion
 

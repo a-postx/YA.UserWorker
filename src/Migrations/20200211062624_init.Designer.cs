@@ -10,14 +10,14 @@ using YA.TenantWorker.Infrastructure.Data;
 namespace YA.TenantWorker.Migrations
 {
     [DbContext(typeof(TenantWorkerDbContext))]
-    [Migration("20191130135302_initial")]
-    partial class initial
+    [Migration("20200211062624_init")]
+    partial class init
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "3.0.1")
+                .HasAnnotation("ProductVersion", "3.1.0")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128)
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
@@ -65,21 +65,33 @@ namespace YA.TenantWorker.Migrations
                         .HasMaxLength(128)
                         .IsUnicode(true);
 
-                    b.Property<string>("Features")
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<bool>("HasTrial")
+                        .HasColumnType("bit");
 
                     b.Property<DateTime>("LastModifiedDateTime")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
                         .HasDefaultValueSql("GETUTCDATE()");
 
-                    b.Property<string>("ResourceLevels")
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int>("MaxScheduledTasks")
+                        .HasColumnType("int");
+
+                    b.Property<int>("MaxUsers")
+                        .HasColumnType("int");
+
+                    b.Property<int>("MaxVkCommunities")
+                        .HasColumnType("int");
+
+                    b.Property<int>("MaxVkCommunitySize")
+                        .HasColumnType("int");
 
                     b.Property<string>("Title")
                         .HasColumnType("nvarchar(128)")
                         .HasMaxLength(128)
                         .IsUnicode(true);
+
+                    b.Property<long?>("TrialPeriod")
+                        .HasColumnType("bigint");
 
                     b.Property<byte[]>("tstamp")
                         .IsConcurrencyToken()
@@ -96,8 +108,27 @@ namespace YA.TenantWorker.Migrations
                             PricingTierID = new Guid("00000000-0000-0000-0000-000000000003"),
                             CreatedDateTime = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Description = "Бесплатно для всех.",
+                            HasTrial = false,
                             LastModifiedDateTime = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            MaxScheduledTasks = 0,
+                            MaxUsers = 1,
+                            MaxVkCommunities = 1,
+                            MaxVkCommunitySize = 1000,
                             Title = "Бесплатный"
+                        },
+                        new
+                        {
+                            PricingTierID = new Guid("00000000-0000-0000-0000-000000000013"),
+                            CreatedDateTime = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Description = "За денежки.",
+                            HasTrial = true,
+                            LastModifiedDateTime = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            MaxScheduledTasks = 1,
+                            MaxUsers = 1,
+                            MaxVkCommunities = 1,
+                            MaxVkCommunitySize = 10000,
+                            Title = "Платный",
+                            TrialPeriod = 12960000000000L
                         });
                 });
 
@@ -118,13 +149,13 @@ namespace YA.TenantWorker.Migrations
                     b.Property<bool>("IsReadOnly")
                         .HasColumnType("bit");
 
-                    b.Property<bool>("IsTrial")
-                        .HasColumnType("bit");
-
                     b.Property<DateTime>("LastModifiedDateTime")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
                         .HasDefaultValueSql("GETUTCDATE()");
+
+                    b.Property<DateTime>("PricingTierActivatedDateTime")
+                        .HasColumnType("datetime2");
 
                     b.Property<Guid?>("PricingTierID")
                         .HasColumnType("uniqueidentifier");
@@ -154,9 +185,19 @@ namespace YA.TenantWorker.Migrations
                             TenantID = new Guid("00000000-0000-0000-0000-000000000001"),
                             IsActive = true,
                             IsReadOnly = false,
-                            IsTrial = false,
+                            PricingTierActivatedDateTime = new DateTime(2020, 2, 11, 6, 26, 24, 364, DateTimeKind.Utc).AddTicks(9131),
                             PricingTierID = new Guid("00000000-0000-0000-0000-000000000003"),
                             TenantName = "Прохожий",
+                            TenantType = 1
+                        },
+                        new
+                        {
+                            TenantID = new Guid("00000000-0000-0000-0000-000000000002"),
+                            IsActive = true,
+                            IsReadOnly = false,
+                            PricingTierActivatedDateTime = new DateTime(2020, 2, 11, 6, 26, 24, 365, DateTimeKind.Utc).AddTicks(768),
+                            PricingTierID = new Guid("00000000-0000-0000-0000-000000000013"),
+                            TenantName = "Уважаемый",
                             TenantType = 1
                         });
                 });
@@ -233,13 +274,13 @@ namespace YA.TenantWorker.Migrations
                         new
                         {
                             UserID = new Guid("00000000-0000-0000-0000-000000000011"),
-                            CreatedDateTime = new DateTime(2019, 11, 30, 13, 53, 1, 869, DateTimeKind.Utc).AddTicks(686),
+                            CreatedDateTime = new DateTime(2020, 2, 11, 6, 26, 24, 365, DateTimeKind.Utc).AddTicks(1905),
                             Email = "admin@email.com",
                             FirstName = "My",
                             IsActive = true,
                             IsDeleted = false,
                             IsPendingActivation = false,
-                            LastModifiedDateTime = new DateTime(2019, 11, 30, 13, 53, 1, 869, DateTimeKind.Utc).AddTicks(708),
+                            LastModifiedDateTime = new DateTime(2020, 2, 11, 6, 26, 24, 365, DateTimeKind.Utc).AddTicks(1914),
                             LastName = "Admin",
                             Password = "123",
                             Role = "Administrator",
@@ -249,13 +290,13 @@ namespace YA.TenantWorker.Migrations
                         new
                         {
                             UserID = new Guid("00000000-0000-0000-0000-000000000012"),
-                            CreatedDateTime = new DateTime(2019, 11, 30, 13, 53, 1, 869, DateTimeKind.Utc).AddTicks(2729),
+                            CreatedDateTime = new DateTime(2020, 2, 11, 6, 26, 24, 365, DateTimeKind.Utc).AddTicks(3857),
                             Email = "user@email.com",
                             FirstName = "My",
                             IsActive = true,
                             IsDeleted = false,
                             IsPendingActivation = false,
-                            LastModifiedDateTime = new DateTime(2019, 11, 30, 13, 53, 1, 869, DateTimeKind.Utc).AddTicks(2736),
+                            LastModifiedDateTime = new DateTime(2020, 2, 11, 6, 26, 24, 365, DateTimeKind.Utc).AddTicks(3865),
                             LastName = "User",
                             Password = "123",
                             Role = "User",

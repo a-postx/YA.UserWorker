@@ -35,6 +35,7 @@ using Microsoft.ApplicationInsights.AspNetCore.Extensions;
 using YA.TenantWorker.Application;
 using YA.TenantWorker.Core.Entities;
 using System.Text;
+using YA.TenantWorker.Infrastructure.Messaging.Consumers;
 
 namespace YA.TenantWorker
 {
@@ -131,6 +132,7 @@ namespace YA.TenantWorker
 
             services
                 .AddProjectCommands()
+                .AddProjectComponents()
                 .AddProjectMappers()
                 .AddProjectRepositories()
                 .AddProjectServices();
@@ -181,6 +183,18 @@ namespace YA.TenantWorker
                         ////e.SetExchangeArgument("x-delayed-type", "direct");
 
                         e.Consumer<TestRequestConsumer>(provider);
+                    });
+
+                    cfg.ReceiveEndpoint(host, MbQueueNames.PricingTierQueueName, e =>
+                    {
+                        e.UseConcurrencyLimit(1);
+                        e.UseMessageRetry(x =>
+                        {
+                            x.Handle<OperationCanceledException>();
+                            x.Interval(2, 500);
+                        });
+
+                        e.Consumer<GetPricingTierConsumer>(provider);
                     });
                 });
             });
