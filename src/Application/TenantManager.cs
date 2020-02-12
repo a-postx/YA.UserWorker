@@ -33,8 +33,7 @@ namespace YA.TenantWorker.Application
         {
             Tenant tenant = await _dbContext.GetTenantWithPricingTierAsync(e => e.TenantID == tenantId, cancellationToken);
 
-            PricingTierTm pricingTierTm = new PricingTierTm();
-            _pricingTierToTmMapper.Map(tenant.PricingTier, pricingTierTm);
+            PricingTierTm pricingTierTm = _pricingTierToTmMapper.Map(tenant.PricingTier);
 
             return pricingTierTm;
         }

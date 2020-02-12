@@ -29,17 +29,17 @@ namespace YA.TenantWorker.Infrastructure.Messaging
 
         public async Task CreateTenantV1Async(Guid correlationId, Guid tenantId, TenantSm tenantSm, CancellationToken cancellationToken)
         {
-            await _publishEndpoint.Publish<ICreateTenantV1>(new CreateTenantV1(correlationId, tenantId, tenantSm), cancellationToken);
+            await _publishEndpoint.Publish<ITenantCreatedV1>(new TenantCreatedV1(correlationId, tenantId, tenantSm), cancellationToken);
         }
 
         public async Task DeleteTenantV1Async(Guid correlationId, Guid tenantId, TenantSm tenantSm, CancellationToken cancellationToken)
         {
-            await _publishEndpoint.Publish<IDeleteTenantV1>(new DeleteTenantV1(correlationId, tenantId, tenantSm), cancellationToken);
+            await _publishEndpoint.Publish<ITenantDeletedV1>(new TenantDeletedV1(correlationId, tenantId, tenantSm), cancellationToken);
         }
 
         public async Task UpdateTenantV1Async(Guid correlationId, Guid tenantId, TenantSm tenantSm, CancellationToken cancellationToken)
         {
-            await _publishEndpoint.Publish<IUpdateTenantV1>(new UpdateTenantV1(correlationId, tenantId, tenantSm), cancellationToken);
+            await _publishEndpoint.Publish<ITenantUpdatedV1>(new TenantUpdatedV1(correlationId, tenantId, tenantSm), cancellationToken);
         }
 
         public async Task SendPricingTierV1Async(Guid correlationId, Guid tenantId, PricingTierTm pricingTierTm, CancellationToken cancellationToken)

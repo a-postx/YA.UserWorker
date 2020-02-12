@@ -9,17 +9,17 @@ namespace MbEvents
         Guid TenantId { get; }
     }
 
-    public interface ICreateTenantV1 : CorrelatedBy<Guid>, ITenantIdMbMessage
+    public interface ITenantCreatedV1 : CorrelatedBy<Guid>, ITenantIdMbMessage
     {
         TenantSm Tenant { get; }
     }
 
-    public interface IDeleteTenantV1 : CorrelatedBy<Guid>, ITenantIdMbMessage
+    public interface ITenantDeletedV1 : CorrelatedBy<Guid>, ITenantIdMbMessage
     {
         TenantSm Tenant { get; }
     }
 
-    public interface IUpdateTenantV1 : CorrelatedBy<Guid>, ITenantIdMbMessage
+    public interface ITenantUpdatedV1 : CorrelatedBy<Guid>, ITenantIdMbMessage
     {
         TenantSm Tenant { get; }
     }

@@ -4,9 +4,9 @@ using YA.TenantWorker.Application.Models.SaveModels;
 
 namespace YA.TenantWorker.Infrastructure.Messaging.Messages
 {
-    internal class UpdateTenantV1 : IUpdateTenantV1
+    internal class TenantUpdatedV1 : ITenantUpdatedV1
     {
-        internal UpdateTenantV1(Guid correlationId, Guid tenantId, TenantSm tenantSm)
+        internal TenantUpdatedV1(Guid correlationId, Guid tenantId, TenantSm tenantSm)
         {
             CorrelationId = correlationId;
             TenantId = tenantId;            

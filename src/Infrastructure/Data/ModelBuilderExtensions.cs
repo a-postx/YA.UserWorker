@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System;
+using YA.TenantWorker.Constants;
 using YA.TenantWorker.Core.Entities;
 
 namespace YA.TenantWorker.Infrastructure.Data
@@ -8,13 +9,13 @@ namespace YA.TenantWorker.Infrastructure.Data
     {
         public static void Seed(this ModelBuilder modelBuilder)
         {
-            Guid freePricingTierId = Guid.Parse("00000000-0000-0000-0000-000000000003");
+            Guid defaultPricingTierId = Guid.Parse(SeedEntities.DefaultPricingTierId);
             Guid paidPricingTierId = Guid.Parse("00000000-0000-0000-0000-000000000013");
 
             modelBuilder.Entity<PricingTier>().HasData(
                 new PricingTier
                 {
-                    PricingTierID = freePricingTierId,
+                    PricingTierID = defaultPricingTierId,
                     Title = "Бесплатный",
                     Description = "Бесплатно для всех.",
                     HasTrial = false,
@@ -37,15 +38,15 @@ namespace YA.TenantWorker.Infrastructure.Data
                 }
             );
 
-            Guid seedFreeTenantId = Guid.Parse("00000000-0000-0000-0000-000000000001");
+            Guid defaultTenantId = Guid.Parse(SeedEntities.DefaultTenantId);
             Guid seedPaidTenantId = Guid.Parse("00000000-0000-0000-0000-000000000002");
 
             modelBuilder.Entity<Tenant>().HasData(
                 new
                 {
-                    TenantID = seedFreeTenantId,
+                    TenantID = defaultTenantId,
                     TenantName = "Прохожий",
-                    PricingTierID = freePricingTierId,
+                    PricingTierID = defaultPricingTierId,
                     PricingTierActivatedDateTime = DateTime.UtcNow,
                     TenantType = TenantTypes.Custom,
                     IsActive = true,
@@ -70,7 +71,7 @@ namespace YA.TenantWorker.Infrastructure.Data
                 new
                 {
                     UserID = seedAdminId,
-                    TenantID = seedFreeTenantId,
+                    TenantID = defaultTenantId,
                     Username = "admin@ya.ru",
                     Password = "123",
                     FirstName = "My",
@@ -86,7 +87,7 @@ namespace YA.TenantWorker.Infrastructure.Data
                 new
                 {
                     UserID = seedUserId,
-                    TenantID = seedFreeTenantId,
+                    TenantID = defaultTenantId,
                     Username = "user@ya.ru",
                     Password = "123",
                     FirstName = "My",

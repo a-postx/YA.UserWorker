@@ -50,6 +50,12 @@ namespace YA.TenantWorker.Application.Commands
             
             Tenant tenant = _tenantSmMapper.Map(tenantSm);
             tenant.TenantType = TenantTypes.Custom;
+
+            Guid defaultPricingTierId = Guid.Parse(SeedEntities.DefaultPricingTierId);
+
+            PricingTier defaultPricingTier = await _dbContext.GetEntityAsync<PricingTier>(e => e.PricingTierID == defaultPricingTierId, cancellationToken);
+            tenant.PricingTier = defaultPricingTier;
+
             TenantVm tenantVm = _tenantVmMapper.Map(tenant);
 
             await _dbContext.CreateAndReturnEntityAsync(tenant, cancellationToken);
