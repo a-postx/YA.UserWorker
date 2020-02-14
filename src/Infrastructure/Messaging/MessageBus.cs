@@ -7,7 +7,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using YA.TenantWorker.Application.Interfaces;
 using YA.TenantWorker.Application.Models.Dto;
-using YA.TenantWorker.Application.Models.SaveModels;
 using YA.TenantWorker.Infrastructure.Messaging.Messages;
 
 namespace YA.TenantWorker.Infrastructure.Messaging
@@ -27,19 +26,19 @@ namespace YA.TenantWorker.Infrastructure.Messaging
         private readonly IBus _bus;
         private readonly IPublishEndpoint _publishEndpoint;
 
-        public async Task CreateTenantV1Async(Guid correlationId, Guid tenantId, TenantSm tenantSm, CancellationToken cancellationToken)
+        public async Task TenantCreatedV1Async(Guid correlationId, Guid tenantId, TenantTm tenantTm, CancellationToken cancellationToken)
         {
-            await _publishEndpoint.Publish<ITenantCreatedV1>(new TenantCreatedV1(correlationId, tenantId, tenantSm), cancellationToken);
+            await _publishEndpoint.Publish<ITenantCreatedV1>(new TenantCreatedV1(correlationId, tenantId, tenantTm), cancellationToken);
         }
 
-        public async Task DeleteTenantV1Async(Guid correlationId, Guid tenantId, TenantSm tenantSm, CancellationToken cancellationToken)
+        public async Task TenantDeletedV1Async(Guid correlationId, Guid tenantId, TenantTm tenantTm, CancellationToken cancellationToken)
         {
-            await _publishEndpoint.Publish<ITenantDeletedV1>(new TenantDeletedV1(correlationId, tenantId, tenantSm), cancellationToken);
+            await _publishEndpoint.Publish<ITenantDeletedV1>(new TenantDeletedV1(correlationId, tenantId, tenantTm), cancellationToken);
         }
 
-        public async Task UpdateTenantV1Async(Guid correlationId, Guid tenantId, TenantSm tenantSm, CancellationToken cancellationToken)
+        public async Task TenantUpdatedV1Async(Guid correlationId, Guid tenantId, TenantTm tenantTm, CancellationToken cancellationToken)
         {
-            await _publishEndpoint.Publish<ITenantUpdatedV1>(new TenantUpdatedV1(correlationId, tenantId, tenantSm), cancellationToken);
+            await _publishEndpoint.Publish<ITenantUpdatedV1>(new TenantUpdatedV1(correlationId, tenantId, tenantTm), cancellationToken);
         }
 
         public async Task SendPricingTierV1Async(Guid correlationId, Guid tenantId, PricingTierTm pricingTierTm, CancellationToken cancellationToken)

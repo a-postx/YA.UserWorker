@@ -36,6 +36,7 @@ using YA.TenantWorker.Application;
 using YA.TenantWorker.Core.Entities;
 using System.Text;
 using YA.TenantWorker.Infrastructure.Messaging.Consumers;
+using AutoMapper;
 
 namespace YA.TenantWorker
 {
@@ -129,6 +130,8 @@ namespace YA.TenantWorker
 
             services
                 .AddAuthorizationCore(options => options.AddPolicy("MustBeAdministrator", policy => policy.RequireClaim(CustomClaimNames.role, "Administrator")));
+
+            services.AddAutoMapper(typeof(Startup));
 
             services
                 .AddProjectCommands()

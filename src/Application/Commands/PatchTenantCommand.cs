@@ -1,4 +1,6 @@
-﻿using Delobytes.Mapper;
+﻿using AutoMapper;
+using Delobytes.AspNetCore;
+using Delobytes.Mapper;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
@@ -8,12 +10,12 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using YA.TenantWorker.Constants;
 using YA.TenantWorker.Application.Interfaces;
-using YA.TenantWorker.Core.Entities;
+using YA.TenantWorker.Application.Models.Dto;
 using YA.TenantWorker.Application.Models.SaveModels;
 using YA.TenantWorker.Application.Models.ViewModels;
-using Delobytes.AspNetCore;
+using YA.TenantWorker.Constants;
+using YA.TenantWorker.Core.Entities;
 
 namespace YA.TenantWorker.Application.Commands
 {
@@ -21,33 +23,30 @@ namespace YA.TenantWorker.Application.Commands
     {
         public PatchTenantCommand(
             ILogger<PatchTenantCommand> logger,
+            IMapper mapper,
             IActionContextAccessor actionContextAccessor,
             IObjectModelValidator objectModelValidator,
             ITenantWorkerDbContext workerDbContext,
             IMessageBus messageBus,
-            IMapper<Tenant, TenantVm> tenantVmMapper,
-            IMapper<Tenant, TenantSm> tenantSmMapper,
-            IMapper<TenantSm, Tenant> tenantMapper)
+            IMapper<Tenant, TenantVm> tenantVmMapper)
         {
             _log = logger ?? throw new ArgumentNullException(nameof(logger));
+            _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
             _actionContextAccessor = actionContextAccessor ?? throw new ArgumentNullException(nameof(actionContextAccessor));
             _objectModelValidator = objectModelValidator ?? throw new ArgumentNullException(nameof(objectModelValidator));
             _dbContext = workerDbContext ?? throw new ArgumentNullException(nameof(workerDbContext));
             _messageBus = messageBus ?? throw new ArgumentNullException(nameof(messageBus));
             _tenantVmMapper = tenantVmMapper ?? throw new ArgumentNullException(nameof(tenantVmMapper));
-            _tenantSmMapper = tenantSmMapper ?? throw new ArgumentNullException(nameof(tenantSmMapper));
-            _tenantMapper = tenantMapper ?? throw new ArgumentNullException(nameof(tenantMapper));
         }
 
         private readonly ILogger<PatchTenantCommand> _log;
+        private readonly IMapper _mapper;
         private readonly IActionContextAccessor _actionContextAccessor;
         private readonly ITenantWorkerDbContext _dbContext;
         private readonly IMessageBus _messageBus;
         private readonly IObjectModelValidator _objectModelValidator;
 
         private readonly IMapper<Tenant, TenantVm> _tenantVmMapper;
-        private readonly IMapper<Tenant, TenantSm> _tenantSmMapper;
-        private readonly IMapper<TenantSm, Tenant> _tenantMapper;
 
         public async Task<IActionResult> ExecuteAsync(JsonPatchDocument<TenantSm> patch, CancellationToken cancellationToken)
         {
@@ -66,7 +65,7 @@ namespace YA.TenantWorker.Application.Commands
                 return new NotFoundResult();
             }
 
-            TenantSm tenantSm = _tenantSmMapper.Map(tenant);
+            TenantSm tenantSm = _mapper.Map<TenantSm>(tenant);
 
             ModelStateDictionary modelState = _actionContextAccessor.ActionContext.ModelState;
             patch.ApplyTo(tenantSm, modelState);
@@ -78,11 +77,12 @@ namespace YA.TenantWorker.Application.Commands
                 return new BadRequestObjectResult(modelState);
             }
 
-            _tenantMapper.Map(tenantSm, tenant);
+            tenant = (Tenant)_mapper.Map(tenantSm, tenant, typeof(TenantSm), typeof(Tenant));
 
             _dbContext.UpdateTenant(tenant);
             await _dbContext.ApplyChangesAsync(cancellationToken);
-            await _messageBus.UpdateTenantV1Async(correlationId, tenantId, tenantSm, cancellationToken);
+
+            await _messageBus.TenantUpdatedV1Async(correlationId, tenantId, _mapper.Map<TenantTm>(tenant), cancellationToken);
 
             TenantVm tenantVm = _tenantVmMapper.Map(tenant);
 

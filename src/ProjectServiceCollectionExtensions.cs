@@ -52,10 +52,7 @@ namespace YA.TenantWorker
         public static IServiceCollection AddProjectMappers(this IServiceCollection services)
         {
             return services
-                .AddSingleton<IMapper<TenantSm, Tenant>, TenantToSmMapper>()
-                .AddSingleton<IMapper<Tenant, TenantSm>, TenantToSmMapper>()
-                .AddSingleton<IMapper<Tenant, TenantVm>, TenantToVmMapper>()
-                .AddSingleton<IMapper<PricingTier, PricingTierTm>, PricingTierToTmMapper>();
+                .AddSingleton<IMapper<Tenant, TenantVm>, TenantToVmMapper>();
         }
 
         /// <summary>

@@ -1,4 +1,5 @@
-﻿using Delobytes.AspNetCore;
+﻿using AutoMapper;
+using Delobytes.AspNetCore;
 using Delobytes.Mapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
@@ -7,6 +8,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using YA.TenantWorker.Application.Interfaces;
+using YA.TenantWorker.Application.Models.Dto;
 using YA.TenantWorker.Application.Models.SaveModels;
 using YA.TenantWorker.Application.Models.ViewModels;
 using YA.TenantWorker.Constants;
@@ -17,27 +19,27 @@ namespace YA.TenantWorker.Application.Commands
     public class PostTenantCommand : IPostTenantCommand
     {
         public PostTenantCommand(ILogger<PostTenantCommand> logger,
+            IMapper mapper,
             IActionContextAccessor actionContextAccessor,
             ITenantWorkerDbContext workerDbContext,
             IMessageBus messageBus,
-            IMapper<Tenant, TenantVm> tenantVmMapper,
-            IMapper<TenantSm, Tenant> tenantSmMapper)
+            IMapper<Tenant, TenantVm> tenantVmMapper)
         {
             _log = logger ?? throw new ArgumentNullException(nameof(logger));
+            _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
             _actionContextAccessor = actionContextAccessor ?? throw new ArgumentNullException(nameof(actionContextAccessor));
             _dbContext = workerDbContext ?? throw new ArgumentNullException(nameof(workerDbContext));
             _messageBus = messageBus ?? throw new ArgumentNullException(nameof(messageBus));
             _tenantVmMapper = tenantVmMapper ?? throw new ArgumentNullException(nameof(tenantVmMapper));
-            _tenantSmMapper = tenantSmMapper ?? throw new ArgumentNullException(nameof(tenantSmMapper));
         }
 
         private readonly ILogger<PostTenantCommand> _log;
+        private readonly IMapper _mapper;
         private readonly IActionContextAccessor _actionContextAccessor;
         private readonly ITenantWorkerDbContext _dbContext;
         private readonly IMessageBus _messageBus;
 
         private readonly IMapper<Tenant, TenantVm> _tenantVmMapper;
-        private readonly IMapper<TenantSm, Tenant> _tenantSmMapper;
 
         public async Task<IActionResult> ExecuteAsync(TenantSm tenantSm, CancellationToken cancellationToken)
         {
@@ -48,7 +50,7 @@ namespace YA.TenantWorker.Application.Commands
                 return new BadRequestResult();
             }
             
-            Tenant tenant = _tenantSmMapper.Map(tenantSm);
+            Tenant tenant = _mapper.Map<Tenant>(tenantSm);
             tenant.TenantType = TenantTypes.Custom;
 
             Guid defaultPricingTierId = Guid.Parse(SeedEntities.DefaultPricingTierId);
@@ -61,7 +63,7 @@ namespace YA.TenantWorker.Application.Commands
             await _dbContext.CreateAndReturnEntityAsync(tenant, cancellationToken);
             await _dbContext.ApplyChangesAsync(cancellationToken);
 
-            await _messageBus.CreateTenantV1Async(correlationId, tenant.TenantID, tenantSm, cancellationToken);
+            await _messageBus.TenantCreatedV1Async(correlationId, tenant.TenantID, _mapper.Map<TenantTm>(tenant), cancellationToken);
 
             return new CreatedAtRouteResult(RouteNames.GetTenant, new { TenantId = tenantVm.TenantId, TenantName = tenantVm.TenantName }, tenantVm);
         }

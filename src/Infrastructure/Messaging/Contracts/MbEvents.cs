@@ -1,6 +1,6 @@
 ﻿using System;
 using MassTransit;
-using YA.TenantWorker.Application.Models.SaveModels;
+using YA.TenantWorker.Application.Models.Dto;
 
 namespace MbEvents
 {
@@ -11,16 +11,16 @@ namespace MbEvents
 
     public interface ITenantCreatedV1 : CorrelatedBy<Guid>, ITenantIdMbMessage
     {
-        TenantSm Tenant { get; }
+        TenantTm Tenant { get; }
     }
 
     public interface ITenantDeletedV1 : CorrelatedBy<Guid>, ITenantIdMbMessage
     {
-        TenantSm Tenant { get; }
+        TenantTm Tenant { get; }
     }
 
     public interface ITenantUpdatedV1 : CorrelatedBy<Guid>, ITenantIdMbMessage
     {
-        TenantSm Tenant { get; }
+        TenantTm Tenant { get; }
     }
 }
