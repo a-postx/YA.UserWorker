@@ -9,7 +9,7 @@ using YA.TenantWorker.Constants;
 
 namespace YA.TenantWorker.Infrastructure.Services
 {
-    public class IpApiGeoData : IGeoDataService
+    public class IpApiGeoData : IRuntimeGeoDataService
     {
         public IpApiGeoData(ILogger<IpApiGeoData> logger)
         {

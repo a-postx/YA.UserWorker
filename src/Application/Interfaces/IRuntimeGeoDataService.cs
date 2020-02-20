@@ -18,7 +18,7 @@ namespace YA.TenantWorker.Application.Interfaces
     /// <summary>
     /// Retrieves geodata for the current application.
     /// </summary>
-    interface IGeoDataService
+    interface IRuntimeGeoDataService
     {
         /// <summary>
         /// Get country code of the application location (ISO 3166).

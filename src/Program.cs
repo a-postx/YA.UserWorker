@@ -19,7 +19,6 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
-using System.Runtime;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using YA.TenantWorker.Application.Interfaces;
@@ -40,12 +39,11 @@ namespace YA.TenantWorker
     public static class Program
     {
         internal static readonly string AppName = Assembly.GetEntryAssembly()?.GetName().Name;
-        internal static readonly Version Version = Assembly.GetEntryAssembly()?.GetName().Version;
+        internal static readonly Version AppVersion = Assembly.GetEntryAssembly()?.GetName().Version;
         internal static readonly string RootPath = Path.GetDirectoryName(typeof(Program).Assembly.Location);
 
         internal static Countries Country { get; private set; }        
         internal static OsPlatforms OsPlatform { get; private set; }
-        internal static string DotNetVersion { get; private set; }
 
         public static async Task<int> Main(string[] args)
         {
@@ -53,7 +51,6 @@ namespace YA.TenantWorker
             Activity.DefaultIdFormat = ActivityIdFormat.W3C;
 
             OsPlatform = GetOs();
-            DotNetVersion = GetNetCoreVersion();
 
             Directory.CreateDirectory(Path.Combine(RootPath, General.AppDataFolderName));
 
@@ -113,15 +110,26 @@ namespace YA.TenantWorker
                 return 1;
             }
 
-            Log.Information("{AppName} v{Version}", AppName, Version);
+            string coreCLR = ((AssemblyInformationalVersionAttribute[])typeof(object).Assembly.GetCustomAttributes(typeof(AssemblyInformationalVersionAttribute), false))[0].InformationalVersion;
+            string coreFX = ((AssemblyInformationalVersionAttribute[])typeof(Uri).Assembly.GetCustomAttributes(typeof(AssemblyInformationalVersionAttribute), false))[0].InformationalVersion;
 
-            IGeoDataService geoService = host.Services.GetService<IGeoDataService>();
+            Log.Information("Application.Name: {AppName}\n Application.Version: {AppVersion}\n " +
+                "Environment.Version: {EnvVersion}\n RuntimeInformation.FrameworkDescription: {RuntimeInfo}\n " +
+                "CoreCLR Build: {CoreClrBuild}\n CoreCLR Hash: {CoreClrHash}\n " +
+                "CoreFX Build: {CoreFxBuild}\n CoreFX Hash: {CoreFxHash}\n " +
+                "Environment.OSVersion {OsVersion}\n RuntimeInformation.OSDescription: {OsDescr}\n " +
+                "RuntimeInformation.OSArchitecture: {OsArch}\n Environment.ProcessorCount: {CpuCount}",
+                AppName, AppVersion, Environment.Version, RuntimeInformation.FrameworkDescription, coreCLR.Split('+')[0],
+                coreCLR.Split('+')[1], coreFX.Split('+')[0], coreFX.Split('+')[1], Environment.OSVersion,
+                RuntimeInformation.OSDescription, RuntimeInformation.OSArchitecture, Environment.ProcessorCount);
+
+            IRuntimeGeoDataService geoService = host.Services.GetService<IRuntimeGeoDataService>();
             Country = await geoService.GetCountryCodeAsync();
 
             try
             {
                 await host.RunAsync();
-                Log.Information("{AppName} v{Version} has stopped.", AppName, Version);
+                Log.Information("{AppName} has stopped.", AppName);
                 return 0;
             }
             catch (Exception e)
@@ -233,7 +241,7 @@ namespace YA.TenantWorker
             loggerConfig
                 .ReadFrom.Configuration(configuration)
                 .Enrich.WithProperty("AppName", AppName)
-                .Enrich.WithProperty("Version", Version.ToString())
+                .Enrich.WithProperty("Version", AppVersion.ToString())
                 .Enrich.WithProperty("NodeId", Node.Id)
                 .Enrich.WithProperty("ProcessId", Process.GetCurrentProcess().Id)
                 .Enrich.WithProperty("ProcessName", Process.GetCurrentProcess().ProcessName)
@@ -304,17 +312,6 @@ namespace YA.TenantWorker
             limits.MinRequestBodyDataRate = sourceLimits.MinRequestBodyDataRate;
             limits.MinResponseDataRate = sourceLimits.MinResponseDataRate;
             limits.RequestHeadersTimeout = sourceLimits.RequestHeadersTimeout;
-        }
-
-        // See: https://github.com/dotnet/BenchmarkDotNet/issues/448#issuecomment-308424100
-        private static string GetNetCoreVersion()
-        {
-            var assembly = typeof(GCSettings).Assembly;
-            var assemblyPath = assembly.CodeBase.Split(new[] { '/', '\\' }, StringSplitOptions.RemoveEmptyEntries);
-            var netCoreAppIndex = Array.IndexOf(assemblyPath, "Microsoft.NETCore.App");
-            return netCoreAppIndex > 0 && netCoreAppIndex < assemblyPath.Length - 2
-                ? assemblyPath[netCoreAppIndex + 1]
-                : null;
         }
 
         private static OsPlatforms GetOs()
