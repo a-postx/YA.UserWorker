@@ -4,13 +4,13 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using CorrelationId;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json;
 using Serilog;
 using Serilog.Context;
 using YA.TenantWorker.Application.Enums;
+using YA.TenantWorker.Application.Interfaces;
 using YA.TenantWorker.Application.Models.Dto;
 using YA.TenantWorker.Constants;
 
@@ -28,10 +28,10 @@ namespace YA.TenantWorker.Infrastructure.Logging.Requests
 
         readonly RequestDelegate _next;
 
-        public async Task InvokeAsync(HttpContext httpContext, IHostEnvironment env, ICorrelationContextAccessor correlationContextAccessor)
+        public async Task InvokeAsync(HttpContext httpContext, IHostEnvironment env, IRuntimeContextAccessor runtimeContextAccessor)
         {
             HttpContext context = httpContext ?? throw new ArgumentNullException(nameof(httpContext));
-            
+
             LogContext.PushProperty(Logs.LogType, LogTypes.BackendApiRequest.ToString());
 
             httpContext.Request.EnableBuffering();
@@ -56,7 +56,7 @@ namespace YA.TenantWorker.Infrastructure.Logging.Requests
             {
                 Stream originalResponseBodyReference = context.Response.Body;
                 context.Response.Body = responseBodyMemoryStream;
-                
+
                 try
                 {
                     await _next(context);
@@ -71,13 +71,13 @@ namespace YA.TenantWorker.Infrastructure.Logging.Requests
                     if (env.IsDevelopment())
                     {
                         unknownError = new ApiProblemDetails("https://tools.ietf.org/html/rfc7231#section-6.6.1", StatusCodes.Status500InternalServerError,
-                            context.Request.HttpContext.Request.Path, errorMessage, ex.Demystify().StackTrace, correlationContextAccessor.CorrelationContext.CorrelationId,
+                            context.Request.HttpContext.Request.Path, errorMessage, ex.Demystify().StackTrace, runtimeContextAccessor.GetCorrelationId().ToString(),
                             context.Request.HttpContext.TraceIdentifier);
                     }
                     else
                     {
                         unknownError = new ApiProblemDetails("https://tools.ietf.org/html/rfc7231#section-6.6.1", StatusCodes.Status500InternalServerError,
-                            context.Request.HttpContext.Request.Path, errorMessage, null, correlationContextAccessor.CorrelationContext.CorrelationId,
+                            context.Request.HttpContext.Request.Path, errorMessage, null, runtimeContextAccessor.GetCorrelationId().ToString(),
                             context.Request.HttpContext.TraceIdentifier);
                     }
 

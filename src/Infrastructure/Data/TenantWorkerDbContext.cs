@@ -19,9 +19,14 @@ namespace YA.TenantWorker.Infrastructure.Data
 {
     public class TenantWorkerDbContext : DbContext, ITenantWorkerDbContext
     {
-        public TenantWorkerDbContext(DbContextOptions options) : base (options)
+        public TenantWorkerDbContext(DbContextOptions options, IRuntimeContextAccessor tenantContextAccessor) : base(options)
         {
-             
+            if (tenantContextAccessor == null)
+            {
+                throw new ArgumentNullException(nameof(tenantContextAccessor));
+            }
+
+            _tenantId = tenantContextAccessor.GetTenantId();
         }
 
         public DbSet<ApiRequest> ApiRequests { get; set; }
@@ -29,10 +34,12 @@ namespace YA.TenantWorker.Infrastructure.Data
         public DbSet<PricingTier> PricingTiers { get; set; }
         public DbSet<User> Users { get; set; }
 
+        private readonly Guid _tenantId;
         private IDbContextTransaction _currentTransaction;
 
         public IDbContextTransaction GetCurrentTransaction() => _currentTransaction;
         public bool HasActiveTransaction => _currentTransaction != null;
+        private bool IsMustHaveTenantFilterEnabled => true;
         private bool IsSoftDeleteFilterEnabled => true;
 
         private static MethodInfo ConfigureGlobalFiltersMethodInfo = typeof(TenantWorkerDbContext).GetMethod(nameof(ConfigureGlobalFilters), BindingFlags.Instance | BindingFlags.NonPublic);
@@ -46,7 +53,7 @@ namespace YA.TenantWorker.Infrastructure.Data
 
             modelBuilder.Seed();
 
-            foreach (var entityType in modelBuilder.Model.GetEntityTypes())
+            foreach (IMutableEntityType entityType in modelBuilder.Model.GetEntityTypes())
             {
                 ConfigureGlobalFiltersMethodInfo
                     .MakeGenericMethod(entityType.ClrType)
@@ -81,6 +88,7 @@ namespace YA.TenantWorker.Infrastructure.Data
             await Set<T>().AddRangeAsync(newItems, cancellationToken);
         }
 
+        //опасный запрос, выводит по всем арендаторам
         public async Task<T> GetEntityAsync<T>(Expression<Func<T, bool>> predicate, CancellationToken cancellationToken) where T : class
         {
             return await Set<T>().SingleOrDefaultAsync(predicate, cancellationToken);
@@ -91,56 +99,13 @@ namespace YA.TenantWorker.Infrastructure.Data
             return await Set<T>().Include(nameof(Tenant)).SingleOrDefaultAsync(predicate, cancellationToken);
         }
 
-        public async Task<ICollection<T>> GetEntitiesPagedAsync<T>(Tenant tenant, int page, int count, CancellationToken cancellationToken) where T : class, ITenantEntity, IRowVersionedEntity
+        public async Task<List<T>> GetEntitiesFromAllTenantsWithTenantAsync<T>(Expression<Func<T, bool>> predicate, CancellationToken cancellationToken) where T : class, ITenantEntity
         {
-            List<T> items = await Set<T>().OrderBy(t => t.tstamp).Where(t => t.Tenant == tenant)
-                .Skip(count * (page - 1)).Take(count).ToListAsync(cancellationToken);
-
-            if (items.Count == 0)
-            {
-                items = null;
-            }
-
-            return items;
+            return await Set<T>().Include(nameof(Tenant)).Where(predicate).ToListAsync(cancellationToken);
         }
 
-        public async Task<ICollection<T>> GetEntitiesOrderedAndPagedAsync<T>(Expression<Func<T, Guid>> orderPredicate,
-            int page, int count, CancellationToken cancellationToken) where T : class
-        {
-            List<T> items = await Set<T>().OrderBy(orderPredicate)
-                .Skip(count * (page - 1)).Take(count).ToListAsync(cancellationToken);
-
-            if (items.Count == 0)
-            {
-                items = null;
-            }
-
-            return items;
-        }
-
-        public async Task<ICollection<T>> GetEntitiesOrderedAndFilteredAndPagedAsync<T>(Expression<Func<T, byte[]>> orderPredicate,
-            Expression<Func<T, bool>> wherePredicate,
-            int page, int count, CancellationToken cancellationToken) where T : class
-        {
-            List<T> items = await Set<T>().OrderBy(orderPredicate).Where(wherePredicate)
-                .Skip(count * (page - 1)).Take(count).ToListAsync(cancellationToken);
-
-            if (items.Count == 0)
-            {
-                items = null;
-            }
-
-            return items;
-        }
-
-        public async Task<(int totalCount, int totalPages)> GetTotalPagesAsync<T>(int count, CancellationToken cancellationToken) where T : class
-        {
-            int totalCount = await Set<T>().CountAsync(cancellationToken);
-            int totalPages = (int)Math.Ceiling(totalCount / (double)count);
-            return (totalCount, totalPages);
-        }
-
-        public Task<List<T>> GetEntitiesPagedAsync<T>(int? first, DateTimeOffset? createdAfter, DateTimeOffset? createdBefore, CancellationToken cancellationToken) where T : class, IAuditedEntityBase, IRowVersionedEntity
+        public Task<List<T>> GetEntitiesPagedAsync<T>(int? first, DateTimeOffset? createdAfter,
+            DateTimeOffset? createdBefore, CancellationToken cancellationToken) where T : class, IAuditedEntityBase, IRowVersionedEntity
         {
             return Task.FromResult(Set<T>().OrderBy(t => t.tstamp)
                 .If(createdAfter.HasValue, x => x.Where(y => y.CreatedDateTime > createdAfter.Value))
@@ -176,7 +141,8 @@ namespace YA.TenantWorker.Infrastructure.Data
                 .Any());
         }
 
-        public Task<List<T>> GetEntitiesPagedTaskAsync<T>(int? first, int? last, DateTimeOffset? createdAfter, DateTimeOffset? createdBefore, CancellationToken cancellationToken) where T : class, IAuditedEntityBase, IRowVersionedEntity
+        public Task<List<T>> GetEntitiesPagedTaskAsync<T>(int? first, int? last, DateTimeOffset? createdAfter,
+            DateTimeOffset? createdBefore, CancellationToken cancellationToken) where T : class, IAuditedEntityBase, IRowVersionedEntity
         {
             Task<List<T>> getTenantsTask;
 
@@ -192,7 +158,8 @@ namespace YA.TenantWorker.Infrastructure.Data
             return getTenantsTask;
         }
 
-        public async Task<bool> GetHasNextPageAsync<T>(int? first, DateTimeOffset? createdAfter, DateTimeOffset? createdBefore, CancellationToken cancellationToken) where T : class, IAuditedEntityBase, IRowVersionedEntity
+        public async Task<bool> GetHasNextPageAsync<T>(int? first, DateTimeOffset? createdAfter,
+            DateTimeOffset? createdBefore, CancellationToken cancellationToken) where T : class, IAuditedEntityBase, IRowVersionedEntity
         {
             if (first.HasValue)
             {
@@ -206,7 +173,8 @@ namespace YA.TenantWorker.Infrastructure.Data
             return false;
         }
 
-        public async Task<bool> GetHasPreviousPageAsync<T>(int? last, DateTimeOffset? createdAfter, DateTimeOffset? createdBefore, CancellationToken cancellationToken) where T : class, IAuditedEntityBase, IRowVersionedEntity
+        public async Task<bool> GetHasPreviousPageAsync<T>(int? last, DateTimeOffset? createdAfter,
+            DateTimeOffset? createdBefore, CancellationToken cancellationToken) where T : class, IAuditedEntityBase, IRowVersionedEntity
         {
             if (last.HasValue)
             {
@@ -223,91 +191,6 @@ namespace YA.TenantWorker.Infrastructure.Data
         public async Task<int> GetEntitiesCountAsync<T>(CancellationToken cancellationToken) where T : class
         {
             return await Set<T>().CountAsync(cancellationToken);
-        }
-
-        public async Task<List<T>> GetTenantEntitiesPagedAsync<T>(Expression<Func<T, bool>> wherePredicate, int? first, DateTimeOffset? createdAfter, DateTimeOffset? createdBefore, CancellationToken cancellationToken) where T : class, ITenantEntity, IAuditedEntityBase, IRowVersionedEntity
-        {
-            return await Set<T>().Where(wherePredicate).OrderBy(t => t.tstamp)
-                .If(createdAfter.HasValue, x => x.Where(y => y.CreatedDateTime > createdAfter.Value))
-                .If(createdBefore.HasValue, x => x.Where(y => y.CreatedDateTime < createdBefore.Value))
-                .If(first.HasValue, x => x.Take(first.Value))
-                .ToListAsync();
-        }
-
-        public Task<List<T>> GetTenantEntitiesPagedReverseAsync<T>(Expression<Func<T, bool>> wherePredicate, int? last, DateTimeOffset? createdAfter, DateTimeOffset? createdBefore, CancellationToken cancellationToken) where T : class, ITenantEntity, IAuditedEntityBase, IRowVersionedEntity
-        {
-            return Task.FromResult(Set<T>().Where(wherePredicate).OrderBy(t => t.tstamp)
-                .If(createdAfter.HasValue, x => x.Where(y => y.CreatedDateTime > createdAfter.Value))
-                .If(createdBefore.HasValue, x => x.Where(y => y.CreatedDateTime < createdBefore.Value))
-                //converting to Enumerable because of error "This overload of the method 'System.Linq.Queryable.TakeLast' is currently not supported." in v.4.0.3.0
-                .If(last.HasValue, x => x.AsEnumerable().TakeLast(last.Value))
-                .ToList());
-        }
-
-        public async Task<bool> GetTenantEntitiesPagedHasNextPageAsync<T>(Expression<Func<T, bool>> wherePredicate, int? first, DateTimeOffset? createdAfter, CancellationToken cancellationToken) where T : class, ITenantEntity, IAuditedEntityBase, IRowVersionedEntity
-        {
-            return await Set<T>().Where(wherePredicate).OrderBy(t => t.tstamp)
-                .If(createdAfter.HasValue, x => x.Where(y => y.CreatedDateTime > createdAfter.Value))
-                .Skip(first.Value)
-                .AnyAsync();
-        }
-
-        public Task<bool> GetTenantEntitiesPagedHasPreviousPageAsync<T>(Expression<Func<T, bool>> wherePredicate, int? last, DateTimeOffset? createdBefore, CancellationToken cancellationToken) where T : class, ITenantEntity, IAuditedEntityBase, IRowVersionedEntity
-        {
-            return Task.FromResult(Set<T>().Where(wherePredicate).OrderBy(t => t.tstamp)
-                .If(createdBefore.HasValue, x => x.Where(y => y.CreatedDateTime < createdBefore.Value))
-                //converting to Enumerable because of error "This overload of the method 'System.Linq.Queryable.SkipLast' is currently not supported." in v.4.0.3.0
-                .AsEnumerable().SkipLast(last.Value)
-                .Any());
-        }
-
-        public Task<List<T>> GetTenantEntitiesPagedTaskAsync<T>(Expression<Func<T, bool>> wherePredicate, int? first, int? last, DateTimeOffset? createdAfter, DateTimeOffset? createdBefore, CancellationToken cancellationToken) where T : class, ITenantEntity, IAuditedEntityBase, IRowVersionedEntity
-        {
-            Task<List<T>> getTenantsTask;
-
-            if (first.HasValue)
-            {
-                getTenantsTask = GetTenantEntitiesPagedAsync<T>(wherePredicate, first, createdAfter, createdBefore, cancellationToken);
-            }
-            else
-            {
-                getTenantsTask = GetTenantEntitiesPagedReverseAsync<T>(wherePredicate, last, createdAfter, createdBefore, cancellationToken);
-            }
-
-            return getTenantsTask;
-        }
-
-        public async Task<bool> GetTenantHasNextPageAsync<T>(Expression<Func<T, bool>> wherePredicate, int? first, DateTimeOffset? createdAfter, DateTimeOffset? createdBefore, CancellationToken cancellationToken) where T : class, ITenantEntity, IAuditedEntityBase, IRowVersionedEntity
-        {
-            if (first.HasValue)
-            {
-                return await GetTenantEntitiesPagedHasNextPageAsync<T>(wherePredicate, first, createdAfter, cancellationToken);
-            }
-            else if (createdBefore.HasValue)
-            {
-                return true;
-            }
-
-            return false;
-        }
-
-        public async Task<bool> GetTenantHasPreviousPageAsync<T>(Expression<Func<T, bool>> wherePredicate, int? last, DateTimeOffset? createdAfter, DateTimeOffset? createdBefore, CancellationToken cancellationToken) where T : class, ITenantEntity, IAuditedEntityBase, IRowVersionedEntity
-        {
-            if (last.HasValue)
-            {
-                return await GetTenantEntitiesPagedHasPreviousPageAsync<T>(wherePredicate, last, createdBefore, cancellationToken);
-            }
-            else if (createdAfter.HasValue)
-            {
-                return true;
-            }
-
-            return false;
-        }
-
-        public async Task<int> GetTenantEntitiesCountAsync<T>(Expression<Func<T, bool>> wherePredicate, CancellationToken cancellationToken) where T : class, ITenantEntity
-        {
-            return await Set<T>().Where(wherePredicate).CountAsync(cancellationToken);
         }
         #endregion
 
@@ -351,6 +234,11 @@ namespace YA.TenantWorker.Infrastructure.Data
 
         private bool ShouldFilterEntity<TEntity>(IMutableEntityType entityType) where TEntity : class
         {
+            if (typeof(ITenantEntity).IsAssignableFrom(typeof(TEntity)))
+            {
+                return true;
+            }
+
             if (typeof(ISoftDeleteEntity).IsAssignableFrom(typeof(TEntity)))
             {
                 return true;
@@ -362,6 +250,12 @@ namespace YA.TenantWorker.Infrastructure.Data
         protected virtual Expression<Func<TEntity, bool>> CreateFilterExpression<TEntity>() where TEntity : class
         {
             Expression<Func<TEntity, bool>> expression = null;
+
+            if (typeof(ITenantEntity).IsAssignableFrom(typeof(TEntity)))
+            {
+                Expression<Func<TEntity, bool>> mustHaveTenantFilter = e => !IsMustHaveTenantFilterEnabled || ((ITenantEntity)e).Tenant.TenantID == _tenantId;
+                expression = expression == null ? mustHaveTenantFilter : CombineExpressions(expression, mustHaveTenantFilter);
+            }
 
             if (typeof(ISoftDeleteEntity).IsAssignableFrom(typeof(TEntity)))
             {
@@ -381,7 +275,7 @@ namespace YA.TenantWorker.Infrastructure.Data
         #region Saving
         private void ApplySavingConcepts()
         {
-            foreach (var entry in ChangeTracker.Entries().ToList())
+            foreach (EntityEntry entry in ChangeTracker.Entries().ToList())
             {
                 if (entry.State != EntityState.Modified && entry.CheckOwnedEntityChange())
                 {
@@ -397,25 +291,34 @@ namespace YA.TenantWorker.Infrastructure.Data
             switch (entry.State)
             {
                 case EntityState.Added:
-                    ApplyAbpConceptsForAddedEntity(entry);
+                    ApplyConceptsForAddedEntity(entry);
                     break;
                 case EntityState.Modified:
-                    ApplyAbpConceptsForModifiedEntity(entry);
+                    ApplyConceptsForModifiedEntity(entry);
+                    break;
+                case EntityState.Deleted:
+                    ApplyConceptsForDeletedEntity(entry);
                     break;
             }
         }
 
-        private void ApplyAbpConceptsForAddedEntity(EntityEntry entry)
+        private void ApplyConceptsForAddedEntity(EntityEntry entry)
         {
             SetCreationAuditProperties(entry.Entity);
         }
 
-        private void ApplyAbpConceptsForModifiedEntity(EntityEntry entry)
+        private void ApplyConceptsForModifiedEntity(EntityEntry entry)
         {
             SetModificationAuditProperties(entry.Entity);
         }
 
-        public static void SetCreationAuditProperties(object entityAsObj)
+        private void ApplyConceptsForDeletedEntity(EntityEntry entry)
+        {
+            CancelDeletionForSoftDelete(entry);
+            SetDeletionAuditProperties(entry.Entity);
+        }
+
+        private static void SetCreationAuditProperties(object entityAsObj)
         {
             if (entityAsObj is IAuditedEntityBase)
             {
@@ -424,7 +327,7 @@ namespace YA.TenantWorker.Infrastructure.Data
             }
         }
 
-        public static void SetModificationAuditProperties(object entityAsObj)
+        private static void SetModificationAuditProperties(object entityAsObj)
         {
             if (entityAsObj is IAuditedEntityBase)
             {
@@ -432,15 +335,54 @@ namespace YA.TenantWorker.Infrastructure.Data
             }
         }
 
+        private static void SetDeletionAuditProperties(object entityAsObj)
+        {
+            if (entityAsObj is IAuditedEntityBase)
+            {
+                // модифицируем для мягко удалённых сущностей
+                entityAsObj.As<IAuditedEntityBase>().LastModifiedDateTime = DateTime.UtcNow;
+            }
+        }
+
+        private void CancelDeletionForSoftDelete(EntityEntry entry)
+        {
+            if (!(entry.Entity is ISoftDeleteEntity))
+            {
+                return;
+            }
+
+            entry.Reload();
+            entry.State = EntityState.Modified;
+            entry.Entity.As<ISoftDeleteEntity>().IsDeleted = true;
+        }
+
+        private void MakeSureSaveWithSingleTenantId()
+        {
+            IEnumerable<EntityEntry<ITenantEntity>> tenantEntities = ChangeTracker.Entries<ITenantEntity>();
+
+            if (tenantEntities.Count() > 0)
+            {
+                int distinctTenantIdsCount = tenantEntities.Select(e => e.Entity.Tenant?.TenantID)
+                                     .Distinct().Count();
+
+                if (distinctTenantIdsCount > 1)
+                {
+                    throw new Exception("More than one TenantID detected.");
+                }
+            }
+        }
+
         public int ApplyChanges()
         {
             ApplySavingConcepts();
+            MakeSureSaveWithSingleTenantId();
             return base.SaveChanges();
         }
 
         public async Task<int> ApplyChangesAsync(CancellationToken cancellationToken)
         {
             ApplySavingConcepts();
+            MakeSureSaveWithSingleTenantId();
             return await base.SaveChangesAsync(cancellationToken);
         }
         #endregion
@@ -453,6 +395,7 @@ namespace YA.TenantWorker.Infrastructure.Data
             }
         }
 
+        #region Transactions
         public async Task<IDbContextTransaction> BeginTransactionAsync()
         {
             if (_currentTransaction != null) return null;
@@ -502,5 +445,6 @@ namespace YA.TenantWorker.Infrastructure.Data
                 }
             }
         }
+        #endregion
     }
 }

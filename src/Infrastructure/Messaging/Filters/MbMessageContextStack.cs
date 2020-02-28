@@ -1,12 +1,13 @@
 ﻿using GreenPipes;
 using System;
+using YA.TenantWorker.Application.Runtime;
 
-namespace YA.TenantWorker.Infrastructure.Logging.MbMessages
+namespace YA.TenantWorker.Infrastructure.Messaging.Filters
 {
     /// <summary>
     /// Manages a Logical Call Context variable containing a stack of <see cref="PipeContext"/> instances.
     /// </summary>
-    static class MassTransitPipeContextStack
+    internal static class MbMessageContextStack
     {
         /// <summary>
         /// Publishes a <see cref="PipeContext"/> onto the stack.
@@ -15,12 +16,12 @@ namespace YA.TenantWorker.Infrastructure.Logging.MbMessages
         /// <returns></returns>
         public static IDisposable Push(PipeContext context)
         {
-            return AsyncLocalStack<PipeContext>.Push(context);
+            return MbMessageAsyncLocalStack<PipeContext>.Push(context);
         }
 
         /// <summary>
         /// Gets the current <see cref="PipeContext"/>.
         /// </summary>
-        public static PipeContext Current => AsyncLocalStack<PipeContext>.Current;
+        public static PipeContext Current => MbMessageAsyncLocalStack<PipeContext>.Current;
     }
 }

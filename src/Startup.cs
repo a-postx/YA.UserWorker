@@ -154,7 +154,8 @@ namespace YA.TenantWorker
             services.AddScoped<IMessageBus, MessageBus>();
 
             services.AddScoped<TestRequestConsumer>();
-            
+            services.AddScoped<GetPricingTierConsumer>();
+
             services.AddMassTransit(options =>
             {
                 options.AddConsumers(GetType().Assembly);
@@ -172,12 +173,15 @@ namespace YA.TenantWorker
 
                     cfg.UseSerilog();
                     cfg.UseSerilogMessagePropertiesEnricher();
-                    cfg.UseSerilogCustomMbEventEnricher();
 
                     cfg.ReceiveEndpoint(host, MbQueueNames.PrivateServiceQueueName, e =>
                     {
                         e.PrefetchCount = 16;
-                        e.UseMessageRetry(x => x.Interval(2, 500));
+                        e.UseMessageRetry(x =>
+                        {
+                            x.Handle<OperationCanceledException>();
+                            x.Interval(2, 500);
+                        });
                         e.AutoDelete = true;
                         e.Durable = false;
                         e.ExchangeType = "fanout";
@@ -196,6 +200,7 @@ namespace YA.TenantWorker
                             x.Handle<OperationCanceledException>();
                             x.Interval(2, 500);
                         });
+                        e.UseMbContextFilter();
 
                         e.Consumer<GetPricingTierConsumer>(provider);
                     });

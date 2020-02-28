@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-using Delobytes.AspNetCore;
 using Delobytes.Mapper;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
@@ -14,7 +13,6 @@ using YA.TenantWorker.Application.Interfaces;
 using YA.TenantWorker.Application.Models.Dto;
 using YA.TenantWorker.Application.Models.SaveModels;
 using YA.TenantWorker.Application.Models.ViewModels;
-using YA.TenantWorker.Constants;
 using YA.TenantWorker.Core.Entities;
 
 namespace YA.TenantWorker.Application.Commands
@@ -24,6 +22,7 @@ namespace YA.TenantWorker.Application.Commands
         public PatchTenantCommand(
             ILogger<PatchTenantCommand> logger,
             IMapper mapper,
+            IRuntimeContextAccessor runtimeContextAccessor,
             IActionContextAccessor actionContextAccessor,
             IObjectModelValidator objectModelValidator,
             ITenantWorkerDbContext workerDbContext,
@@ -32,6 +31,7 @@ namespace YA.TenantWorker.Application.Commands
         {
             _log = logger ?? throw new ArgumentNullException(nameof(logger));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
+            _runtimeContext = runtimeContextAccessor ?? throw new ArgumentNullException(nameof(runtimeContextAccessor));
             _actionContextAccessor = actionContextAccessor ?? throw new ArgumentNullException(nameof(actionContextAccessor));
             _objectModelValidator = objectModelValidator ?? throw new ArgumentNullException(nameof(objectModelValidator));
             _dbContext = workerDbContext ?? throw new ArgumentNullException(nameof(workerDbContext));
@@ -41,6 +41,7 @@ namespace YA.TenantWorker.Application.Commands
 
         private readonly ILogger<PatchTenantCommand> _log;
         private readonly IMapper _mapper;
+        private readonly IRuntimeContextAccessor _runtimeContext;
         private readonly IActionContextAccessor _actionContextAccessor;
         private readonly ITenantWorkerDbContext _dbContext;
         private readonly IMessageBus _messageBus;
@@ -50,8 +51,7 @@ namespace YA.TenantWorker.Application.Commands
 
         public async Task<IActionResult> ExecuteAsync(JsonPatchDocument<TenantSm> patch, CancellationToken cancellationToken)
         {
-            Guid correlationId = _actionContextAccessor.GetCorrelationId(General.CorrelationIdHeader);
-            Guid tenantId = _actionContextAccessor.ActionContext.HttpContext.User.GetClaimValue<Guid>(CustomClaimNames.tid);
+            Guid tenantId = _runtimeContext.GetTenantId();
 
             if (tenantId == Guid.Empty || patch == null)
             {
@@ -82,7 +82,7 @@ namespace YA.TenantWorker.Application.Commands
             _dbContext.UpdateTenant(tenant);
             await _dbContext.ApplyChangesAsync(cancellationToken);
 
-            await _messageBus.TenantUpdatedV1Async(correlationId, tenantId, _mapper.Map<TenantTm>(tenant), cancellationToken);
+            await _messageBus.TenantUpdatedV1Async(tenantId, _mapper.Map<TenantTm>(tenant), cancellationToken);
 
             TenantVm tenantVm = _tenantVmMapper.Map(tenant);
 

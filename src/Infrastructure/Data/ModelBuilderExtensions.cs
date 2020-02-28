@@ -9,7 +9,7 @@ namespace YA.TenantWorker.Infrastructure.Data
     {
         public static void Seed(this ModelBuilder modelBuilder)
         {
-            Guid defaultPricingTierId = Guid.Parse(SeedEntities.DefaultPricingTierId);
+            Guid defaultPricingTierId = Guid.Parse(SeedData.SeedPricingTierId);
             Guid paidPricingTierId = Guid.Parse("00000000-0000-0000-0000-000000000013");
 
             modelBuilder.Entity<PricingTier>().HasData(
@@ -38,7 +38,7 @@ namespace YA.TenantWorker.Infrastructure.Data
                 }
             );
 
-            Guid defaultTenantId = Guid.Parse(SeedEntities.DefaultTenantId);
+            Guid defaultTenantId = Guid.Parse(SeedData.SystemTenantId);
             Guid seedPaidTenantId = Guid.Parse("00000000-0000-0000-0000-000000000002");
 
             modelBuilder.Entity<Tenant>().HasData(

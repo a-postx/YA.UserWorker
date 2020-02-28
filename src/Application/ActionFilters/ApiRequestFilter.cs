@@ -1,5 +1,4 @@
-﻿using CorrelationId;
-using Delobytes.AspNetCore;
+﻿using Delobytes.AspNetCore;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
@@ -21,22 +20,24 @@ namespace YA.TenantWorker.Application.ActionFilters
     /// </summary>
     public sealed class ApiRequestFilter : ActionFilterAttribute
     {
-        public ApiRequestFilter(IApiRequestTracker apiRequestTracker, ICorrelationContextAccessor correlationContextAccessor)
+        public ApiRequestFilter(IApiRequestTracker apiRequestTracker, IRuntimeContextAccessor runtimeContextAccessor)
         {
-            _correlationContextAccessor = correlationContextAccessor ?? throw new ArgumentNullException(nameof(correlationContextAccessor));
+            _runtimeContext = runtimeContextAccessor ?? throw new ArgumentNullException(nameof(runtimeContextAccessor));
             _apiRequestTracker = apiRequestTracker ?? throw new ArgumentNullException(nameof(apiRequestTracker));
         }
 
-        private readonly ICorrelationContextAccessor _correlationContextAccessor;
+        private readonly IRuntimeContextAccessor _runtimeContext;
         private readonly IApiRequestTracker _apiRequestTracker;
 
         public override async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
         {
-            using (CancellationTokenSource cts = new CancellationTokenSource())
-            {
-                string method = context.HttpContext.Request.Method;
+            string method = context.HttpContext.Request.Method;
 
-                if (Guid.TryParse(_correlationContextAccessor.CorrelationContext.CorrelationId, out Guid correlationId))
+            Guid correlationId = _runtimeContext.GetCorrelationId();
+
+            if (correlationId != Guid.Empty)
+            {
+                using (CancellationTokenSource cts = new CancellationTokenSource())
                 {
                     (bool requestCreated, ApiRequest request) = await _apiRequestTracker.GetOrCreateRequestAsync(correlationId, method, cts.Token);
 
@@ -50,11 +51,17 @@ namespace YA.TenantWorker.Application.ActionFilters
                         return;
                     }
                 }
-                else
-                {
-                    context.Result = new BadRequestResult();
-                    return;
-                }
+            }
+            else
+            {
+                context.Result = new BadRequestResult();
+                return;
+            }
+
+            if (_runtimeContext.GetTenantId() == Guid.Empty)
+            {
+                context.Result = new UnauthorizedResult();
+                return;
             }
 
             await next.Invoke();
@@ -62,11 +69,12 @@ namespace YA.TenantWorker.Application.ActionFilters
 
         public override async Task OnResultExecutionAsync(ResultExecutingContext context, ResultExecutionDelegate next)
         {
-            using (CancellationTokenSource cts = new CancellationTokenSource())
-            {
-                string method = context.HttpContext.Request.Method;
+            string method = context.HttpContext.Request.Method;
+            Guid correlationId = _runtimeContext.GetCorrelationId();
 
-                if (Guid.TryParse(_correlationContextAccessor.CorrelationContext.CorrelationId, out Guid correlationId))
+            if (correlationId != Guid.Empty)
+            {
+                using (CancellationTokenSource cts = new CancellationTokenSource())
                 {
                     (bool requestCreated, ApiRequest request) = await _apiRequestTracker.GetOrCreateRequestAsync(correlationId, method, cts.Token);
 

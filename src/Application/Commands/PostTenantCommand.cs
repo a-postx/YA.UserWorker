@@ -43,8 +43,6 @@ namespace YA.TenantWorker.Application.Commands
 
         public async Task<IActionResult> ExecuteAsync(TenantSm tenantSm, CancellationToken cancellationToken)
         {
-            Guid correlationId = _actionContextAccessor.GetCorrelationId(General.CorrelationIdHeader);
-            
             if (tenantSm.TenantId == Guid.Empty || string.IsNullOrEmpty(tenantSm.TenantName))
             {
                 return new BadRequestResult();
@@ -53,7 +51,7 @@ namespace YA.TenantWorker.Application.Commands
             Tenant tenant = _mapper.Map<Tenant>(tenantSm);
             tenant.TenantType = TenantTypes.Custom;
 
-            Guid defaultPricingTierId = Guid.Parse(SeedEntities.DefaultPricingTierId);
+            Guid defaultPricingTierId = Guid.Parse(SeedData.SeedPricingTierId);
 
             PricingTier defaultPricingTier = await _dbContext.GetEntityAsync<PricingTier>(e => e.PricingTierID == defaultPricingTierId, cancellationToken);
             tenant.PricingTier = defaultPricingTier;
@@ -63,7 +61,7 @@ namespace YA.TenantWorker.Application.Commands
             await _dbContext.CreateAndReturnEntityAsync(tenant, cancellationToken);
             await _dbContext.ApplyChangesAsync(cancellationToken);
 
-            await _messageBus.TenantCreatedV1Async(correlationId, tenant.TenantID, _mapper.Map<TenantTm>(tenant), cancellationToken);
+            await _messageBus.TenantCreatedV1Async(tenant.TenantID, _mapper.Map<TenantTm>(tenant), cancellationToken);
 
             return new CreatedAtRouteResult(RouteNames.GetTenant, new { TenantId = tenantVm.TenantId, TenantName = tenantVm.TenantName }, tenantVm);
         }

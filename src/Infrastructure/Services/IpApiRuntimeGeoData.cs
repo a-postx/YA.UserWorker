@@ -9,15 +9,15 @@ using YA.TenantWorker.Constants;
 
 namespace YA.TenantWorker.Infrastructure.Services
 {
-    public class IpApiGeoData : IRuntimeGeoDataService
+    public class IpApiRuntimeGeoData : IRuntimeGeoDataService
     {
-        public IpApiGeoData(ILogger<IpApiGeoData> logger)
+        public IpApiRuntimeGeoData(ILogger<IpApiRuntimeGeoData> logger)
         {
             _log = logger ?? throw new ArgumentNullException(nameof(logger));
             ProviderUrl = "http://ip-api.com";
         }
 
-        private readonly ILogger<IpApiGeoData> _log;
+        private readonly ILogger<IpApiRuntimeGeoData> _log;
 
         private string ProviderUrl { get; set; }
         private GeoData Data { get; set; }

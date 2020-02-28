@@ -1,35 +1,36 @@
 ﻿using System;
 using System.Collections.Immutable;
+using System.Linq;
 using System.Threading;
 
-namespace YA.TenantWorker.Infrastructure.Logging.MbMessages
+namespace YA.TenantWorker.Application.Runtime
 {
     /// <summary>
     /// Manages a Logical Call Context variable containing a stack of <typeparamref name="T"/> instances.
     /// </summary>
-    public static class AsyncLocalStack<T>
+    public static class MbMessageAsyncLocalStack<T>
     {
         /// <summary>
         /// Wraps the stack information.
         /// </summary>
-        class LogicalContextData
+        private class LogicalContextData
         {
             public ImmutableStack<T> Stack { get; set; }
         }
 
-        readonly static AsyncLocal<LogicalContextData> data = new AsyncLocal<LogicalContextData>();
+        private static readonly AsyncLocal<LogicalContextData> data = new AsyncLocal<LogicalContextData>();
 
         /// <summary>
         /// Gets the current context stack.
         /// </summary>
-        static ImmutableStack<T> CurrentContext
+        private static ImmutableStack<T> CurrentContext
         {
             get => data.Value?.Stack ?? ImmutableStack<T>.Empty;
             set => data.Value = new LogicalContextData { Stack = value };
         }
 
         /// <summary>
-        /// Publishes a <typeparamref name="T"/> onto the stack.
+        /// Publishes a <see><cref>T</cref></see> onto the stack.
         /// </summary>
         /// <param name="context"></param>
         /// <returns></returns>
@@ -40,16 +41,16 @@ namespace YA.TenantWorker.Infrastructure.Logging.MbMessages
         }
 
         /// <summary>
-        /// Gets the current <typeparamref name="T"/>.
+        /// Gets the current <see><cref>T</cref></see>.
         /// </summary>
         public static T Current => Peek();
 
         /// <summary>
         /// Removes the last item from the stack.
         /// </summary>
-        static void Pop()
+        private static void Pop()
         {
-            var currentContext = CurrentContext;
+            ImmutableStack<T> currentContext = CurrentContext;
             if (currentContext.IsEmpty == false)
                 CurrentContext = currentContext.Pop();
         }
@@ -58,19 +59,19 @@ namespace YA.TenantWorker.Infrastructure.Logging.MbMessages
         /// Returns the last item on the stack.
         /// </summary>
         /// <returns></returns>
-        static T Peek()
+        private static T Peek()
         {
-            var currentContext = CurrentContext;
+            ImmutableStack<T> currentContext = CurrentContext;
             if (currentContext.IsEmpty == false)
                 return currentContext.Peek();
             else
-                return default(T);
+                return default;
         }
 
         /// <summary>
         /// Implements a Pop operation when disposed.
         /// </summary>
-        class PopWhenDisposed : IDisposable
+        private class PopWhenDisposed : IDisposable
         {
             bool _disposed;
 

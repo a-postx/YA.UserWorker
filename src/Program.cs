@@ -250,7 +250,7 @@ namespace YA.TenantWorker
                 .Enrich.WithProperty("EnvironmentUserName", Environment.UserName)
                 .Enrich.WithProperty("OSPlatform", OsPlatform.ToString())
                 .Enrich.FromMassTransitMessage()
-                .Enrich.FromCustomMbEvent()
+                .Enrich.FromCustomMbMessageContext()
                 .Enrich.WithExceptionDetails(new DestructuringOptionsBuilder()
                     .WithDefaultDestructurers()
                     //speed up EF Core exception destructuring

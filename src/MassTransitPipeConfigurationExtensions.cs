@@ -1,22 +1,22 @@
 ﻿using GreenPipes;
 using System;
-using YA.TenantWorker.Infrastructure.Logging.MbMessages;
+using YA.TenantWorker.Infrastructure.Messaging.Filters;
 
 namespace YA.TenantWorker
 {
     public static class MassTransitPipeConfiguratorExtensions
     {
         /// <summary>
-        /// Injects the required configuration into Mass Transit to allow Serilog to acquire custom event's enrichment data.
+        /// Injects filter to intercept custom message context from MassTransit message.
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="configurator"></param>
-        public static void UseSerilogCustomMbEventEnricher<T>(this IPipeConfigurator<T> configurator) where T : class, PipeContext
+        public static void UseMbContextFilter<T>(this IPipeConfigurator<T> configurator) where T : class, PipeContext
         {
             if (configurator == null)
                 throw new ArgumentNullException(nameof(configurator));
 
-            configurator.AddPipeSpecification(new YaMbEventSerilogEnricherSpecification<T>());
+            configurator.AddPipeSpecification(new MbMessageContextFilterPipeSpecification<T>());
         }
     }
 }

@@ -16,7 +16,7 @@ namespace YA.TenantWorker
         /// </summary>
         /// <param name="configuration"></param>
         /// <returns></returns>
-        public static LoggerConfiguration FromCustomMbEvent(this LoggerEnrichmentConfiguration configuration)
+        public static LoggerConfiguration FromCustomMbMessageContext(this LoggerEnrichmentConfiguration configuration)
         {
             if (configuration == null)
                 throw new ArgumentNullException(nameof(configuration));

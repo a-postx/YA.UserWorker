@@ -1,9 +1,9 @@
-﻿using CorrelationId;
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Threading.Tasks;
 using YA.Common;
+using YA.TenantWorker.Application.Interfaces;
 using YA.TenantWorker.Constants;
 
 namespace YA.TenantWorker.Infrastructure.Logging.Requests
@@ -20,15 +20,14 @@ namespace YA.TenantWorker.Infrastructure.Logging.Requests
 
         private readonly RequestDelegate _next;
 
-        public async Task InvokeAsync(HttpContext httpContext, ILogger<CorrelationIdContextLogger> logger, ICorrelationContextAccessor correlationContextAccessor)
+        public async Task InvokeAsync(HttpContext httpContext, ILogger<CorrelationIdContextLogger> logger, IRuntimeContextAccessor runtimeContextAccessor)
         {
             HttpContext context = httpContext ?? throw new ArgumentNullException(nameof(httpContext));
+            Guid correlationId = runtimeContextAccessor.GetCorrelationId();
 
-            string correlationId = correlationContextAccessor.CorrelationContext.CorrelationId;
-
-            if (!string.IsNullOrEmpty(correlationId))
+            if (correlationId != Guid.Empty)
             {
-                using (logger.BeginScopeWith((Logs.CorrelationId, correlationId)))
+                using (logger.BeginScopeWith((Logs.CorrelationId, correlationId.ToString())))
                 {
                     await _next(context);
                 }
