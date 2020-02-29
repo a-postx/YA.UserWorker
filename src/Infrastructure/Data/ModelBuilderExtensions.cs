@@ -48,7 +48,7 @@ namespace YA.TenantWorker.Infrastructure.Data
                     TenantName = "Прохожий",
                     PricingTierID = defaultPricingTierId,
                     PricingTierActivatedDateTime = DateTime.UtcNow,
-                    TenantType = TenantTypes.Custom,
+                    TenantType = TenantTypes.System,
                     IsActive = true,
                     IsReadOnly = false
                 },
