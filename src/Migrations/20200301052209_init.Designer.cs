@@ -10,14 +10,14 @@ using YA.TenantWorker.Infrastructure.Data;
 namespace YA.TenantWorker.Migrations
 {
     [DbContext(typeof(TenantWorkerDbContext))]
-    [Migration("20200214044454_init")]
+    [Migration("20200301052209_init")]
     partial class init
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "3.1.0")
+                .HasAnnotation("ProductVersion", "3.1.2")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128)
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
@@ -185,17 +185,17 @@ namespace YA.TenantWorker.Migrations
                             TenantID = new Guid("00000000-0000-0000-0000-000000000001"),
                             IsActive = true,
                             IsReadOnly = false,
-                            PricingTierActivatedDateTime = new DateTime(2020, 2, 14, 4, 44, 53, 481, DateTimeKind.Utc).AddTicks(1977),
+                            PricingTierActivatedDateTime = new DateTime(2020, 3, 1, 5, 22, 9, 315, DateTimeKind.Utc).AddTicks(2426),
                             PricingTierID = new Guid("00000000-0000-0000-0000-000000000001"),
-                            TenantName = "Прохожий",
-                            TenantType = 1
+                            TenantName = "Системный",
+                            TenantType = 0
                         },
                         new
                         {
                             TenantID = new Guid("00000000-0000-0000-0000-000000000002"),
                             IsActive = true,
                             IsReadOnly = false,
-                            PricingTierActivatedDateTime = new DateTime(2020, 2, 14, 4, 44, 53, 481, DateTimeKind.Utc).AddTicks(3923),
+                            PricingTierActivatedDateTime = new DateTime(2020, 3, 1, 5, 22, 9, 315, DateTimeKind.Utc).AddTicks(4120),
                             PricingTierID = new Guid("00000000-0000-0000-0000-000000000013"),
                             TenantName = "Уважаемый",
                             TenantType = 1
@@ -274,13 +274,13 @@ namespace YA.TenantWorker.Migrations
                         new
                         {
                             UserID = new Guid("00000000-0000-0000-0000-000000000011"),
-                            CreatedDateTime = new DateTime(2020, 2, 14, 4, 44, 53, 481, DateTimeKind.Utc).AddTicks(5179),
+                            CreatedDateTime = new DateTime(2020, 3, 1, 5, 22, 9, 315, DateTimeKind.Utc).AddTicks(5398),
                             Email = "admin@email.com",
                             FirstName = "My",
                             IsActive = true,
                             IsDeleted = false,
                             IsPendingActivation = false,
-                            LastModifiedDateTime = new DateTime(2020, 2, 14, 4, 44, 53, 481, DateTimeKind.Utc).AddTicks(5187),
+                            LastModifiedDateTime = new DateTime(2020, 3, 1, 5, 22, 9, 315, DateTimeKind.Utc).AddTicks(5406),
                             LastName = "Admin",
                             Password = "123",
                             Role = "Administrator",
@@ -290,13 +290,13 @@ namespace YA.TenantWorker.Migrations
                         new
                         {
                             UserID = new Guid("00000000-0000-0000-0000-000000000012"),
-                            CreatedDateTime = new DateTime(2020, 2, 14, 4, 44, 53, 481, DateTimeKind.Utc).AddTicks(7261),
+                            CreatedDateTime = new DateTime(2020, 3, 1, 5, 22, 9, 315, DateTimeKind.Utc).AddTicks(7319),
                             Email = "user@email.com",
                             FirstName = "My",
                             IsActive = true,
                             IsDeleted = false,
                             IsPendingActivation = false,
-                            LastModifiedDateTime = new DateTime(2020, 2, 14, 4, 44, 53, 481, DateTimeKind.Utc).AddTicks(7269),
+                            LastModifiedDateTime = new DateTime(2020, 3, 1, 5, 22, 9, 315, DateTimeKind.Utc).AddTicks(7326),
                             LastName = "User",
                             Password = "123",
                             Role = "User",

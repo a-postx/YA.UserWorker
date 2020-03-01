@@ -115,22 +115,22 @@ namespace YA.TenantWorker.Migrations
             migrationBuilder.InsertData(
                 table: "Tenants",
                 columns: new[] { "TenantID", "IsActive", "IsReadOnly", "PricingTierActivatedDateTime", "PricingTierID", "TenantName", "TenantType" },
-                values: new object[] { new Guid("00000000-0000-0000-0000-000000000001"), true, false, new DateTime(2020, 2, 14, 4, 44, 53, 481, DateTimeKind.Utc).AddTicks(1977), new Guid("00000000-0000-0000-0000-000000000001"), "Прохожий", 1 });
+                values: new object[] { new Guid("00000000-0000-0000-0000-000000000001"), true, false, new DateTime(2020, 3, 1, 5, 22, 9, 315, DateTimeKind.Utc).AddTicks(2426), new Guid("00000000-0000-0000-0000-000000000001"), "Системный", 0 });
 
             migrationBuilder.InsertData(
                 table: "Tenants",
                 columns: new[] { "TenantID", "IsActive", "IsReadOnly", "PricingTierActivatedDateTime", "PricingTierID", "TenantName", "TenantType" },
-                values: new object[] { new Guid("00000000-0000-0000-0000-000000000002"), true, false, new DateTime(2020, 2, 14, 4, 44, 53, 481, DateTimeKind.Utc).AddTicks(3923), new Guid("00000000-0000-0000-0000-000000000013"), "Уважаемый", 1 });
+                values: new object[] { new Guid("00000000-0000-0000-0000-000000000002"), true, false, new DateTime(2020, 3, 1, 5, 22, 9, 315, DateTimeKind.Utc).AddTicks(4120), new Guid("00000000-0000-0000-0000-000000000013"), "Уважаемый", 1 });
 
             migrationBuilder.InsertData(
                 table: "Users",
                 columns: new[] { "UserID", "CreatedDateTime", "Email", "FirstName", "IsActive", "IsDeleted", "IsPendingActivation", "LastLoginDate", "LastModifiedDateTime", "LastName", "Password", "Role", "TenantID", "Username" },
-                values: new object[] { new Guid("00000000-0000-0000-0000-000000000011"), new DateTime(2020, 2, 14, 4, 44, 53, 481, DateTimeKind.Utc).AddTicks(5179), "admin@email.com", "My", true, false, false, null, new DateTime(2020, 2, 14, 4, 44, 53, 481, DateTimeKind.Utc).AddTicks(5187), "Admin", "123", "Administrator", new Guid("00000000-0000-0000-0000-000000000001"), "admin@ya.ru" });
+                values: new object[] { new Guid("00000000-0000-0000-0000-000000000011"), new DateTime(2020, 3, 1, 5, 22, 9, 315, DateTimeKind.Utc).AddTicks(5398), "admin@email.com", "My", true, false, false, null, new DateTime(2020, 3, 1, 5, 22, 9, 315, DateTimeKind.Utc).AddTicks(5406), "Admin", "123", "Administrator", new Guid("00000000-0000-0000-0000-000000000001"), "admin@ya.ru" });
 
             migrationBuilder.InsertData(
                 table: "Users",
                 columns: new[] { "UserID", "CreatedDateTime", "Email", "FirstName", "IsActive", "IsDeleted", "IsPendingActivation", "LastLoginDate", "LastModifiedDateTime", "LastName", "Password", "Role", "TenantID", "Username" },
-                values: new object[] { new Guid("00000000-0000-0000-0000-000000000012"), new DateTime(2020, 2, 14, 4, 44, 53, 481, DateTimeKind.Utc).AddTicks(7261), "user@email.com", "My", true, false, false, null, new DateTime(2020, 2, 14, 4, 44, 53, 481, DateTimeKind.Utc).AddTicks(7269), "User", "123", "User", new Guid("00000000-0000-0000-0000-000000000001"), "user@ya.ru" });
+                values: new object[] { new Guid("00000000-0000-0000-0000-000000000012"), new DateTime(2020, 3, 1, 5, 22, 9, 315, DateTimeKind.Utc).AddTicks(7319), "user@email.com", "My", true, false, false, null, new DateTime(2020, 3, 1, 5, 22, 9, 315, DateTimeKind.Utc).AddTicks(7326), "User", "123", "User", new Guid("00000000-0000-0000-0000-000000000001"), "user@ya.ru" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_Tenants_PricingTierID",

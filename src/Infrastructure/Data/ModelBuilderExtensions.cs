@@ -45,7 +45,7 @@ namespace YA.TenantWorker.Infrastructure.Data
                 new
                 {
                     TenantID = defaultTenantId,
-                    TenantName = "Прохожий",
+                    TenantName = "Системный",
                     PricingTierID = defaultPricingTierId,
                     PricingTierActivatedDateTime = DateTime.UtcNow,
                     TenantType = TenantTypes.System,
