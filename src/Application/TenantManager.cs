@@ -32,7 +32,7 @@ namespace YA.TenantWorker.Application
 
         public async Task<PricingTierTm> GetPricingTierMbTransferModelAsync(CancellationToken cancellationToken)
         {
-            Tenant tenant = await _dbContext.GetTenantWithPricingTierAsync(e => e.TenantID == _runtimeContext.GetTenantId(), cancellationToken);
+            Tenant tenant = await _dbContext.GetTenantWithPricingTierAsync(cancellationToken);
 
             PricingTierTm pricingTierTm = _mapper.Map<PricingTierTm>(tenant.PricingTier);
 

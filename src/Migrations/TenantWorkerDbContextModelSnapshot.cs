@@ -118,7 +118,7 @@ namespace YA.TenantWorker.Migrations
                         {
                             PricingTierID = new Guid("00000000-0000-0000-0000-000000000013"),
                             CreatedDateTime = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Description = "За денежки.",
+                            Description = "За денежки",
                             HasTrial = true,
                             LastModifiedDateTime = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             MaxScheduledTasks = 1,
@@ -183,7 +183,7 @@ namespace YA.TenantWorker.Migrations
                             TenantID = new Guid("00000000-0000-0000-0000-000000000001"),
                             IsActive = true,
                             IsReadOnly = false,
-                            PricingTierActivatedDateTime = new DateTime(2020, 3, 1, 5, 22, 9, 315, DateTimeKind.Utc).AddTicks(2426),
+                            PricingTierActivatedDateTime = new DateTime(2020, 3, 13, 4, 35, 20, 859, DateTimeKind.Utc).AddTicks(2126),
                             PricingTierID = new Guid("00000000-0000-0000-0000-000000000001"),
                             TenantName = "Системный",
                             TenantType = 0
@@ -193,7 +193,7 @@ namespace YA.TenantWorker.Migrations
                             TenantID = new Guid("00000000-0000-0000-0000-000000000002"),
                             IsActive = true,
                             IsReadOnly = false,
-                            PricingTierActivatedDateTime = new DateTime(2020, 3, 1, 5, 22, 9, 315, DateTimeKind.Utc).AddTicks(4120),
+                            PricingTierActivatedDateTime = new DateTime(2020, 3, 13, 4, 35, 20, 859, DateTimeKind.Utc).AddTicks(3903),
                             PricingTierID = new Guid("00000000-0000-0000-0000-000000000013"),
                             TenantName = "Уважаемый",
                             TenantType = 1
@@ -272,13 +272,13 @@ namespace YA.TenantWorker.Migrations
                         new
                         {
                             UserID = new Guid("00000000-0000-0000-0000-000000000011"),
-                            CreatedDateTime = new DateTime(2020, 3, 1, 5, 22, 9, 315, DateTimeKind.Utc).AddTicks(5398),
+                            CreatedDateTime = new DateTime(2020, 3, 13, 4, 35, 20, 859, DateTimeKind.Utc).AddTicks(5273),
                             Email = "admin@email.com",
                             FirstName = "My",
                             IsActive = true,
                             IsDeleted = false,
                             IsPendingActivation = false,
-                            LastModifiedDateTime = new DateTime(2020, 3, 1, 5, 22, 9, 315, DateTimeKind.Utc).AddTicks(5406),
+                            LastModifiedDateTime = new DateTime(2020, 3, 13, 4, 35, 20, 859, DateTimeKind.Utc).AddTicks(5281),
                             LastName = "Admin",
                             Password = "123",
                             Role = "Administrator",
@@ -288,13 +288,13 @@ namespace YA.TenantWorker.Migrations
                         new
                         {
                             UserID = new Guid("00000000-0000-0000-0000-000000000012"),
-                            CreatedDateTime = new DateTime(2020, 3, 1, 5, 22, 9, 315, DateTimeKind.Utc).AddTicks(7319),
+                            CreatedDateTime = new DateTime(2020, 3, 13, 4, 35, 20, 859, DateTimeKind.Utc).AddTicks(7301),
                             Email = "user@email.com",
                             FirstName = "My",
                             IsActive = true,
                             IsDeleted = false,
                             IsPendingActivation = false,
-                            LastModifiedDateTime = new DateTime(2020, 3, 1, 5, 22, 9, 315, DateTimeKind.Utc).AddTicks(7326),
+                            LastModifiedDateTime = new DateTime(2020, 3, 13, 4, 35, 20, 859, DateTimeKind.Utc).AddTicks(7309),
                             LastName = "User",
                             Password = "123",
                             Role = "User",
@@ -308,7 +308,7 @@ namespace YA.TenantWorker.Migrations
                     b.HasOne("YA.TenantWorker.Core.Entities.PricingTier", "PricingTier")
                         .WithMany("Tenants")
                         .HasForeignKey("PricingTierID")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .OnDelete(DeleteBehavior.NoAction);
                 });
 
             modelBuilder.Entity("YA.TenantWorker.Core.Entities.User", b =>

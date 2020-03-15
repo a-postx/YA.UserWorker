@@ -10,6 +10,9 @@ using YA.TenantWorker.Infrastructure.Messaging.Filters;
 
 namespace YA.TenantWorker.Infrastructure.Services
 {
+    /// <summary>
+    /// Отслеживает состояние контекста исполнения
+    /// </summary>
     public class RuntimeContextAccessor : IRuntimeContextAccessor
     {
         public RuntimeContextAccessor(ILogger<RuntimeContextAccessor> logger,
@@ -25,6 +28,9 @@ namespace YA.TenantWorker.Infrastructure.Services
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly ICorrelationContextAccessor _correlationContextAccessor;
 
+        /// <summary>
+        /// Доступ к текущему идентификатору корелляции.
+        /// </summary>
         public Guid GetCorrelationId()
         {
             MbMessageContext mbMessageContext = MbMessageContextProvider.Current;
@@ -66,6 +72,9 @@ namespace YA.TenantWorker.Infrastructure.Services
             throw new Exception("Cannot obtain CorrelationID.");
         }
 
+        /// <summary>
+        /// Доступ к текущему идентификатору арендатора. Никогда не выводит пустой идентификатор.
+        /// </summary>
         public Guid GetTenantId()
         {
             MbMessageContext mbMessageContext = MbMessageContextProvider.Current;

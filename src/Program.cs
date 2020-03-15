@@ -82,15 +82,15 @@ namespace YA.TenantWorker
 
                     if (dbContext.Database.GetPendingMigrations().GetEnumerator().MoveNext())
                     {
-                        Console.WriteLine("Applying database migrations...");
+                        Console.WriteLine("Applying application database migrations...");
 
                         dbContext.Database.Migrate();
 
-                        Console.WriteLine("Database migrations applied successfully.");
+                        Console.WriteLine("Application database migrations applied successfully.");
                     }
                     else
                     {
-                        Console.WriteLine("No database migrations needed.");
+                        Console.WriteLine("No application database migrations needed.");
                     }
                 }
             }

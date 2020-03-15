@@ -3,7 +3,7 @@ using Delobytes.AspNetCore;
 
 namespace YA.TenantWorker.Application.Commands
 {
-    public interface IDeleteTenantCommand : IAsyncCommand<Guid>
+    public interface IDeleteTenantByIdCommand : IAsyncCommand<Guid>
     {
 
     }

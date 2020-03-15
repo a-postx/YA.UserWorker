@@ -12,8 +12,8 @@ namespace YA.TenantWorker.Core.Entities
     public class Tenant : IRowVersionedEntity, IAuditedEntityBase
     {
         public Guid TenantID { get; set; }
-        public TenantTypes TenantType { get; set; }
         public string TenantName { get; set; }
+        public TenantTypes TenantType { get; set; }
         public virtual PricingTier PricingTier { get; set; }
         public DateTime PricingTierActivatedDateTime { get; set; }
         public bool IsActive { get; set; }

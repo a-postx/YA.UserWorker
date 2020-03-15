@@ -37,7 +37,7 @@ namespace YA.TenantWorker.Infrastructure.Messaging.Consumers
 
                 await context.RespondAsync<ISendPricingTierV1>(new SendPricingTierV1(_runtimeContext.GetCorrelationId(), _runtimeContext.GetTenantId(), pricingTierTm));
 
-                //await _messageBus.SendPricingTierV1Async(_runtimeContext.GetCorrelationId(),
+                //await _messageBus.PricingTierSentV1Async(_runtimeContext.GetCorrelationId(),
                 //    _runtimeContext.GetTenantId(), pricingTierTm, context.CancellationToken);
             }
             catch (Exception e) when (_log.LogException(e, (Logs.MbMessage, context.Message.ToJson())))

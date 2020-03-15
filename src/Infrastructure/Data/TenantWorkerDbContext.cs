@@ -19,14 +19,14 @@ namespace YA.TenantWorker.Infrastructure.Data
 {
     public class TenantWorkerDbContext : DbContext, ITenantWorkerDbContext
     {
-        public TenantWorkerDbContext(DbContextOptions options, IRuntimeContextAccessor tenantContextAccessor) : base(options)
+        public TenantWorkerDbContext(DbContextOptions options, IRuntimeContextAccessor runtimeContext) : base(options)
         {
-            if (tenantContextAccessor == null)
+            if (runtimeContext == null)
             {
-                throw new ArgumentNullException(nameof(tenantContextAccessor));
+                throw new ArgumentNullException(nameof(runtimeContext));
             }
 
-            _tenantId = tenantContextAccessor.GetTenantId();
+            _tenantId = runtimeContext.GetTenantId();
         }
 
         public DbSet<ApiRequest> ApiRequests { get; set; }
@@ -81,11 +81,6 @@ namespace YA.TenantWorker.Infrastructure.Data
         {
             EntityEntry<T> entityEntry = await Set<T>().AddAsync(item, cancellationToken);
             return entityEntry.Entity;
-        }
-
-        public async Task CreateEntitiesAsync<T>(List<T> newItems, CancellationToken cancellationToken) where T : class
-        {
-            await Set<T>().AddRangeAsync(newItems, cancellationToken);
         }
 
         //опасный запрос, выводит по всем арендаторам
@@ -195,6 +190,15 @@ namespace YA.TenantWorker.Infrastructure.Data
         #endregion
 
         #region Tenants
+        public async Task<Tenant> GetTenantAsync(CancellationToken cancellationToken)
+        {
+            return await Tenants.SingleOrDefaultAsync(e => e.TenantID == _tenantId, cancellationToken);
+        }
+
+        public async Task<Tenant> GetTenantAsync(Expression<Func<Tenant, bool>> predicate, CancellationToken cancellationToken)
+        {
+            return await Tenants.SingleOrDefaultAsync(predicate, cancellationToken);
+        }
         public void DeleteTenant(Tenant tenant)
         {
             DeleteItem(tenant);
@@ -205,9 +209,9 @@ namespace YA.TenantWorker.Infrastructure.Data
             UpdateItem(tenant);
         }
 
-        public async Task<Tenant> GetTenantWithPricingTierAsync(Expression<Func<Tenant, bool>> predicate, CancellationToken cancellationToken)
+        public async Task<Tenant> GetTenantWithPricingTierAsync(CancellationToken cancellationToken)
         {
-            return await Set<Tenant>().Include(nameof(PricingTier)).SingleOrDefaultAsync(predicate, cancellationToken);
+            return await Set<Tenant>().Include(nameof(PricingTier)).SingleOrDefaultAsync(e => e.TenantID == _tenantId, cancellationToken);
         }
         #endregion
 

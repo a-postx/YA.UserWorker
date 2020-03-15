@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using YA.TenantWorker.Application.Models.Dto;
 using YA.TenantWorker.Application.Models.SaveModels;
+using YA.TenantWorker.Application.Models.ViewModels;
 using YA.TenantWorker.Core.Entities;
 
 namespace YA.TenantWorker.Application.Mappers
@@ -14,7 +15,7 @@ namespace YA.TenantWorker.Application.Mappers
             CreateMap<Tenant, TenantTm>();
             CreateMap<TenantTm, Tenant>();
             CreateMap<PricingTier, PricingTierTm>();
-            CreateMap<PricingTierTm, PricingTier>();            
+            CreateMap<PricingTierTm, PricingTier>();
         }
     }
 }

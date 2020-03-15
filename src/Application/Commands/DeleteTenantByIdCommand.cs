@@ -10,9 +10,9 @@ using YA.TenantWorker.Core.Entities;
 
 namespace YA.TenantWorker.Application.Commands
 {
-    public class DeleteTenantCommand : IDeleteTenantCommand
+    public class DeleteTenantByIdCommand : IDeleteTenantByIdCommand
     {
-        public DeleteTenantCommand(ILogger<DeleteTenantCommand> logger,
+        public DeleteTenantByIdCommand(ILogger<DeleteTenantByIdCommand> logger,
             IMapper mapper,
             IRuntimeContextAccessor runtimeContextAccessor,
             ITenantWorkerDbContext dbContext,
@@ -25,15 +25,20 @@ namespace YA.TenantWorker.Application.Commands
             _messageBus = messageBus ?? throw new ArgumentNullException(nameof(messageBus));
         }
 
-        private readonly ILogger<DeleteTenantCommand> _log;
+        private readonly ILogger<DeleteTenantByIdCommand> _log;
         private readonly IMapper _mapper;
         private readonly IRuntimeContextAccessor _runtimeContext;
         private readonly ITenantWorkerDbContext _dbContext;
         private readonly IMessageBus _messageBus;
 
-        public async Task<IActionResult> ExecuteAsync(CancellationToken cancellationToken = default)
+        public async Task<IActionResult> ExecuteAsync(Guid tenantId, CancellationToken cancellationToken = default)
         {
-            Tenant tenant = await _dbContext.GetTenantAsync(cancellationToken);
+            if (tenantId == Guid.Empty)
+            {
+                return new BadRequestResult();
+            }
+
+            Tenant tenant = await _dbContext.GetTenantAsync(e => e.TenantID == tenantId, cancellationToken);
 
             if (tenant == null)
             {

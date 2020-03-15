@@ -31,22 +31,26 @@ namespace YA.TenantWorker.Infrastructure.Messaging
 
         public async Task TenantCreatedV1Async(Guid tenantId, TenantTm tenantTm, CancellationToken cancellationToken)
         {
-            await _publishEndpoint.Publish<ITenantCreatedV1>(new TenantCreatedV1(_runtimeContext.GetCorrelationId(), tenantId, tenantTm), cancellationToken);
+            await _publishEndpoint
+                .Publish<ITenantCreatedV1>(new TenantCreatedV1(_runtimeContext.GetCorrelationId(), tenantId, tenantTm), cancellationToken);
         }
 
         public async Task TenantDeletedV1Async(Guid tenantId, TenantTm tenantTm, CancellationToken cancellationToken)
         {
-            await _publishEndpoint.Publish<ITenantDeletedV1>(new TenantDeletedV1(_runtimeContext.GetCorrelationId(), tenantId, tenantTm), cancellationToken);
+            await _publishEndpoint
+                .Publish<ITenantDeletedV1>(new TenantDeletedV1(_runtimeContext.GetCorrelationId(), tenantId, tenantTm), cancellationToken);
         }
 
         public async Task TenantUpdatedV1Async(Guid tenantId, TenantTm tenantTm, CancellationToken cancellationToken)
         {
-            await _publishEndpoint.Publish<ITenantUpdatedV1>(new TenantUpdatedV1(_runtimeContext.GetCorrelationId(), tenantId, tenantTm), cancellationToken);
+            await _publishEndpoint
+                .Publish<ITenantUpdatedV1>(new TenantUpdatedV1(_runtimeContext.GetCorrelationId(), tenantId, tenantTm), cancellationToken);
         }
 
-        public async Task SendPricingTierV1Async(PricingTierTm pricingTierTm, CancellationToken cancellationToken)
+        public async Task PricingTierSentV1Async(PricingTierTm pricingTierTm, CancellationToken cancellationToken)
         {
-            await _publishEndpoint.Publish<ISendPricingTierV1>(new SendPricingTierV1(_runtimeContext.GetCorrelationId(), _runtimeContext.GetTenantId(), pricingTierTm), cancellationToken);
+            await _publishEndpoint
+                .Publish<ISendPricingTierV1>(new SendPricingTierV1(_runtimeContext.GetCorrelationId(), _runtimeContext.GetTenantId(), pricingTierTm), cancellationToken);
         }
     }
 }

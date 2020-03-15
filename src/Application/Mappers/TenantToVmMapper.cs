@@ -40,9 +40,18 @@ namespace YA.TenantWorker.Application.Mappers
             destination.TenantId = source.TenantID;
             destination.TenantName = source.TenantName;
 
-            //property name of anonymous route value object must correspond to controller http route values
-            //destination.Url = _linkGenerator.GetUriByRouteValues(_httpContextAccessor.HttpContext, RouteNames.GetTenant, new { tenantId });
-            destination.Url = new Uri(_linkGenerator.GetUriByAction(_httpContextAccessor.HttpContext));
+            RouteData routeData = _httpContextAccessor.HttpContext.GetRouteData();
+            string route = (string)routeData.Values["controller"] + (string)routeData.Values["action"];
+
+            if (route.Contains("All") || route.Contains("ById") || route.Contains("Post"))
+            {
+                //property name of anonymous route value object must correspond to controller http route values
+                destination.Url = new Uri(_linkGenerator.GetUriByName(_httpContextAccessor.HttpContext, RouteNames.GetTenantById, new { tenantId }));
+            }
+            else
+            {
+                destination.Url = new Uri(_linkGenerator.GetUriByAction(_httpContextAccessor.HttpContext));
+            }
             
             ////var hhh = _linkGenerator.GetUriByName(_httpContextAccessor.HttpContext, RouteNames.GetTenant, new { tenantId });
             ////bool gotGwHost = _httpContextAccessor.HttpContext.Request.Headers.TryGetValue("Gateway-Base-Url", out StringValues baseUrl);

@@ -14,7 +14,7 @@ namespace YA.TenantWorker.Application.Models.ViewModelSchemaFilters
             TenantSm tenantSm = new TenantSm()
             {
                 TenantId = Guid.Parse("00000000-0000-0000-0000-000000000003"),
-                TenantName = "Вверх тормашками"
+                TenantName = "stranger@moscow.ru"
             };
 
             model.Default = new OpenApiString(JsonConvert.SerializeObject(tenantSm, Formatting.Indented));

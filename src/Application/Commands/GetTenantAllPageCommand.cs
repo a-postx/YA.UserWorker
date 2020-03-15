@@ -15,22 +15,22 @@ using YA.TenantWorker.Core.Entities;
 
 namespace YA.TenantWorker.Application.Commands
 {
-    public class GetTenantPageCommand : IGetTenantPageCommand
+    public class GetTenantAllPageCommand : IGetTenantAllPageCommand
     {
-        public GetTenantPageCommand(ILogger<GetTenantPageCommand> logger,
-            ITenantWorkerDbContext workerDbContext,
+        public GetTenantAllPageCommand(ILogger<GetTenantAllPageCommand> logger,
+            ITenantWorkerDbContext dbContext,
             IMapper<Tenant, TenantVm> tenantVmMapper,
             IHttpContextAccessor httpContextAccessor,
             LinkGenerator linkGenerator)
         {
             _log = logger ?? throw new ArgumentNullException(nameof(logger));
-            _dbContext = workerDbContext ?? throw new ArgumentNullException(nameof(workerDbContext));
+            _dbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
             _tenantVmMapper = tenantVmMapper ?? throw new ArgumentNullException(nameof(tenantVmMapper));
             _httpContextAccessor = httpContextAccessor ?? throw new ArgumentNullException(nameof(httpContextAccessor));
             _linkGenerator = linkGenerator ?? throw new ArgumentNullException(nameof(linkGenerator));
         }
         
-        private readonly ILogger<GetTenantPageCommand> _log;
+        private readonly ILogger<GetTenantAllPageCommand> _log;
         private readonly ITenantWorkerDbContext _dbContext;
         private readonly IMapper<Tenant, TenantVm> _tenantVmMapper;
         private readonly IHttpContextAccessor _httpContextAccessor;

@@ -15,7 +15,7 @@ namespace YA.TenantWorker.Infrastructure.Data
             modelBuilder.Entity<PricingTier>().HasData(
                 new PricingTier
                 {
-                    PricingTierID = defaultPricingTierId,
+                    PricingTierID = Guid.Parse(SeedData.SeedPricingTierId),
                     Title = "Бесплатный",
                     Description = "Бесплатно для всех.",
                     HasTrial = false,
@@ -28,7 +28,7 @@ namespace YA.TenantWorker.Infrastructure.Data
                 {
                     PricingTierID = paidPricingTierId,
                     Title = "Платный",
-                    Description = "За денежки.",
+                    Description = "За денежки",
                     HasTrial = true,
                     TrialPeriod = TimeSpan.FromDays(15),
                     MaxUsers = 1,
@@ -40,6 +40,20 @@ namespace YA.TenantWorker.Infrastructure.Data
 
             Guid defaultTenantId = Guid.Parse(SeedData.SystemTenantId);
             Guid seedPaidTenantId = Guid.Parse("00000000-0000-0000-0000-000000000002");
+
+            ////modelBuilder.Entity<Tenant>().HasData(
+            ////    Tenant.GetSystem(),
+            ////    new
+            ////    {
+            ////        TenantID = seedPaidTenantId,
+            ////        TenantName = "Уважаемый",
+            ////        PricingTierID = paidPricingTierId,
+            ////        PricingTierActivatedDateTime = DateTime.UtcNow,
+            ////        TenantType = TenantTypes.Custom,
+            ////        IsActive = true,
+            ////        IsReadOnly = false
+            ////    }
+            ////);
 
             modelBuilder.Entity<Tenant>().HasData(
                 new

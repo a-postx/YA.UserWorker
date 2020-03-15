@@ -14,9 +14,9 @@ using Delobytes.Mapper;
 
 namespace YA.TenantWorker.Application.Commands
 {
-    public class GetTenantCommand : IGetTenantCommand
+    public class GetTenantByIdCommand : IGetTenantByIdCommand
     {
-        public GetTenantCommand(ILogger<GetTenantCommand> logger,
+        public GetTenantByIdCommand(ILogger<GetTenantByIdCommand> logger,
             IRuntimeContextAccessor runtimeContextAccessor,
             IActionContextAccessor actionContextAccessor,
             ITenantWorkerDbContext dbContext,
@@ -29,21 +29,26 @@ namespace YA.TenantWorker.Application.Commands
             _tenantVmMapper = tenantVmMapper ?? throw new ArgumentNullException(nameof(tenantVmMapper));
         }
 
-        private readonly ILogger<GetTenantCommand> _log;
+        private readonly ILogger<GetTenantByIdCommand> _log;
         private readonly IRuntimeContextAccessor _runtimeContext;
         private readonly IActionContextAccessor _actionContextAccessor;
         private readonly ITenantWorkerDbContext _dbContext;
         private readonly IMapper<Tenant, TenantVm> _tenantVmMapper;
 
-        public async Task<IActionResult> ExecuteAsync(CancellationToken cancellationToken = default)
+        public async Task<IActionResult> ExecuteAsync(Guid tenantId, CancellationToken cancellationToken = default)
         {
-            Tenant tenant = await _dbContext.GetTenantAsync(cancellationToken);
+            if (tenantId == Guid.Empty)
+            {
+                return new BadRequestResult();
+            }
+
+            Tenant tenant = await _dbContext.GetTenantAsync(e => e.TenantID == tenantId, cancellationToken);
 
             if (tenant == null)
             {
                 return new NotFoundResult();
             }
-
+            
             if (_actionContextAccessor.ActionContext.HttpContext
                 .Request.Headers.TryGetValue(HeaderNames.IfModifiedSince, out StringValues stringValues))
             {
@@ -56,7 +61,7 @@ namespace YA.TenantWorker.Application.Commands
             TenantVm tenantViewModel = _tenantVmMapper.Map(tenant);
             _actionContextAccessor.ActionContext.HttpContext
                 .Response.Headers.Add(HeaderNames.LastModified, tenant.LastModifiedDateTime.ToString("R"));
-                    
+
             return new OkObjectResult(tenantViewModel);
         }
     }

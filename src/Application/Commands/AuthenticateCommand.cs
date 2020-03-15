@@ -25,12 +25,12 @@ namespace YA.TenantWorker.Application.Commands
         public AuthenticateCommand(ILogger<AuthenticateCommand> logger,
             IActionContextAccessor actionContextAccessor,
             IConfiguration configuration,
-            ITenantWorkerDbContext workerDbContext)
+            ITenantWorkerDbContext dbContext)
         {
             _log = logger ?? throw new ArgumentNullException(nameof(logger));
             _actionContextAccessor = actionContextAccessor ?? throw new ArgumentNullException(nameof(actionContextAccessor));
             _config = configuration ?? throw new ArgumentNullException(nameof(configuration));
-            _dbContext = workerDbContext ?? throw new ArgumentNullException(nameof(workerDbContext));
+            _dbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
         }
 
         private readonly ILogger<AuthenticateCommand> _log;
@@ -47,7 +47,8 @@ namespace YA.TenantWorker.Application.Commands
 
             AppSecrets secrets = _config.Get<AppSecrets>();
 
-            List<User> users = await _dbContext.GetEntitiesFromAllTenantsWithTenantAsync<User>(u => u.Username == credentials.Username && u.Password == credentials.Password, cancellationToken);
+            List<User> users = await _dbContext
+                .GetEntitiesFromAllTenantsWithTenantAsync<User>(u => u.Username == credentials.Username && u.Password == credentials.Password, cancellationToken);
 
             if (users.Count == 0)
             {

@@ -16,11 +16,11 @@ namespace YA.TenantWorker.Application
     /// </summary>
     public class ApiRequestTracker : IApiRequestTracker
     {
-        public ApiRequestTracker(ILogger<ApiRequestTracker> logger, IApiRequestMemoryCache apiRequestCache, ITenantWorkerDbContext workerDbContext)
+        public ApiRequestTracker(ILogger<ApiRequestTracker> logger, IApiRequestMemoryCache apiRequestCache, ITenantWorkerDbContext dbContext)
         {
             _log = logger ?? throw new ArgumentNullException(nameof(logger));
             _apiRequestCache = apiRequestCache ?? throw new ArgumentNullException(nameof(apiRequestCache));
-            _dbContext = workerDbContext ?? throw new ArgumentNullException(nameof(workerDbContext));
+            _dbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
         }
 
         private readonly ILogger<ApiRequestTracker> _log;

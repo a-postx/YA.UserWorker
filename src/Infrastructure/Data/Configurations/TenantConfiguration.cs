@@ -36,7 +36,7 @@ namespace YA.TenantWorker.Infrastructure.Data.Configurations
             modelBuilder
                 .HasOne(c => c.PricingTier)
                 .WithMany(u => u.Tenants)
-                .OnDelete(DeleteBehavior.SetNull);
+                .OnDelete(DeleteBehavior.NoAction);
         }
     }
 }

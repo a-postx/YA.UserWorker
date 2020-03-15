@@ -3,14 +3,19 @@
     public static class RouteNames
     {
         public const string GetToken = ControllerName.Token + nameof(GetToken);
-        public const string GetTenant = ControllerName.Tenant + nameof(GetTenant);
-        public const string GetTenantPage = ControllerName.Tenant + nameof(GetTenantPage);
-        public const string HeadTenant = ControllerName.Tenant + nameof(HeadTenant);
-        public const string HeadTenantPage = ControllerName.Tenant + nameof(HeadTenantPage);
-        public const string OptionsTenant = ControllerName.Tenant + nameof(OptionsTenant);
-        public const string OptionsTenants = ControllerName.Tenant + nameof(OptionsTenants);
-        public const string PostTenant = ControllerName.Tenant + nameof(PostTenant);
-        public const string PatchTenant = ControllerName.Tenant + nameof(PatchTenant);
-        public const string DeleteTenant = ControllerName.Tenant + nameof(DeleteTenant);
+        public const string GetTenant = ControllerName.Tenants + nameof(GetTenant);
+        public const string GetTenantById = ControllerName.Tenants + nameof(GetTenantById);
+        public const string GetTenantPage = ControllerName.Tenants + nameof(GetTenantPage);
+        public const string HeadTenant = ControllerName.Tenants + nameof(HeadTenant);
+        public const string HeadTenantById = ControllerName.Tenants + nameof(HeadTenantById);
+        public const string HeadTenantPage = ControllerName.Tenants + nameof(HeadTenantPage);
+        public const string OptionsTenant = ControllerName.Tenants + nameof(OptionsTenant);
+        public const string OptionsTenantAll = ControllerName.Tenants + nameof(OptionsTenantAll);
+        public const string OptionsTenantById = ControllerName.Tenants + nameof(OptionsTenantById);
+        public const string PostTenant = ControllerName.Tenants + nameof(PostTenant);
+        public const string PatchTenantById = ControllerName.Tenants + nameof(PatchTenantById);
+        public const string PatchTenant = ControllerName.Tenants + nameof(PatchTenant);
+        public const string DeleteTenantById = ControllerName.Tenants + nameof(DeleteTenantById);
+        public const string DeleteTenant = ControllerName.Tenants + nameof(DeleteTenant);
     }
 }

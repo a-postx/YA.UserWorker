@@ -22,6 +22,13 @@
     <UserSecretsId>dbf95a25-628c-4098-9e1f-317618f9d6ed</UserSecretsId>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Compile Remove="Migrations\20200311060556_init.cs" />
+    <Compile Remove="Migrations\20200311060556_init.Designer.cs" />
+    <Compile Remove="Migrations\20200311060940_init.cs" />
+    <Compile Remove="Migrations\20200311060940_init.Designer.cs" />
+  </ItemGroup>
+
   <ItemGroup Label="Package References">
     <PackageReference Include="Amazon.Extensions.Configuration.SystemsManager" Version="1.2.0" />
     <PackageReference Include="AspNetCore.HealthChecks.SqlServer" Version="3.0.0" />

@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-using Delobytes.AspNetCore;
 using Delobytes.Mapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
@@ -21,14 +20,14 @@ namespace YA.TenantWorker.Application.Commands
         public PostTenantCommand(ILogger<PostTenantCommand> logger,
             IMapper mapper,
             IActionContextAccessor actionContextAccessor,
-            ITenantWorkerDbContext workerDbContext,
+            ITenantWorkerDbContext dbContext,
             IMessageBus messageBus,
             IMapper<Tenant, TenantVm> tenantVmMapper)
         {
             _log = logger ?? throw new ArgumentNullException(nameof(logger));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
             _actionContextAccessor = actionContextAccessor ?? throw new ArgumentNullException(nameof(actionContextAccessor));
-            _dbContext = workerDbContext ?? throw new ArgumentNullException(nameof(workerDbContext));
+            _dbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
             _messageBus = messageBus ?? throw new ArgumentNullException(nameof(messageBus));
             _tenantVmMapper = tenantVmMapper ?? throw new ArgumentNullException(nameof(tenantVmMapper));
         }
@@ -47,7 +46,7 @@ namespace YA.TenantWorker.Application.Commands
             {
                 return new BadRequestResult();
             }
-            
+
             Tenant tenant = _mapper.Map<Tenant>(tenantSm);
             tenant.TenantType = TenantTypes.Custom;
 
@@ -56,10 +55,10 @@ namespace YA.TenantWorker.Application.Commands
             PricingTier defaultPricingTier = await _dbContext.GetEntityAsync<PricingTier>(e => e.PricingTierID == defaultPricingTierId, cancellationToken);
             tenant.PricingTier = defaultPricingTier;
 
-            TenantVm tenantVm = _tenantVmMapper.Map(tenant);
-
-            await _dbContext.CreateAndReturnEntityAsync(tenant, cancellationToken);
+            await _dbContext.CreateEntityAsync(tenant, cancellationToken);
             await _dbContext.ApplyChangesAsync(cancellationToken);
+
+            TenantVm tenantVm = _tenantVmMapper.Map(tenant);
 
             await _messageBus.TenantCreatedV1Async(tenant.TenantID, _mapper.Map<TenantTm>(tenant), cancellationToken);
 

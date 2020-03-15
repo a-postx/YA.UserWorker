@@ -31,9 +31,12 @@ namespace YA.TenantWorker
             return services
                 .AddScoped<IAuthenticateCommand, AuthenticateCommand>()
                 .AddScoped<IGetTenantCommand, GetTenantCommand>()
-                .AddScoped<IGetTenantPageCommand, GetTenantPageCommand>()
+                .AddScoped<IGetTenantByIdCommand, GetTenantByIdCommand>()
+                .AddScoped<IGetTenantAllPageCommand, GetTenantAllPageCommand>()
                 .AddScoped<IPostTenantCommand, PostTenantCommand>()
+                .AddScoped<IPatchTenantByIdCommand, PatchTenantByIdCommand>()
                 .AddScoped<IPatchTenantCommand, PatchTenantCommand>()
+                .AddScoped<IDeleteTenantByIdCommand, DeleteTenantByIdCommand>()
                 .AddScoped<IDeleteTenantCommand, DeleteTenantCommand>();
         }
 

@@ -17,11 +17,12 @@ using YA.TenantWorker.Core.Entities;
 
 namespace YA.TenantWorker.Application.Commands
 {
-    public class PatchTenantCommand : IPatchTenantCommand
+    public class PatchTenantByIdCommand : IPatchTenantByIdCommand
     {
-        public PatchTenantCommand(
-            ILogger<PatchTenantCommand> logger,
+        public PatchTenantByIdCommand(
+            ILogger<PatchTenantByIdCommand> logger,
             IMapper mapper,
+            IRuntimeContextAccessor runtimeContextAccessor,
             IActionContextAccessor actionContextAccessor,
             IObjectModelValidator objectModelValidator,
             ITenantWorkerDbContext dbContext,
@@ -30,6 +31,7 @@ namespace YA.TenantWorker.Application.Commands
         {
             _log = logger ?? throw new ArgumentNullException(nameof(logger));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
+            _runtimeContext = runtimeContextAccessor ?? throw new ArgumentNullException(nameof(runtimeContextAccessor));
             _actionContextAccessor = actionContextAccessor ?? throw new ArgumentNullException(nameof(actionContextAccessor));
             _objectModelValidator = objectModelValidator ?? throw new ArgumentNullException(nameof(objectModelValidator));
             _dbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
@@ -37,8 +39,9 @@ namespace YA.TenantWorker.Application.Commands
             _tenantVmMapper = tenantVmMapper ?? throw new ArgumentNullException(nameof(tenantVmMapper));
         }
 
-        private readonly ILogger<PatchTenantCommand> _log;
+        private readonly ILogger<PatchTenantByIdCommand> _log;
         private readonly IMapper _mapper;
+        private readonly IRuntimeContextAccessor _runtimeContext;
         private readonly IActionContextAccessor _actionContextAccessor;
         private readonly ITenantWorkerDbContext _dbContext;
         private readonly IMessageBus _messageBus;
@@ -46,14 +49,14 @@ namespace YA.TenantWorker.Application.Commands
 
         private readonly IMapper<Tenant, TenantVm> _tenantVmMapper;
 
-        public async Task<IActionResult> ExecuteAsync(JsonPatchDocument<TenantSm> patch, CancellationToken cancellationToken)
+        public async Task<IActionResult> ExecuteAsync(Guid tenantId, JsonPatchDocument<TenantSm> patch, CancellationToken cancellationToken)
         {
-            if (patch == null)
+            if (tenantId == Guid.Empty || patch == null)
             {
                 return new BadRequestResult();
             }
 
-            Tenant tenant = await _dbContext.GetTenantAsync(cancellationToken);
+            Tenant tenant = await _dbContext.GetTenantAsync(e => e.TenantID == tenantId, cancellationToken);
 
             if (tenant == null)
             {
@@ -77,7 +80,7 @@ namespace YA.TenantWorker.Application.Commands
             _dbContext.UpdateTenant(tenant);
             await _dbContext.ApplyChangesAsync(cancellationToken);
 
-            await _messageBus.TenantUpdatedV1Async(tenant.TenantID, _mapper.Map<TenantTm>(tenant), cancellationToken);
+            await _messageBus.TenantUpdatedV1Async(tenantId, _mapper.Map<TenantTm>(tenant), cancellationToken);
 
             TenantVm tenantVm = _tenantVmMapper.Map(tenant);
 

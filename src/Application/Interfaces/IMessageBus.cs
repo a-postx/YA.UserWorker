@@ -11,6 +11,6 @@ namespace YA.TenantWorker.Application.Interfaces
         Task TenantDeletedV1Async(Guid tenantId, TenantTm tenantTm, CancellationToken cancellationToken);
         Task TenantUpdatedV1Async(Guid tenantId, TenantTm tenantTm, CancellationToken cancellationToken);
 
-        Task SendPricingTierV1Async(PricingTierTm pricingTierTm, CancellationToken cancellationToken);
+        Task PricingTierSentV1Async(PricingTierTm pricingTierTm, CancellationToken cancellationToken);
     }
 }
