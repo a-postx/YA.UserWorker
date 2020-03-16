@@ -7,7 +7,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
-using YA.TenantWorker.Infrastructure.Data.Configurations;
 using YA.TenantWorker.Core.Entities;
 using YA.TenantWorker.Application.Interfaces;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
@@ -46,10 +45,7 @@ namespace YA.TenantWorker.Infrastructure.Data
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.ApplyConfiguration(new ApiRequestConfiguration());
-            modelBuilder.ApplyConfiguration(new TenantConfiguration());
-            modelBuilder.ApplyConfiguration(new UserConfiguration());
-            modelBuilder.ApplyConfiguration(new PricingTierConfiguration());
+            modelBuilder.ApplyConfigurationsFromAssembly(typeof(TenantWorkerDbContext).Assembly);
 
             modelBuilder.Seed();
 
