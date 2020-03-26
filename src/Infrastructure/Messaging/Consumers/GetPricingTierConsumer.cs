@@ -33,7 +33,7 @@ namespace YA.TenantWorker.Infrastructure.Messaging.Consumers
         {
             try
             {
-                PricingTierTm pricingTierTm = await _tenantManager.GetPricingTierMbTransferModelAsync(context.CancellationToken);
+                PricingTierTm pricingTierTm = await _tenantManager.GetPricingTierMbTmAsync(context.CancellationToken);
 
                 await context.RespondAsync<ISendPricingTierV1>(new SendPricingTierV1(_runtimeContext.GetCorrelationId(), _runtimeContext.GetTenantId(), pricingTierTm));
 

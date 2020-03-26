@@ -37,7 +37,7 @@ namespace YA.TenantWorker.Application.ActionFilters
 
             if (correlationId != Guid.Empty)
             {
-                using (CancellationTokenSource cts = new CancellationTokenSource())
+                using (CancellationTokenSource cts = new CancellationTokenSource(Timeouts.ApiRequestFiterMs))
                 {
                     (bool requestCreated, ApiRequest request) = await _apiRequestTracker.GetOrCreateRequestAsync(correlationId, method, cts.Token);
 
@@ -74,7 +74,7 @@ namespace YA.TenantWorker.Application.ActionFilters
 
             if (correlationId != Guid.Empty)
             {
-                using (CancellationTokenSource cts = new CancellationTokenSource())
+                using (CancellationTokenSource cts = new CancellationTokenSource(Timeouts.ApiRequestFiterMs))
                 {
                     (bool requestCreated, ApiRequest request) = await _apiRequestTracker.GetOrCreateRequestAsync(correlationId, method, cts.Token);
 

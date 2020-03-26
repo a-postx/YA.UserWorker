@@ -30,7 +30,7 @@ namespace YA.TenantWorker.Application
         private readonly ITenantWorkerDbContext _dbContext;
         private readonly IMessageBus _messageBus;
 
-        public async Task<PricingTierTm> GetPricingTierMbTransferModelAsync(CancellationToken cancellationToken)
+        public async Task<PricingTierTm> GetPricingTierMbTmAsync(CancellationToken cancellationToken)
         {
             Tenant tenant = await _dbContext.GetTenantWithPricingTierAsync(cancellationToken);
 

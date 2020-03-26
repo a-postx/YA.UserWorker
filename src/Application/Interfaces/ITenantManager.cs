@@ -6,6 +6,6 @@ namespace YA.TenantWorker.Application.Interfaces
 {
     public interface ITenantManager
     {
-        Task<PricingTierTm> GetPricingTierMbTransferModelAsync(CancellationToken cancellationToken);
+        Task<PricingTierTm> GetPricingTierMbTmAsync(CancellationToken cancellationToken);
     }
 }
