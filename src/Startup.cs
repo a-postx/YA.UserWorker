@@ -3,7 +3,6 @@ using CorrelationId;
 using GreenPipes;
 using MassTransit;
 using MassTransit.Audit;
-using MassTransit.RabbitMqTransport;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Hosting;
@@ -37,6 +36,7 @@ using YA.TenantWorker.Core.Entities;
 using System.Text;
 using YA.TenantWorker.Infrastructure.Messaging.Consumers;
 using AutoMapper;
+using Microsoft.Extensions.Logging;
 
 namespace YA.TenantWorker
 {
@@ -165,16 +165,16 @@ namespace YA.TenantWorker
             {
                 return Bus.Factory.CreateUsingRabbitMq(cfg =>
                 {
-                    IRabbitMqHost host = cfg.Host(secrets.MessageBusHost, secrets.MessageBusVHost, h =>
+                    cfg.Host(secrets.MessageBusHost, secrets.MessageBusVHost, h =>
                     {
                         h.Username(secrets.MessageBusLogin);
                         h.Password(secrets.MessageBusPassword);
                     });
 
-                    cfg.UseSerilog();
+                    cfg.SetLoggerFactory(provider.GetRequiredService<ILoggerFactory>());
                     cfg.UseSerilogMessagePropertiesEnricher();
 
-                    cfg.ReceiveEndpoint(host, MbQueueNames.PrivateServiceQueueName, e =>
+                    cfg.ReceiveEndpoint(MbQueueNames.PrivateServiceQueueName, e =>
                     {
                         e.PrefetchCount = 16;
                         e.UseMessageRetry(x =>
@@ -192,7 +192,7 @@ namespace YA.TenantWorker
                         e.Consumer<TestRequestConsumer>(provider);
                     });
 
-                    cfg.ReceiveEndpoint(host, MbQueueNames.PricingTierQueueName, e =>
+                    cfg.ReceiveEndpoint(MbQueueNames.PricingTierQueueName, e =>
                     {
                         e.UseConcurrencyLimit(1);
                         e.UseMessageRetry(x =>
@@ -257,8 +257,7 @@ namespace YA.TenantWorker
                 .UseRouting()
                 .UseCors(CorsPolicyName.AllowAny)
                 .UseStaticFilesWithCacheControl()
-
-                .UseCustomSerilogRequestLogging()
+                .UseRouteParamsLogging()
 
                 ////.UseIf(
                 ////    !_webHostEnvironment.IsDevelopment(),

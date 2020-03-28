@@ -42,9 +42,9 @@ namespace YA.TenantWorker.Health.System
             {
                 networkIsAvailable = await ipAddress.CheckPingAsync();
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                _log.LogError("Error checking health for Network: {Exception}", e);
+                _log.LogError(ex, "Error checking health for Network");
             }
 
             discoverySw.Stop();

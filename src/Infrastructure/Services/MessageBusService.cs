@@ -53,9 +53,9 @@ namespace YA.TenantWorker.Infrastructure.Services
                 {
                     result = await NetTools.CheckTcpConnectionAsync(secrets.MessageBusHost, General.MessageBusServiceHealthPort);
                 }
-                catch (Exception e)
+                catch (Exception ex)
                 {
-                    _log.LogError(nameof(MessageBusService) + " background service check has failed: {Exception}", e);
+                    _log.LogError(ex, nameof(MessageBusService) + " background service check has failed");
                 }
 
                 if (result)
