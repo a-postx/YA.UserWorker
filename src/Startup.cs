@@ -108,6 +108,7 @@ namespace YA.TenantWorker
                 .AddCustomRouting()
                 .AddResponseCaching()
                 .AddCustomResponseCompression(_config)
+
                 .AddCustomHealthChecks(_config)
                 .AddCustomSwagger()
                 .AddHttpContextAccessor()
@@ -227,12 +228,11 @@ namespace YA.TenantWorker
         public void Configure(IApplicationBuilder application)
         {
             application
-                // Pass a GUID in X-Correlation-ID HTTP header to set the HttpContext.TraceIdentifier.
                 .UseCorrelationId(new CorrelationIdOptions {
                     Header = General.CorrelationIdHeader,
                     IncludeInResponse = false,
                     UpdateTraceIdentifier = true,
-                    UseGuidForCorrelationId = false
+                    UseGuidForCorrelationId = true
                     })
                 .UseCorrelationIdContextLogging()
 
@@ -253,7 +253,7 @@ namespace YA.TenantWorker
                 .UseResponseCompression()
                 
                 .UseHttpContextLogging()
-                
+
                 .UseRouting()
                 .UseCors(CorsPolicyName.AllowAny)
                 .UseStaticFilesWithCacheControl()

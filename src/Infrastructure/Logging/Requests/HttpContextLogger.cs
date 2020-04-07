@@ -100,7 +100,7 @@ namespace YA.TenantWorker.Infrastructure.Logging.Requests
 
                 string endResponseBody = (responseBody.Length > General.MaxLogFieldLength) ?
                     responseBody.Substring(0, General.MaxLogFieldLength) : responseBody;
-
+                
                 Log.ForContext(Logs.ResponseHeaders, context.Response.Headers.ToDictionary(h => h.Key, h => h.Value.ToString()), true)
                     .ForContext(Logs.ResponseBody, endResponseBody)
                     .Information("Response information {RequestMethod} {RequestPath} {StatusCode}", context.Request.Method, context.Request.Path, context.Response.StatusCode);
