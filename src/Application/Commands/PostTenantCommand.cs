@@ -52,7 +52,8 @@ namespace YA.TenantWorker.Application.Commands
 
             Guid defaultPricingTierId = Guid.Parse(SeedData.SeedPricingTierId);
 
-            PricingTier defaultPricingTier = await _dbContext.GetEntityAsync<PricingTier>(e => e.PricingTierID == defaultPricingTierId, cancellationToken);
+            PricingTier defaultPricingTier = await _dbContext
+                .GetEntityAsync<PricingTier>(e => e.PricingTierID == defaultPricingTierId, cancellationToken);
             tenant.PricingTier = defaultPricingTier;
 
             await _dbContext.CreateEntityAsync(tenant, cancellationToken);

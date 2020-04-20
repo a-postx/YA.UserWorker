@@ -85,6 +85,7 @@ namespace YA.TenantWorker
                         .AllowAnyOrigin()
                         .AllowAnyMethod()
                         .AllowAnyHeader());
+                
             });
         }
 

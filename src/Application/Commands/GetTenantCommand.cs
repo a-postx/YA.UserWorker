@@ -38,12 +38,12 @@ namespace YA.TenantWorker.Application.Commands
         public async Task<IActionResult> ExecuteAsync(CancellationToken cancellationToken = default)
         {
             Tenant tenant = await _dbContext.GetTenantAsync(cancellationToken);
-
+            //await Task.Delay(6000);
             if (tenant == null)
             {
                 return new NotFoundResult();
             }
-
+            
             if (_actionContextAccessor.ActionContext.HttpContext
                 .Request.Headers.TryGetValue(HeaderNames.IfModifiedSince, out StringValues stringValues))
             {

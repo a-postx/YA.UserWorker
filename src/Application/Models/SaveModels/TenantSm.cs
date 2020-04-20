@@ -18,5 +18,10 @@ namespace YA.TenantWorker.Application.Models.SaveModels
         /// Tenant name.
         /// </summary>
         public string TenantName { get; set; }
+
+        /// <summary>
+        /// Сигнал к активации арендатора.
+        /// </summary>
+        public bool IsActive { get; set; }
     }
 }

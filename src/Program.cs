@@ -54,7 +54,6 @@ namespace YA.TenantWorker
 
             Directory.CreateDirectory(Path.Combine(RootPath, General.AppDataFolderName));
 
-
             IHostBuilder builder = CreateHostBuilder(args);
 
             IHost host;

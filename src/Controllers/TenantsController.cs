@@ -13,6 +13,8 @@ using YA.TenantWorker.Application.Models.ViewModels;
 using YA.TenantWorker.Constants;
 using Microsoft.AspNetCore.Authorization;
 using YA.TenantWorker.Application.Models.Dto;
+using Microsoft.AspNetCore.Cors;
+using Delobytes.AspNetCore.Filters;
 
 namespace YA.TenantWorker.Controllers
 {
@@ -23,7 +25,9 @@ namespace YA.TenantWorker.Controllers
     [ApiController]
     [ApiVersion(ApiVersionName.V1)]
     [Authorize]
+    [NoCache]
     [ServiceFilter(typeof(ApiRequestFilter))]
+    [EnableCors(CorsPolicyName.AllowAny)]
     [SwaggerResponse(StatusCodes.Status403Forbidden)]
     [SwaggerResponse(StatusCodes.Status500InternalServerError, HttpCodeMessages.Code500ErrorMessage, typeof(ApiProblemDetails))]
     public class TenantsController : ControllerBase

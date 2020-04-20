@@ -8,7 +8,9 @@ using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Security.Principal;
+using System.Text;
 using System.Threading.Tasks;
 using YA.TenantWorker.Constants;
 
@@ -57,52 +59,49 @@ namespace YA.TenantWorker.Infrastructure.Authentication
 
                 if (tokenS != null)
                 {
-                    string tenantId = tokenS.Claims.FirstOrDefault(claim => claim.Type == CustomClaimNames.tid)?.Value;
-                    string userId = tokenS.Claims.FirstOrDefault(claim => claim.Type == CustomClaimNames.nameidentifier)?.Value;
-                    string username = tokenS.Claims.FirstOrDefault(claim => claim.Type == CustomClaimNames.authsub)?.Value;
+                    string userId = tokenS.Claims.FirstOrDefault(claim => claim.Type == CustomClaimNames.uid)?.Value;
+                    string username = tokenS.Claims.FirstOrDefault(claim => claim.Type == CustomClaimNames.sub)?.Value;
                     string name = tokenS.Claims.FirstOrDefault(claim => claim.Type == CustomClaimNames.name)?.Value;
-                    string useremail = tokenS.Claims.FirstOrDefault(claim => claim.Type == CustomClaimNames.authemail)?.Value;
-                    string userrole = tokenS.Claims.FirstOrDefault(claim => claim.Type == CustomClaimNames.role)?.Value;
 
-                    if (tenantId == null)
-                    {
-                        throw new Exception($"Authentication failed: {CustomClaimNames.tid} claim cannot be found.");
-                    }
                     if (userId == null)
                     {
-                        throw new Exception($"Authentication failed: {CustomClaimNames.nameidentifier} claim cannot be found.");
+                        throw new Exception($"Authentication failed: {CustomClaimNames.uid} claim cannot be found.");
                     }
                     if (username == null)
                     {
-                        throw new Exception($"Authentication failed: {CustomClaimNames.authsub} claim cannot be found.");
+                        throw new Exception($"Authentication failed: {CustomClaimNames.username} claim cannot be found.");
                     }
                     if (name == null)
                     {
                         throw new Exception($"Authentication failed: {CustomClaimNames.name} claim cannot be found.");
                     }
-                    if (useremail == null)
-                    {
-                        throw new Exception($"Authentication failed: {CustomClaimNames.authemail} claim cannot be found.");
-                    }
-                    if (userrole == null)
-                    {
-                        throw new Exception($"Authentication failed: {CustomClaimNames.role} claim cannot be found.");
-                    }
 
                     ClaimsIdentity userIdentity = new ClaimsIdentity("Bearer", CustomClaimNames.name, CustomClaimNames.role);
 
-                    userIdentity.AddClaim(new Claim(CustomClaimNames.tid, tenantId));
-                    userIdentity.AddClaim(new Claim(CustomClaimNames.nameidentifier, userId));
+                    Guid tenantId;
+                    using (MD5 md5 = MD5.Create())
+                    {
+                        byte[] hash = md5.ComputeHash(Encoding.Default.GetBytes(userId));
+                        tenantId = new Guid(hash);
+                    }
+                    ////Guid tenantId = Guid.Parse("00000000-0000-0000-0000-000000000001");
+
+                    userIdentity.AddClaim(new Claim(CustomClaimNames.uid, userId));
+                    userIdentity.AddClaim(new Claim(CustomClaimNames.tid, tenantId.ToString()));
                     userIdentity.AddClaim(new Claim(CustomClaimNames.username, username));
                     userIdentity.AddClaim(new Claim(CustomClaimNames.name, name));
-                    userIdentity.AddClaim(new Claim(CustomClaimNames.useremail, useremail));
-                    GenericPrincipal userPricipal = new GenericPrincipal(userIdentity, new string[] { userrole });
+                    GenericPrincipal userPricipal = new GenericPrincipal(userIdentity, new string[] { "user" });
                     ClaimsPrincipal principal = new ClaimsPrincipal(userPricipal);
+
+                    AuthenticationProperties props = new AuthenticationProperties();
+                    props.IssuedUtc = tokenS.IssuedAt;
+                    props.ExpiresUtc = tokenS.ValidTo;
+                    props.RedirectUri = "/authentication/login";
 
                     _log.LogInformation("User {Username} is authenticated.", username);
 
                     return Task.FromResult(
-                        AuthenticateResult.Success(new AuthenticationTicket(principal, new AuthenticationProperties(), _scheme.Name))
+                        AuthenticateResult.Success(new AuthenticationTicket(principal, props, _scheme.Name))
                     );
                 }
                 else
@@ -119,7 +118,7 @@ namespace YA.TenantWorker.Infrastructure.Authentication
         public Task ChallengeAsync(AuthenticationProperties properties)
         {
             HttpContext context = _httpContextAccessor.HttpContext;
-            context.Response.Redirect("/authentication");
+            context.Response.Redirect("/authentication/login");
             return Task.CompletedTask;
         }
 

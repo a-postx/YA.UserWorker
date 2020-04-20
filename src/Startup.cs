@@ -37,6 +37,7 @@ using System.Text;
 using YA.TenantWorker.Infrastructure.Messaging.Consumers;
 using AutoMapper;
 using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.Mvc;
 
 namespace YA.TenantWorker
 {
@@ -228,14 +229,14 @@ namespace YA.TenantWorker
         public void Configure(IApplicationBuilder application)
         {
             application
-                .UseCorrelationId(new CorrelationIdOptions {
+                .UseCorrelationId(new CorrelationIdOptions
+                {
                     Header = General.CorrelationIdHeader,
                     IncludeInResponse = false,
-                    UpdateTraceIdentifier = true,
-                    UseGuidForCorrelationId = true
-                    })
+                    UpdateTraceIdentifier = false,
+                    UseGuidForCorrelationId = false
+                })
                 .UseCorrelationIdContextLogging()
-
                 ////.UseHttpsRedirection()
 
                 ////.UseAllElasticApm(Configuration)
