@@ -27,7 +27,6 @@ namespace YA.TenantWorker.Controllers
     [Authorize]
     [NoCache]
     [ServiceFilter(typeof(ApiRequestFilter))]
-    [EnableCors(CorsPolicyName.AllowAny)]
     [SwaggerResponse(StatusCodes.Status403Forbidden)]
     [SwaggerResponse(StatusCodes.Status500InternalServerError, HttpCodeMessages.Code500ErrorMessage, typeof(ApiProblemDetails))]
     public class TenantsController : ControllerBase

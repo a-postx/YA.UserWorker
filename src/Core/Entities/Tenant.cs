@@ -14,6 +14,7 @@ namespace YA.TenantWorker.Core.Entities
         public Guid TenantID { get; set; }
         public string TenantName { get; set; }
         public TenantTypes TenantType { get; set; }
+        public Guid PricingTierId { get; set; }
         public virtual PricingTier PricingTier { get; set; }
         public DateTime PricingTierActivatedDateTime { get; set; }
         public bool IsActive { get; set; }

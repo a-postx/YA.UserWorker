@@ -30,6 +30,13 @@ namespace YA.TenantWorker.Infrastructure.Data.Configurations
             modelBuilder.Property(p => p.Description)
                 .IsUnicode()
                 .HasMaxLength(128);
+
+            modelBuilder
+                .HasMany(c => c.Tenants)
+                .WithOne(u => u.PricingTier)
+                .HasForeignKey(k => k.PricingTierId)
+                .OnDelete(DeleteBehavior.NoAction)
+                .IsRequired();
         }
     }
 }

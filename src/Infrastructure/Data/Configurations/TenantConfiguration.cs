@@ -32,11 +32,6 @@ namespace YA.TenantWorker.Infrastructure.Data.Configurations
                 .WithOne(u => u.Tenant)
                 .OnDelete(DeleteBehavior.Cascade)
                 .IsRequired();
-
-            modelBuilder
-                .HasOne(c => c.PricingTier)
-                .WithMany(u => u.Tenants)
-                .OnDelete(DeleteBehavior.NoAction);
         }
     }
 }

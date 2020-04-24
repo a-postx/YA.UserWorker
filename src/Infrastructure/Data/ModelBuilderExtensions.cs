@@ -60,7 +60,7 @@ namespace YA.TenantWorker.Infrastructure.Data
                 {
                     TenantID = defaultTenantId,
                     TenantName = "Системный",
-                    PricingTierID = defaultPricingTierId,
+                    PricingTierId = defaultPricingTierId,
                     PricingTierActivatedDateTime = DateTime.UtcNow,
                     TenantType = TenantTypes.System,
                     IsActive = true,
@@ -70,7 +70,7 @@ namespace YA.TenantWorker.Infrastructure.Data
                 {
                     TenantID = seedPaidTenantId,
                     TenantName = "Уважаемый",
-                    PricingTierID = paidPricingTierId,
+                    PricingTierId = paidPricingTierId,
                     PricingTierActivatedDateTime = DateTime.UtcNow,
                     TenantType = TenantTypes.Custom,
                     IsActive = true,

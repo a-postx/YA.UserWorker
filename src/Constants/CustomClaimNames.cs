@@ -6,7 +6,6 @@
         public const string tid = nameof(tid);
         public const string uid = nameof(uid);
         public const string sub = nameof(sub);
-        public const string nameidentifier = nameof(nameidentifier);
         public const string username = nameof(username);
         public const string name = nameof(name);
         public const string role = nameof(role);
