@@ -22,6 +22,8 @@ namespace YA.TenantWorker.Infrastructure.Data.Configurations
                 .HasConversion(v => v, v => DateTime.SpecifyKind(v, DateTimeKind.Utc));
             modelBuilder.Property(p => p.PricingTierActivatedDateTime)
                 .HasConversion(v => v, v => DateTime.SpecifyKind(v, DateTimeKind.Utc));
+            modelBuilder.Property(p => p.PricingTierActivatedUntilDateTime)
+                .HasConversion(v => v, v => DateTime.SpecifyKind(v, DateTimeKind.Utc));
             modelBuilder.Property(p => p.tstamp).IsRowVersion();
             modelBuilder.Property(p => p.TenantName)
                 .IsUnicode()

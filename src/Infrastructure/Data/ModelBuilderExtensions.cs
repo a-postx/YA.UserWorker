@@ -62,6 +62,7 @@ namespace YA.TenantWorker.Infrastructure.Data
                     TenantName = "Системный",
                     PricingTierId = defaultPricingTierId,
                     PricingTierActivatedDateTime = DateTime.UtcNow,
+                    PricingTierActivatedUntilDateTime = DateTime.MinValue,
                     TenantType = TenantTypes.System,
                     IsActive = true,
                     IsReadOnly = false
@@ -72,6 +73,7 @@ namespace YA.TenantWorker.Infrastructure.Data
                     TenantName = "Уважаемый",
                     PricingTierId = paidPricingTierId,
                     PricingTierActivatedDateTime = DateTime.UtcNow,
+                    PricingTierActivatedUntilDateTime = DateTime.UtcNow.AddDays(30),
                     TenantType = TenantTypes.Custom,
                     IsActive = true,
                     IsReadOnly = false

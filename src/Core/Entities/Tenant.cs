@@ -17,6 +17,7 @@ namespace YA.TenantWorker.Core.Entities
         public Guid PricingTierId { get; set; }
         public virtual PricingTier PricingTier { get; set; }
         public DateTime PricingTierActivatedDateTime { get; set; }
+        public DateTime PricingTierActivatedUntilDateTime { get; set; }
         public bool IsActive { get; set; }
         public bool IsReadOnly { get; set; }
         public virtual ICollection<User> Users { get; set; }

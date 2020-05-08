@@ -21,5 +21,15 @@ namespace YA.TenantWorker.Application.Models.ViewModels
         /// URL used to retrieve the resource conforming to REST'ful JSON http://restfuljson.org/.
         /// </summary>
         public Uri Url { get; set; }
+
+        /// <summary>
+        /// Current pricing tier
+        /// </summary>
+        public PricingTierVm PricingTier { get; set; }
+
+        /// <summary>
+        /// Date the pricing tier is valid for
+        /// </summary>
+        public DateTime PricingTierActivatedUntil { get; set; }
     }
 }

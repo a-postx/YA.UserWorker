@@ -10,14 +10,14 @@ using YA.TenantWorker.Infrastructure.Data;
 namespace YA.TenantWorker.Migrations
 {
     [DbContext(typeof(TenantWorkerDbContext))]
-    [Migration("20200424042331_init")]
+    [Migration("20200428033950_init")]
     partial class init
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "3.1.2")
+                .HasAnnotation("ProductVersion", "3.1.3")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128)
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
@@ -157,6 +157,9 @@ namespace YA.TenantWorker.Migrations
                     b.Property<DateTime>("PricingTierActivatedDateTime")
                         .HasColumnType("datetime2");
 
+                    b.Property<DateTime>("PricingTierActivatedUntilDateTime")
+                        .HasColumnType("datetime2");
+
                     b.Property<Guid>("PricingTierId")
                         .HasColumnType("uniqueidentifier");
 
@@ -185,7 +188,8 @@ namespace YA.TenantWorker.Migrations
                             TenantID = new Guid("00000000-0000-0000-0000-000000000001"),
                             IsActive = true,
                             IsReadOnly = false,
-                            PricingTierActivatedDateTime = new DateTime(2020, 4, 24, 4, 23, 30, 494, DateTimeKind.Utc).AddTicks(1403),
+                            PricingTierActivatedDateTime = new DateTime(2020, 4, 28, 3, 39, 50, 143, DateTimeKind.Utc).AddTicks(5433),
+                            PricingTierActivatedUntilDateTime = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             PricingTierId = new Guid("00000000-0000-0000-0000-000000000001"),
                             TenantName = "Системный",
                             TenantType = 0
@@ -195,7 +199,8 @@ namespace YA.TenantWorker.Migrations
                             TenantID = new Guid("00000000-0000-0000-0000-000000000002"),
                             IsActive = true,
                             IsReadOnly = false,
-                            PricingTierActivatedDateTime = new DateTime(2020, 4, 24, 4, 23, 30, 494, DateTimeKind.Utc).AddTicks(3128),
+                            PricingTierActivatedDateTime = new DateTime(2020, 4, 28, 3, 39, 50, 143, DateTimeKind.Utc).AddTicks(7261),
+                            PricingTierActivatedUntilDateTime = new DateTime(2020, 5, 28, 3, 39, 50, 143, DateTimeKind.Utc).AddTicks(7271),
                             PricingTierId = new Guid("00000000-0000-0000-0000-000000000013"),
                             TenantName = "Уважаемый",
                             TenantType = 1
@@ -274,13 +279,13 @@ namespace YA.TenantWorker.Migrations
                         new
                         {
                             UserID = new Guid("00000000-0000-0000-0000-000000000011"),
-                            CreatedDateTime = new DateTime(2020, 4, 24, 4, 23, 30, 494, DateTimeKind.Utc).AddTicks(4340),
+                            CreatedDateTime = new DateTime(2020, 4, 28, 3, 39, 50, 143, DateTimeKind.Utc).AddTicks(8588),
                             Email = "admin@email.com",
                             FirstName = "My",
                             IsActive = true,
                             IsDeleted = false,
                             IsPendingActivation = false,
-                            LastModifiedDateTime = new DateTime(2020, 4, 24, 4, 23, 30, 494, DateTimeKind.Utc).AddTicks(4348),
+                            LastModifiedDateTime = new DateTime(2020, 4, 28, 3, 39, 50, 143, DateTimeKind.Utc).AddTicks(8596),
                             LastName = "Admin",
                             Password = "123",
                             Role = "Administrator",
@@ -290,13 +295,13 @@ namespace YA.TenantWorker.Migrations
                         new
                         {
                             UserID = new Guid("00000000-0000-0000-0000-000000000012"),
-                            CreatedDateTime = new DateTime(2020, 4, 24, 4, 23, 30, 494, DateTimeKind.Utc).AddTicks(6465),
+                            CreatedDateTime = new DateTime(2020, 4, 28, 3, 39, 50, 144, DateTimeKind.Utc).AddTicks(809),
                             Email = "user@email.com",
                             FirstName = "My",
                             IsActive = true,
                             IsDeleted = false,
                             IsPendingActivation = false,
-                            LastModifiedDateTime = new DateTime(2020, 4, 24, 4, 23, 30, 494, DateTimeKind.Utc).AddTicks(6473),
+                            LastModifiedDateTime = new DateTime(2020, 4, 28, 3, 39, 50, 144, DateTimeKind.Utc).AddTicks(818),
                             LastName = "User",
                             Password = "123",
                             Role = "User",

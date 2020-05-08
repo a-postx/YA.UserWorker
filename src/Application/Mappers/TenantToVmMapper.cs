@@ -7,21 +7,27 @@ using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Primitives;
+using AutoMapper;
 
 namespace YA.TenantWorker.Application.Mappers
 {
     public class TenantToVmMapper : IMapper<Tenant, TenantVm>
     {
-        public TenantToVmMapper(ILogger<TenantToVmMapper> logger, IHttpContextAccessor httpContextAccessor, LinkGenerator linkGenerator)
+        public TenantToVmMapper(ILogger<TenantToVmMapper> logger,
+            IHttpContextAccessor httpContextAccessor,
+            LinkGenerator linkGenerator,
+            IMapper mapper)
         {
             _log = logger;
             _httpContextAccessor = httpContextAccessor;
             _linkGenerator = linkGenerator;
+            _mapper = mapper;
         }
 
         private readonly ILogger<TenantToVmMapper> _log;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly LinkGenerator _linkGenerator;
+        private readonly IMapper _mapper;
 
         public void Map(Tenant source, TenantVm destination)
         {
@@ -39,6 +45,12 @@ namespace YA.TenantWorker.Application.Mappers
 
             destination.TenantId = source.TenantID;
             destination.TenantName = source.TenantName;
+            destination.PricingTierActivatedUntil = source.PricingTierActivatedUntilDateTime;
+
+            if (source.PricingTier != null)
+            {
+                destination.PricingTier = _mapper.Map<PricingTierVm>(source.PricingTier);
+            }
 
             RouteData routeData = _httpContextAccessor.HttpContext.GetRouteData();
             string route = (string)routeData.Values["controller"] + (string)routeData.Values["action"];

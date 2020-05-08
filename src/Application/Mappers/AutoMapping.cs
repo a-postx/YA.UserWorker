@@ -14,8 +14,11 @@ namespace YA.TenantWorker.Application.Mappers
             CreateMap<TenantSm, Tenant>();
             CreateMap<Tenant, TenantTm>();
             CreateMap<TenantTm, Tenant>();
+
             CreateMap<PricingTier, PricingTierTm>();
             CreateMap<PricingTierTm, PricingTier>();
+            CreateMap<PricingTier, PricingTierVm>();
+            CreateMap<PricingTierVm, PricingTier>();
         }
     }
 }

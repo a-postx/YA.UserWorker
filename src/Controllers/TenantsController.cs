@@ -86,7 +86,7 @@ namespace YA.TenantWorker.Controllers
         }
 
         /// <summary>
-        /// Get current tenant.
+        /// Get current tenant with pricing tier.
         /// </summary>
         /// <param name="command">Action command.</param>
         /// <param name="cancellationToken">Cancellation token used to cancel the HTTP request.</param>

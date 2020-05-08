@@ -35,9 +35,9 @@ namespace YA.TenantWorker.Application.Commands
         private readonly ITenantWorkerDbContext _dbContext;
         private readonly IMapper<Tenant, TenantVm> _tenantVmMapper;
 
-        public async Task<IActionResult> ExecuteAsync(CancellationToken cancellationToken = default)
+        public async Task<IActionResult> ExecuteAsync(CancellationToken cancellationToken)
         {
-            Tenant tenant = await _dbContext.GetTenantAsync(cancellationToken);
+            Tenant tenant = await _dbContext.GetTenantWithPricingTierAsync(cancellationToken);
             //await Task.Delay(6000);
             if (tenant == null)
             {

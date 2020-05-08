@@ -93,7 +93,7 @@ namespace YA.TenantWorker
                 // Add Problem Details media type (application/problem+json) to the JSON input and output formatters.
                 // See https://tools.ietf.org/html/rfc7807
                 jsonSystemOutputFormatterMediaTypes.Insert(0, ContentType.ProblemJson);
-                //xmlOutputFormatterMediaTypes.Insert(0, ContentType.ProblemXml);
+                ////xmlOutputFormatterMediaTypes.Insert(0, ContentType.ProblemXml);
 
                 // Add RESTful JSON media type (application/vnd.restful+json) to the JSON input and output formatters.
                 // See http://restfuljson.org/

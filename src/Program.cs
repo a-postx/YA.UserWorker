@@ -257,7 +257,7 @@ namespace YA.TenantWorker
 
             if (!string.IsNullOrEmpty(secrets.AppInsightsInstrumentationKey))
             {
-                loggerConfig.WriteTo.ApplicationInsights(secrets.AppInsightsInstrumentationKey, new TraceTelemetryConverter(), LogEventLevel.Debug);
+                loggerConfig.WriteTo.ApplicationInsights(secrets.AppInsightsInstrumentationKey, TelemetryConverter.Traces, LogEventLevel.Debug);
             }
 
             if (!string.IsNullOrEmpty(secrets.LogzioToken))
