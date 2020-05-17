@@ -58,33 +58,6 @@ namespace YA.TenantWorker.Infrastructure.Data
         }
 
         #region Generics
-        private void DeleteItem<T>(T item) where T : class
-        {
-            Set<T>().Remove(item);
-        }
-
-        private void UpdateItem<T>(T item) where T : class
-        {
-            Set<T>().Update(item);
-        }
-
-        public async Task CreateEntityAsync<T>(T item, CancellationToken cancellationToken) where T : class
-        {
-            await Set<T>().AddAsync(item, cancellationToken);
-        }
-
-        public async Task<T> CreateAndReturnEntityAsync<T>(T item, CancellationToken cancellationToken) where T : class
-        {
-            EntityEntry<T> entityEntry = await Set<T>().AddAsync(item, cancellationToken);
-            return entityEntry.Entity;
-        }
-
-        //опасный запрос, выводит по всем арендаторам
-        public async Task<T> GetEntityAsync<T>(Expression<Func<T, bool>> predicate, CancellationToken cancellationToken) where T : class
-        {
-            return await Set<T>().SingleOrDefaultAsync(predicate, cancellationToken);
-        }
-
         public async Task<T> GetEntityWithTenantAsync<T>(Expression<Func<T, bool>> predicate, CancellationToken cancellationToken) where T : class, ITenantEntity
         {
             return await Set<T>().Include(nameof(Tenant)).SingleOrDefaultAsync(predicate, cancellationToken);
@@ -185,7 +158,25 @@ namespace YA.TenantWorker.Infrastructure.Data
         }
         #endregion
 
+        #region ApiRequests
+        public async Task<ApiRequest> CreateApiRequestAsync(ApiRequest item, CancellationToken cancellationToken)
+        {
+            EntityEntry<ApiRequest> entityEntry = await Set<ApiRequest>().AddAsync(item, cancellationToken);
+            return entityEntry.Entity;
+        }
+
+        public async Task<ApiRequest> GetApiRequestAsync(Expression<Func<ApiRequest, bool>> predicate, CancellationToken cancellationToken)
+        {
+            return await Set<ApiRequest>().SingleOrDefaultAsync(predicate, cancellationToken);
+        }
+        #endregion
+
         #region Tenants
+        public async Task CreateTenantAsync(Tenant item, CancellationToken cancellationToken)
+        {
+            await Set<Tenant>().AddAsync(item, cancellationToken);
+        }
+
         public async Task<Tenant> GetTenantAsync(CancellationToken cancellationToken)
         {
             return await Tenants.SingleOrDefaultAsync(e => e.TenantID == _tenantId, cancellationToken);
@@ -193,21 +184,22 @@ namespace YA.TenantWorker.Infrastructure.Data
 
         public async Task<Tenant> GetTenantAsync(Expression<Func<Tenant, bool>> predicate, CancellationToken cancellationToken)
         {
-            return await Tenants.SingleOrDefaultAsync(predicate, cancellationToken);
-        }
-        public void DeleteTenant(Tenant tenant)
-        {
-            DeleteItem(tenant);
-        }
-
-        public void UpdateTenant(Tenant tenant)
-        {
-            UpdateItem(tenant);
+            return await Set<Tenant>().SingleOrDefaultAsync(predicate, cancellationToken);
         }
 
         public async Task<Tenant> GetTenantWithPricingTierAsync(CancellationToken cancellationToken)
         {
             return await Set<Tenant>().Include(nameof(PricingTier)).SingleOrDefaultAsync(e => e.TenantID == _tenantId, cancellationToken);
+        }
+
+        public void UpdateTenant(Tenant item)
+        {
+            Set<Tenant>().Update(item);
+        }
+
+        public void DeleteTenant(Tenant item)
+        {
+            Set<Tenant>().Remove(item);
         }
         #endregion
 

@@ -54,7 +54,7 @@ namespace YA.TenantWorker.Application.Commands
 
             tenant.PricingTierId = defaultPricingTierId;
 
-            await _dbContext.CreateEntityAsync(tenant, cancellationToken);
+            await _dbContext.CreateTenantAsync(tenant, cancellationToken);
             await _dbContext.ApplyChangesAsync(cancellationToken);
 
             TenantVm tenantVm = _tenantVmMapper.Map(tenant);

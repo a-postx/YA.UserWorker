@@ -46,7 +46,7 @@ namespace YA.TenantWorker.Application
                 {
                     ApiRequest newApiRequest = new ApiRequest(correlationId, DateTime.UtcNow, method);
 
-                    ApiRequest createdRequest = await _dbContext.CreateAndReturnEntityAsync(newApiRequest, cancellationToken);
+                    ApiRequest createdRequest = await _dbContext.CreateApiRequestAsync(newApiRequest, cancellationToken);
                     await _dbContext.ApplyChangesAsync(cancellationToken);
 
                     _apiRequestCache.Add(newApiRequest, newApiRequest.ApiRequestID);
@@ -62,8 +62,7 @@ namespace YA.TenantWorker.Application
                 
             if (requestFromCache == null)
             {
-                ApiRequest request = await _dbContext
-                    .GetEntityAsync<ApiRequest>(ae => ae.ApiRequestID == correlationId, cancellationToken);
+                ApiRequest request = await _dbContext.GetApiRequestAsync(e => e.ApiRequestID == correlationId, cancellationToken);
 
                 return (request != null) ? (false, request) : (false, null);
             }
