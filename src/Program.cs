@@ -20,6 +20,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Threading;
 using System.Threading.Tasks;
 using YA.TenantWorker.Application.Interfaces;
 using YA.TenantWorker.Constants;
@@ -79,17 +80,20 @@ namespace YA.TenantWorker
                 {
                     TenantWorkerDbContext dbContext = scope.ServiceProvider.GetService<TenantWorkerDbContext>();
 
-                    if (dbContext.Database.GetPendingMigrations().GetEnumerator().MoveNext())
+                    using (CancellationTokenSource cts = new CancellationTokenSource(120000))
                     {
-                        Console.WriteLine("Applying application database migrations...");
+                        if (dbContext.Database.GetPendingMigrations().GetEnumerator().MoveNext())
+                        {
+                            Console.WriteLine("Applying database migrations...");
 
-                        dbContext.Database.Migrate();
+                            await dbContext.Database.MigrateAsync(cts.Token);
 
-                        Console.WriteLine("Application database migrations applied successfully.");
-                    }
-                    else
-                    {
-                        Console.WriteLine("No application database migrations needed.");
+                            Console.WriteLine("Database migrations applied successfully.");
+                        }
+                        else
+                        {
+                            Console.WriteLine("No database migrations needed.");
+                        }
                     }
                 }
             }

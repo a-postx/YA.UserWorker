@@ -17,20 +17,17 @@ namespace YA.TenantWorker.Application.Commands
     public class GetTenantCommand : IGetTenantCommand
     {
         public GetTenantCommand(ILogger<GetTenantCommand> logger,
-            IRuntimeContextAccessor runtimeContextAccessor,
             IActionContextAccessor actionContextAccessor,
             ITenantWorkerDbContext dbContext,
             IMapper<Tenant, TenantVm> tenantVmMapper)
         {
             _log = logger ?? throw new ArgumentNullException(nameof(logger));
-            _runtimeContext = runtimeContextAccessor ?? throw new ArgumentNullException(nameof(runtimeContextAccessor));
             _actionContextAccessor = actionContextAccessor ?? throw new ArgumentNullException(nameof(actionContextAccessor));
             _dbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
             _tenantVmMapper = tenantVmMapper ?? throw new ArgumentNullException(nameof(tenantVmMapper));
         }
 
         private readonly ILogger<GetTenantCommand> _log;
-        private readonly IRuntimeContextAccessor _runtimeContext;
         private readonly IActionContextAccessor _actionContextAccessor;
         private readonly ITenantWorkerDbContext _dbContext;
         private readonly IMapper<Tenant, TenantVm> _tenantVmMapper;

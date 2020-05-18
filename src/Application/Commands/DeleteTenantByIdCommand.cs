@@ -14,20 +14,17 @@ namespace YA.TenantWorker.Application.Commands
     {
         public DeleteTenantByIdCommand(ILogger<DeleteTenantByIdCommand> logger,
             IMapper mapper,
-            IRuntimeContextAccessor runtimeContextAccessor,
             ITenantWorkerDbContext dbContext,
             IMessageBus messageBus)
         {
             _log = logger ?? throw new ArgumentNullException(nameof(logger));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
-            _runtimeContext = runtimeContextAccessor ?? throw new ArgumentNullException(nameof(runtimeContextAccessor));
             _dbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
             _messageBus = messageBus ?? throw new ArgumentNullException(nameof(messageBus));
         }
 
         private readonly ILogger<DeleteTenantByIdCommand> _log;
         private readonly IMapper _mapper;
-        private readonly IRuntimeContextAccessor _runtimeContext;
         private readonly ITenantWorkerDbContext _dbContext;
         private readonly IMessageBus _messageBus;
 

@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Headers;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
@@ -18,14 +19,18 @@ namespace YA.TenantWorker.Infrastructure.Authentication
 {
     public class YaAuthenticationHandler : IAuthenticationHandler
     {
-        public YaAuthenticationHandler(ILogger<YaAuthenticationHandler> logger, IHttpContextAccessor httpContextAccessor)
+        public YaAuthenticationHandler(ILogger<YaAuthenticationHandler> logger,
+            IHttpContextAccessor httpContextAccessor,
+            IConfiguration configuration)
         {
             _log = logger ?? throw new ArgumentNullException(nameof(logger));
+            _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
             _httpContextAccessor = httpContextAccessor ?? throw new ArgumentNullException(nameof(httpContextAccessor));
         }
 
         private readonly ILogger<YaAuthenticationHandler> _log;
         private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly IConfiguration _configuration;
         private AuthenticationScheme _scheme;
         private RequestHeaders _headers;
 
@@ -96,7 +101,7 @@ namespace YA.TenantWorker.Infrastructure.Authentication
                     AuthenticationProperties props = new AuthenticationProperties();
                     props.IssuedUtc = tokenS.IssuedAt;
                     props.ExpiresUtc = tokenS.ValidTo;
-                    props.RedirectUri = "/authentication/login";
+                    props.RedirectUri = General.LoginRedirectPath;
 
                     _log.LogInformation("User {Username} is authenticated.", username);
 
@@ -118,8 +123,18 @@ namespace YA.TenantWorker.Infrastructure.Authentication
         public Task ChallengeAsync(AuthenticationProperties properties)
         {
             HttpContext context = _httpContextAccessor.HttpContext;
-            context.Response.Redirect("/authentication/login");
-            return Task.CompletedTask;
+
+            AppSecrets secrets = _configuration.Get<AppSecrets>();
+
+            if (context.Request.Host.Host == secrets.ApiGatewayHost && context.Request.Host.Port == secrets.ApiGatewayPort)
+            {
+                context.Response.Redirect(General.LoginRedirectPath);
+                return Task.CompletedTask;
+            }
+            else
+            {
+                return ForbidAsync(properties);
+            }
         }
 
         public Task ForbidAsync(AuthenticationProperties properties)

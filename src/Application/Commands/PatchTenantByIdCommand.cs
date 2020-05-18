@@ -22,7 +22,6 @@ namespace YA.TenantWorker.Application.Commands
         public PatchTenantByIdCommand(
             ILogger<PatchTenantByIdCommand> logger,
             IMapper mapper,
-            IRuntimeContextAccessor runtimeContextAccessor,
             IActionContextAccessor actionContextAccessor,
             IObjectModelValidator objectModelValidator,
             ITenantWorkerDbContext dbContext,
@@ -31,7 +30,6 @@ namespace YA.TenantWorker.Application.Commands
         {
             _log = logger ?? throw new ArgumentNullException(nameof(logger));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
-            _runtimeContext = runtimeContextAccessor ?? throw new ArgumentNullException(nameof(runtimeContextAccessor));
             _actionContextAccessor = actionContextAccessor ?? throw new ArgumentNullException(nameof(actionContextAccessor));
             _objectModelValidator = objectModelValidator ?? throw new ArgumentNullException(nameof(objectModelValidator));
             _dbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
@@ -41,7 +39,6 @@ namespace YA.TenantWorker.Application.Commands
 
         private readonly ILogger<PatchTenantByIdCommand> _log;
         private readonly IMapper _mapper;
-        private readonly IRuntimeContextAccessor _runtimeContext;
         private readonly IActionContextAccessor _actionContextAccessor;
         private readonly ITenantWorkerDbContext _dbContext;
         private readonly IMessageBus _messageBus;

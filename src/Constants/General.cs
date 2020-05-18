@@ -16,6 +16,7 @@
         public const string SqlDatabaseHealthCheckName = "sql_database";
         public const string ForwardedForHeader = "X-Original-For";
         public const string CorrelationIdHeader = "X-Correlation-ID";
+        public const string LoginRedirectPath = "/authentication/login";
         public const int StartupServiceCheckRetryIntervalMs = 10000;
         public const int ApiRequestsCacheSize = 256;
         public const int ApiRequestCacheSlidingExpirationSec = 120;
