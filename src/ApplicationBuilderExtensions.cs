@@ -12,6 +12,7 @@ using YA.TenantWorker.Infrastructure.Logging.Requests;
 using Serilog;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
+using System.Collections.Generic;
 
 namespace YA.TenantWorker
 {
@@ -63,7 +64,7 @@ namespace YA.TenantWorker
                 });
         }
 
-        public static IApplicationBuilder UseCustomSwaggerUI(this IApplicationBuilder application)
+        public static IApplicationBuilder UseCustomSwaggerUI(this IApplicationBuilder application, AppSecrets secrets)
         {
             return application.UseSwaggerUI(options =>
                 {
@@ -83,6 +84,14 @@ namespace YA.TenantWorker
                             $"/swagger/{apiVersionDescription.GroupName}/swagger.json",
                             $"Version {apiVersionDescription.ApiVersion}");
                     }
+
+                    options.OAuthClientId(secrets.OauthImplicitClientId);
+                    options.OAuthScopeSeparator(" ");
+                    options.OAuthAdditionalQueryStringParams(new Dictionary<string, string> {
+                        { "response_type", secrets.OauthImplicitResponseType },
+                        { "scope", secrets.OauthImplicitScope },
+                        { "nonce","nonce" }
+                    });
                 });
         }
 

@@ -180,7 +180,7 @@ namespace YA.TenantWorker
         /// <summary>
         /// Add and configure Swagger services.
         /// </summary>
-        public static IServiceCollection AddCustomSwagger(this IServiceCollection services)
+        public static IServiceCollection AddCustomSwagger(this IServiceCollection services, AppSecrets secrets)
         {
             return services.AddSwaggerGen(options =>
                 {
@@ -200,6 +200,8 @@ namespace YA.TenantWorker
                     options.OperationFilter<ClaimsOperationFilter>();
                     options.OperationFilter<ForbiddenResponseOperationFilter>();
                     options.OperationFilter<UnauthorizedResponseOperationFilter>();
+
+                    options.OperationFilter<AuthorizeCheckOperationFilter>();
 
                     // Show an example model for JsonPatchDocument<T>.
                     options.SchemaFilter<JsonPatchDocumentSchemaFilter>();
@@ -238,6 +240,20 @@ namespace YA.TenantWorker
                                 }
                             },
                             new string[] { }
+                        }
+                    });
+
+                    options.AddSecurityDefinition("oauth2", new OpenApiSecurityScheme
+                    {
+                        Type = SecuritySchemeType.OAuth2,
+                        Flows = new OpenApiOAuthFlows()
+                        {
+                            Implicit = new OpenApiOAuthFlow()
+                            {
+                                AuthorizationUrl = new Uri(secrets.OauthImplicitAuthorizationUrl),
+                                TokenUrl = new Uri(secrets.OauthImplicitTokenUrl),
+                                Scopes = new Dictionary<string, string>()
+                            }
                         }
                     });
                 });

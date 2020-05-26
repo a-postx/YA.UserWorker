@@ -111,7 +111,7 @@ namespace YA.TenantWorker
                 .AddCustomResponseCompression(_config)
 
                 .AddCustomHealthChecks(_config)
-                .AddCustomSwagger()
+                .AddCustomSwagger(secrets)
                 .AddHttpContextAccessor()
 
                 .AddSingleton<IActionContextAccessor, ActionContextAccessor>()
@@ -228,6 +228,8 @@ namespace YA.TenantWorker
         /// </summary>
         public void Configure(IApplicationBuilder application)
         {
+            AppSecrets secrets = _config.Get<AppSecrets>();
+
             application
                 .UseCorrelationId(new CorrelationIdOptions
                 {
@@ -297,7 +299,7 @@ namespace YA.TenantWorker
                 })
 
                 .UseSwagger()
-                .UseCustomSwaggerUI();
+                .UseCustomSwaggerUI(secrets);
         }
     }
 }

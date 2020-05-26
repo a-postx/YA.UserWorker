@@ -7,8 +7,7 @@ using System.Collections.Generic;
 namespace YA.TenantWorker.OperationFilters
 {
     /// <summary>
-    /// Adds a Swashbuckle <see cref="OpenApiExample"/> to all available operations with a description of X-Correlation-ID
-    /// HTTP header and default GUID value.
+    /// Adds a Swashbuckle <see cref="OpenApiExample"/> to all available operations with a supported content type.
     /// </summary>
     /// <seealso cref="IOperationFilter" />
     public class ContentTypeOperationFilter : IOperationFilter

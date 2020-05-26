@@ -12,5 +12,10 @@
         public string ApiGatewayHost { get; set; }
         public int ApiGatewayPort { get; set; }
         public string JwtSigningKey { get; set; }
+        public string OauthImplicitAuthorizationUrl { get; set; }
+        public string OauthImplicitTokenUrl { get; set; }
+        public string OauthImplicitClientId { get; set; }
+        public string OauthImplicitResponseType { get; set; }
+        public string OauthImplicitScope { get; set; }
     }
 }
