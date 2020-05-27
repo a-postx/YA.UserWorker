@@ -231,14 +231,7 @@ namespace YA.TenantWorker
             AppSecrets secrets = _config.Get<AppSecrets>();
 
             application
-                .UseCorrelationId(new CorrelationIdOptions
-                {
-                    Header = General.CorrelationIdHeader,
-                    IncludeInResponse = false,
-                    UpdateTraceIdentifier = false,
-                    UseGuidForCorrelationId = false
-                })
-                .UseCorrelationIdContextLogging()
+                .UseCorrelationId()
                 ////.UseHttpsRedirection()
 
                 ////.UseAllElasticApm(Configuration)

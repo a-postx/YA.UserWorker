@@ -20,7 +20,7 @@ namespace YA.TenantWorker.Infrastructure.Logging.Requests
 
         readonly RequestDelegate _next;
 
-        public async Task InvokeAsync(HttpContext httpContext, ILogger<CorrelationIdContextLogger> logger)
+        public async Task InvokeAsync(HttpContext httpContext, ILogger<NetworkContextLogger> logger)
         {
             HttpContext context = httpContext ?? throw new ArgumentNullException(nameof(httpContext));
 

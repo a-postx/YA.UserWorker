@@ -101,12 +101,6 @@ namespace YA.TenantWorker
                 .UseMiddleware<NetworkContextLogger>();
         }
 
-        public static IApplicationBuilder UseCorrelationIdContextLogging(this IApplicationBuilder application)
-        {
-            return application
-                .UseMiddleware<CorrelationIdContextLogger>();
-        }
-
         public static IApplicationBuilder UseHttpContextLogging(this IApplicationBuilder application)
         {
             return application

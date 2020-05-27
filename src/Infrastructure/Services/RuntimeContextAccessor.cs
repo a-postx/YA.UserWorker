@@ -1,4 +1,4 @@
-﻿using CorrelationId;
+﻿using CorrelationId.Abstractions;
 using Delobytes.AspNetCore;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;

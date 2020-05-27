@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO.Compression;
 using System.Linq;
 using System.Reflection;
-using CorrelationId;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.AspNetCore.ResponseCompression;
@@ -26,6 +25,7 @@ using YA.TenantWorker.Health.Services;
 using YA.TenantWorker.Health.System;
 using Microsoft.OpenApi.Models;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
+using CorrelationId.DependencyInjection;
 
 namespace YA.TenantWorker
 {
@@ -36,7 +36,18 @@ namespace YA.TenantWorker
     {
         public static IServiceCollection AddCorrelationIdFluent(this IServiceCollection services)
         {
-            services.AddCorrelationId();
+            services.AddDefaultCorrelationId(options =>
+            {
+                options.CorrelationIdGenerator = () => "";
+                options.AddToLoggingScope = true;
+                options.LoggingScopeKey = Logs.CorrelationId;
+                options.EnforceHeader = false;
+                options.IgnoreRequestHeader = false;
+                options.IncludeInResponse = false;
+                options.RequestHeader = General.CorrelationIdHeader;
+                options.ResponseHeader = General.CorrelationIdHeader;
+                options.UpdateTraceIdentifier = false;
+            });
 
             return services;
         }
