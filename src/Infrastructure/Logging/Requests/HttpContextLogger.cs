@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -36,7 +37,7 @@ namespace YA.TenantWorker.Infrastructure.Logging.Requests
 
             httpContext.Request.EnableBuffering();
             Stream body = httpContext.Request.Body;
-            byte[] buffer = new byte[Convert.ToInt32(httpContext.Request.ContentLength)];
+            byte[] buffer = new byte[Convert.ToInt32(httpContext.Request.ContentLength, CultureInfo.InvariantCulture)];
             await httpContext.Request.Body.ReadAsync(buffer, 0, buffer.Length);
             string initialRequestBody = Encoding.UTF8.GetString(buffer);
             body.Seek(0, SeekOrigin.Begin);
@@ -89,23 +90,30 @@ namespace YA.TenantWorker.Infrastructure.Logging.Requests
                 }
 
                 context.Response.Body.Seek(0, SeekOrigin.Begin);
-                string responseBody = await new StreamReader(context.Response.Body).ReadToEndAsync();
-                context.Response.Body.Seek(0, SeekOrigin.Begin);
 
-                if (Enumerable.Range(400, 599).Contains(context.Response.StatusCode) && responseBody.Contains("traceId", StringComparison.InvariantCultureIgnoreCase))
+                string responseBody;
+
+                using (StreamReader sr = new StreamReader(context.Response.Body))
                 {
-                    ApiProblemDetails problem = JsonConvert.DeserializeObject<ApiProblemDetails>(responseBody);
-                    LogContext.PushProperty(Logs.TraceId, problem.TraceId);
+                    responseBody = await sr.ReadToEndAsync();
+
+                    context.Response.Body.Seek(0, SeekOrigin.Begin);
+
+                    if (Enumerable.Range(400, 599).Contains(context.Response.StatusCode) && responseBody.Contains("traceId", StringComparison.InvariantCultureIgnoreCase))
+                    {
+                        ApiProblemDetails problem = JsonConvert.DeserializeObject<ApiProblemDetails>(responseBody);
+                        LogContext.PushProperty(Logs.TraceId, problem.TraceId);
+                    }
+
+                    string endResponseBody = (responseBody.Length > General.MaxLogFieldLength) ?
+                        responseBody.Substring(0, General.MaxLogFieldLength) : responseBody;
+
+                    Log.ForContext(Logs.ResponseHeaders, context.Response.Headers.ToDictionary(h => h.Key, h => h.Value.ToString()), true)
+                        .ForContext(Logs.ResponseBody, endResponseBody)
+                        .Information("Response information {RequestMethod} {RequestPath} {StatusCode}", context.Request.Method, context.Request.Path, context.Response.StatusCode);
+
+                    await responseBodyMemoryStream.CopyToAsync(originalResponseBodyReference);
                 }
-
-                string endResponseBody = (responseBody.Length > General.MaxLogFieldLength) ?
-                    responseBody.Substring(0, General.MaxLogFieldLength) : responseBody;
-                
-                Log.ForContext(Logs.ResponseHeaders, context.Response.Headers.ToDictionary(h => h.Key, h => h.Value.ToString()), true)
-                    .ForContext(Logs.ResponseBody, endResponseBody)
-                    .Information("Response information {RequestMethod} {RequestPath} {StatusCode}", context.Request.Method, context.Request.Path, context.Response.StatusCode);
-
-                await responseBodyMemoryStream.CopyToAsync(originalResponseBodyReference);
             }
         }
     }

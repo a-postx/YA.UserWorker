@@ -250,7 +250,7 @@ namespace YA.TenantWorker
                                     Id = "Bearer"
                                 }
                             },
-                            new string[] { }
+                            Array.Empty<string>()
                         }
                     });
 

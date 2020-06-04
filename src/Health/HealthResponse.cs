@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
@@ -11,7 +12,7 @@ namespace YA.TenantWorker.Health
     /// <summary>
     /// JSON formatter for health responses.
     /// </summary>
-    public class HealthResponse
+    public static class HealthResponse
     {
         /// <summary>
         /// Returns a json health status object.
@@ -20,6 +21,16 @@ namespace YA.TenantWorker.Health
         [SwaggerResponse(StatusCodes.Status200OK, "Write response in JSON format.")]
         public static Task WriteResponseAsync(HttpContext httpContext, HealthReport result)
         {
+            if (httpContext == null)
+            {
+                throw new ArgumentNullException(nameof(httpContext));
+            }
+
+            if (result == null)
+            {
+                throw new ArgumentNullException(nameof(result));
+            }
+
             httpContext.Response.ContentType = "application/json";
 
             JObject json = new JObject(

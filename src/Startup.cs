@@ -38,6 +38,7 @@ using YA.TenantWorker.Infrastructure.Messaging.Consumers;
 using AutoMapper;
 using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Http;
 
 namespace YA.TenantWorker
 {
@@ -287,7 +288,7 @@ namespace YA.TenantWorker
                     }).RequireCors(CorsPolicyName.AllowAny);
                     endpoints.MapGet("/nodeid", async (context) =>
                     {
-                        await context.Response.BodyWriter.WriteAsync(Encoding.UTF8.GetBytes(Node.Id));
+                        await context.Response.WriteAsync(Node.Id, Encoding.UTF8);
                     }).RequireCors(CorsPolicyName.AllowAny);
                 })
 

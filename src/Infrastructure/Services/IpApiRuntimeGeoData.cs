@@ -52,7 +52,7 @@ namespace YA.TenantWorker.Infrastructure.Services
                 {
                     client.BaseAddress = new Uri(ProviderUrl);
 
-                    using (HttpResponseMessage response = await client.GetAsync("/json"))
+                    using (HttpResponseMessage response = await client.GetAsync(new Uri("/json", UriKind.Relative)))
                     {
                         if (response.StatusCode == HttpStatusCode.OK)
                         {

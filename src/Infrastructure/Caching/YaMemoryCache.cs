@@ -4,9 +4,10 @@ using System.Threading.Tasks;
 
 namespace YA.TenantWorker.Infrastructure.Caching
 {
-    public class YaMemoryCache
+    public class YaMemoryCache : IDisposable
     {
         private MemoryCache _cache;
+        private bool disposedValue;
 
         protected void SetOptions(MemoryCacheOptions options)
         {
@@ -15,6 +16,11 @@ namespace YA.TenantWorker.Infrastructure.Caching
 
         public async Task<(bool created, T type)> GetOrCreateAsync<T>(object key, Func<Task<T>> createItem, MemoryCacheEntryOptions options) where T : class
         {
+            if (createItem == null)
+            {
+                throw new ArgumentNullException(nameof(createItem));
+            }
+
             bool itemExists = _cache.TryGetValue(key, out T cacheEntry);
 
             if (!itemExists)
@@ -47,6 +53,32 @@ namespace YA.TenantWorker.Infrastructure.Caching
         {
             _cache.Remove(key);
             return _cache.Set(key, newCacheEntry, options);
+        }
+
+        public void Remove<T>(object key) where T : class
+        {
+            _cache.Remove(key);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    _cache.Dispose();
+                }
+
+                _cache = null;
+
+                disposedValue = true;
+            }
+        }
+
+        public void Dispose()
+        {
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
         }
     }
 }

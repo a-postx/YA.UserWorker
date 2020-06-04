@@ -38,13 +38,18 @@ namespace YA.TenantWorker.Infrastructure.Data
 
         public IDbContextTransaction GetCurrentTransaction() => _currentTransaction;
         public bool HasActiveTransaction => _currentTransaction != null;
-        private bool IsMustHaveTenantFilterEnabled => true;
-        private bool IsSoftDeleteFilterEnabled => true;
+        private static bool IsMustHaveTenantFilterEnabled => true;
+        private static bool IsSoftDeleteFilterEnabled => true;
 
         private static MethodInfo ConfigureGlobalFiltersMethodInfo = typeof(TenantWorkerDbContext).GetMethod(nameof(ConfigureGlobalFilters), BindingFlags.Instance | BindingFlags.NonPublic);
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            if (modelBuilder == null)
+            {
+                throw new ArgumentNullException(nameof(modelBuilder));
+            }
+
             modelBuilder.ApplyConfigurationsFromAssembly(typeof(TenantWorkerDbContext).Assembly);
 
             modelBuilder.Seed();
@@ -352,7 +357,7 @@ namespace YA.TenantWorker.Infrastructure.Data
         {
             IEnumerable<EntityEntry<ITenantEntity>> tenantEntities = ChangeTracker.Entries<ITenantEntity>();
 
-            if (tenantEntities.Count() > 0)
+            if (tenantEntities.Any())
             {
                 int distinctTenantIdsCount = tenantEntities.Select(e => e.Entity.Tenant?.TenantID)
                                      .Distinct().Count();

@@ -11,6 +11,7 @@ using YA.TenantWorker.Application.Interfaces;
 using YA.TenantWorker.Core.Entities;
 using YA.TenantWorker.Application.Models.ViewModels;
 using Delobytes.Mapper;
+using System.Globalization;
 
 namespace YA.TenantWorker.Application.Commands
 {
@@ -57,7 +58,7 @@ namespace YA.TenantWorker.Application.Commands
 
             TenantVm tenantViewModel = _tenantVmMapper.Map(tenant);
             _actionContextAccessor.ActionContext.HttpContext
-                .Response.Headers.Add(HeaderNames.LastModified, tenant.LastModifiedDateTime.ToString("R"));
+                .Response.Headers.Add(HeaderNames.LastModified, tenant.LastModifiedDateTime.ToString("R", CultureInfo.InvariantCulture));
 
             return new OkObjectResult(tenantViewModel);
         }

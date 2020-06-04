@@ -55,7 +55,7 @@ namespace YA.TenantWorker.Application.Mappers
             RouteData routeData = _httpContextAccessor.HttpContext.GetRouteData();
             string route = (string)routeData.Values["controller"] + (string)routeData.Values["action"];
 
-            if (route.Contains("All") || route.Contains("ById") || route.Contains("Post"))
+            if (route.Contains("All", StringComparison.Ordinal) || route.Contains("ById", StringComparison.Ordinal) || route.Contains("Post", StringComparison.Ordinal))
             {
                 //property name of anonymous route value object must correspond to controller http route values
                 destination.Url = new Uri(_linkGenerator.GetUriByName(_httpContextAccessor.HttpContext, RouteNames.GetTenantById, new { tenantId }));
