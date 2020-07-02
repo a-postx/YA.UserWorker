@@ -8,7 +8,7 @@ namespace YA.TenantWorker
     {
         internal static readonly string Id = GetOrSetNodeId();
 
-        static string GetOrSetNodeId()
+        private static string GetOrSetNodeId()
         {
             string filePath = Path.Combine(Program.RootPath, General.AppDataFolderName, "nodeid");
 

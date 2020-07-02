@@ -7,7 +7,7 @@ namespace YA.TenantWorker.Infrastructure.Caching
     public class YaMemoryCache : IDisposable
     {
         private MemoryCache _cache;
-        private bool disposedValue;
+        private bool _disposed;
 
         protected void SetOptions(MemoryCacheOptions options)
         {
@@ -62,7 +62,7 @@ namespace YA.TenantWorker.Infrastructure.Caching
 
         protected virtual void Dispose(bool disposing)
         {
-            if (!disposedValue)
+            if (!_disposed)
             {
                 if (disposing)
                 {
@@ -71,7 +71,7 @@ namespace YA.TenantWorker.Infrastructure.Caching
 
                 _cache = null;
 
-                disposedValue = true;
+                _disposed = true;
             }
         }
 

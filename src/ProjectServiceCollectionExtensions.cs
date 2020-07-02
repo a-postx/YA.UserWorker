@@ -4,11 +4,10 @@ using YA.TenantWorker.Application;
 using YA.TenantWorker.Application.Commands;
 using YA.TenantWorker.Application.Interfaces;
 using YA.TenantWorker.Application.Mappers;
-using YA.TenantWorker.Application.Models.Dto;
-using YA.TenantWorker.Application.Models.SaveModels;
 using YA.TenantWorker.Application.Models.ViewModels;
 using YA.TenantWorker.Core.Entities;
 using YA.TenantWorker.Infrastructure.Data;
+using YA.TenantWorker.Infrastructure.Messaging;
 using YA.TenantWorker.Infrastructure.Services;
 
 namespace YA.TenantWorker
@@ -74,6 +73,7 @@ namespace YA.TenantWorker
         {
             return services
                 .AddSingleton<IClockService, Clock>()
+                .AddScoped<IMessageBus, MessageBus>()
                 .AddScoped<IRuntimeContextAccessor, RuntimeContextAccessor>()
                 .AddSingleton<IRuntimeGeoDataService, IpApiRuntimeGeoData>()
                 .AddHostedService<MessageBusService>();

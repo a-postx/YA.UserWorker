@@ -2,7 +2,9 @@
 {
     public static class General
     {
-        public const int SystemShutdownTimeoutSec = 3600;
+        public const int HostShutdownTimeoutSec = 15;
+        public const int WebHostShutdownTimeoutSec = 120;
+        public const int SqlCommandTimeout = 60;
         public const string AppDataFolderName = "AppData";
         public const string DefaultHttpUserAgent = "YA/1.0 (2412719@mail.ru)";
         public const string AppHttpUserAgent = "YA.TenantWorker/1.0 (2412719@mail.ru)";

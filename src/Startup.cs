@@ -78,12 +78,12 @@ namespace YA.TenantWorker
             AWSOptions awsOptions = _config.GetAWSOptions();
             services.AddDefaultAWSOptions(awsOptions);
 
-            services.Configure<HostOptions>(option =>
-            {
-                option.ShutdownTimeout = TimeSpan.FromSeconds(General.SystemShutdownTimeoutSec);
-            });
-
             AppSecrets secrets = _config.Get<AppSecrets>();
+
+            services.Configure<HostOptions>(options =>
+            {
+                options.ShutdownTimeout = TimeSpan.FromSeconds(General.HostShutdownTimeoutSec);
+            });
 
             if (!string.IsNullOrEmpty(secrets.AppInsightsInstrumentationKey))
             {
@@ -147,26 +147,19 @@ namespace YA.TenantWorker
                 .AddEntityFrameworkSqlServer()
                 .AddDbContext<TenantWorkerDbContext>(options =>
                     options.UseSqlServer(secrets.TenantWorkerConnStr, sqlOptions => 
-                        sqlOptions.EnableRetryOnFailure().CommandTimeout(60))
+                        sqlOptions.EnableRetryOnFailure().CommandTimeout(General.SqlCommandTimeout))
                     .ConfigureWarnings(x => x.Throw(RelationalEventId.QueryPossibleExceptionWithAggregateOperatorWarning))
                     .EnableSensitiveDataLogging(_webHostEnvironment.IsDevelopment()));
                     //// useful for API-related projects that only read data
                     //// we don't need query tracking if dbcontext is disposed on every request
                     //.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking));
 
-            services.AddScoped<IMessageBus, MessageBus>();
-
             services.AddScoped<TestRequestConsumer>();
             services.AddScoped<GetPricingTierConsumer>();
 
             services.AddMassTransit(options =>
             {
-                options.AddConsumers(GetType().Assembly);
-            });
-
-            services.AddSingleton(provider =>
-            {
-                return Bus.Factory.CreateUsingRabbitMq(cfg =>
+                options.UsingRabbitMq((context, cfg) =>
                 {
                     cfg.Host(secrets.MessageBusHost, secrets.MessageBusVHost, h =>
                     {
@@ -174,7 +167,6 @@ namespace YA.TenantWorker
                         h.Password(secrets.MessageBusPassword);
                     });
 
-                    cfg.SetLoggerFactory(provider.GetRequiredService<ILoggerFactory>());
                     cfg.UseSerilogMessagePropertiesEnricher();
 
                     cfg.ReceiveEndpoint(MbQueueNames.PrivateServiceQueueName, e =>
@@ -192,7 +184,7 @@ namespace YA.TenantWorker
                         e.ExclusiveConsumer = true;
                         ////e.SetExchangeArgument("x-delayed-type", "direct");
 
-                        e.Consumer<TestRequestConsumer>(provider);
+                        e.ConfigureConsumer<TestRequestConsumer>(context);
                     });
 
                     cfg.ReceiveEndpoint(MbQueueNames.PricingTierQueueName, e =>
@@ -205,9 +197,11 @@ namespace YA.TenantWorker
                         });
                         e.UseMbContextFilter();
 
-                        e.Consumer<GetPricingTierConsumer>(provider);
+                        e.ConfigureConsumer<GetPricingTierConsumer>(context);
                     });
                 });
+
+                options.AddConsumers(GetType().Assembly);
             });
 
             services.AddSingleton<IPublishEndpoint>(provider => provider.GetRequiredService<IBusControl>());
