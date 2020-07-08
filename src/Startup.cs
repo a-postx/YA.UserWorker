@@ -39,6 +39,9 @@ using AutoMapper;
 using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http;
+using Prometheus;
+using MassTransit.PrometheusIntegration;
+//using Elastic.Apm.NetCoreAll;
 
 namespace YA.TenantWorker
 {
@@ -169,6 +172,8 @@ namespace YA.TenantWorker
 
                     cfg.UseSerilogMessagePropertiesEnricher();
 
+                    cfg.UsePrometheusMetrics();
+
                     cfg.ReceiveEndpoint(MbQueueNames.PrivateServiceQueueName, e =>
                     {
                         e.PrefetchCount = 16;
@@ -228,8 +233,8 @@ namespace YA.TenantWorker
             application
                 .UseCorrelationId()
                 ////.UseHttpsRedirection()
-
-                ////.UseAllElasticApm(Configuration)
+                
+                //.UseAllElasticApm(Configuration)
 
                 //!experimental!
                 ////.UseHttpException()
@@ -285,6 +290,8 @@ namespace YA.TenantWorker
                         await context.Response.WriteAsync(Node.Id, Encoding.UTF8);
                     }).RequireCors(CorsPolicyName.AllowAny);
                 })
+                .UseMetricServer()
+                .UseHealthChecksPrometheusExporter("/metrics")
 
                 .UseSwagger()
                 .UseCustomSwaggerUI(secrets);
