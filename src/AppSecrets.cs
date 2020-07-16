@@ -1,4 +1,6 @@
-﻿namespace YA.TenantWorker
+﻿using System;
+
+namespace YA.TenantWorker
 {
     public class AppSecrets
     {
@@ -11,7 +13,9 @@
         public string TenantWorkerConnStr { get; set; }
         public string ApiGatewayHost { get; set; }
         public int ApiGatewayPort { get; set; }
+        [Obsolete("Jwt signing key is retrieved from OIDC provider")]
         public string JwtSigningKey { get; set; }
+        public string OidcProviderIssuer { get; set; }
         public string OauthImplicitAuthorizationUrl { get; set; }
         public string OauthImplicitTokenUrl { get; set; }
         public string OauthImplicitClientId { get; set; }

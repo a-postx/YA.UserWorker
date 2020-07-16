@@ -3,9 +3,8 @@ using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
-using YA.TenantWorker.Core.Entities;
 
-namespace YA.TenantWorker.Application.Interfaces
+namespace YA.TenantWorker.Core.Entities
 {
     public interface ITenantWorkerDbContext
     {

@@ -4,15 +4,18 @@ using Microsoft.AspNetCore.Http.Headers;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
+using Microsoft.IdentityModel.Protocols;
+using Microsoft.IdentityModel.Protocols.OpenIdConnect;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.Net.Http.Headers;
 using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Security.Claims;
-using System.Security.Cryptography;
 using System.Security.Principal;
-using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
+using YA.TenantWorker.Application;
 using YA.TenantWorker.Constants;
 
 namespace YA.TenantWorker.Infrastructure.Authentication
@@ -21,16 +24,19 @@ namespace YA.TenantWorker.Infrastructure.Authentication
     {
         public YaAuthenticationHandler(ILogger<YaAuthenticationHandler> logger,
             IHttpContextAccessor httpContextAccessor,
-            IConfiguration configuration)
+            IConfiguration configuration,
+            IConfigurationManager<OpenIdConnectConfiguration> configManager)
         {
             _log = logger ?? throw new ArgumentNullException(nameof(logger));
-            _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
             _httpContextAccessor = httpContextAccessor ?? throw new ArgumentNullException(nameof(httpContextAccessor));
+            _config = configuration ?? throw new ArgumentNullException(nameof(configuration));            
+            _configManager = configManager ?? throw new ArgumentNullException(nameof(configManager));
         }
 
         private readonly ILogger<YaAuthenticationHandler> _log;
         private readonly IHttpContextAccessor _httpContextAccessor;
-        private readonly IConfiguration _configuration;
+        private readonly IConfiguration _config;
+        private readonly IConfigurationManager<OpenIdConnectConfiguration> _configManager;
         private AuthenticationScheme _scheme;
         private RequestHeaders _headers;
 
@@ -51,7 +57,7 @@ namespace YA.TenantWorker.Infrastructure.Authentication
             return Task.CompletedTask;
         }
 
-        public Task<AuthenticateResult> AuthenticateAsync()
+        public async Task<AuthenticateResult> AuthenticateAsync()
         {
             if (_headers.Headers.TryGetValue(HeaderNames.Authorization, out StringValues authValue))
             {
@@ -59,14 +65,23 @@ namespace YA.TenantWorker.Infrastructure.Authentication
 
                 string token = (authHeaderValues.Length > 1) ? authHeaderValues[1] : authHeaderValues[0];
 
-                JwtSecurityTokenHandler handler = new JwtSecurityTokenHandler();
-                JwtSecurityToken tokenS = handler.ReadJwtToken(token);
+                //todo: добавить опцию выбора "валидировать ли токен" на случай проблем
+                ////JwtSecurityTokenHandler handler = new JwtSecurityTokenHandler();
+                ////JwtSecurityToken validatedToken = handler.ReadJwtToken(token);
 
-                if (tokenS != null)
+                JwtSecurityToken validatedToken;
+
+                using (CancellationTokenSource cts = new CancellationTokenSource(TimeSpan.FromSeconds(10)))
                 {
-                    string userId = tokenS.Claims.FirstOrDefault(claim => claim.Type == CustomClaimNames.uid)?.Value;
-                    string username = tokenS.Claims.FirstOrDefault(claim => claim.Type == CustomClaimNames.sub)?.Value;
-                    string name = tokenS.Claims.FirstOrDefault(claim => claim.Type == CustomClaimNames.name)?.Value;
+                    validatedToken = await ValidateTokenAsync(token, cts.Token);
+                }
+
+                if (validatedToken != null)
+                {
+                    string userId = validatedToken.Claims.FirstOrDefault(claim => claim.Type == CustomClaimNames.uid)?.Value;
+                    string username = validatedToken.Claims.FirstOrDefault(claim => claim.Type == CustomClaimNames.sub)?.Value;
+                    string email = validatedToken.Claims.FirstOrDefault(claim => claim.Type == CustomClaimNames.email)?.Value;
+                    string name = validatedToken.Claims.FirstOrDefault(claim => claim.Type == CustomClaimNames.name)?.Value;
 
                     if (userId == null)
                     {
@@ -76,6 +91,10 @@ namespace YA.TenantWorker.Infrastructure.Authentication
                     {
                         throw new Exception($"Authentication failed: {CustomClaimNames.username} claim cannot be found.");
                     }
+                    if (email == null)
+                    {
+                        throw new Exception($"Authentication failed: {CustomClaimNames.email} claim cannot be found.");
+                    }
                     if (name == null)
                     {
                         throw new Exception($"Authentication failed: {CustomClaimNames.name} claim cannot be found.");
@@ -83,40 +102,34 @@ namespace YA.TenantWorker.Infrastructure.Authentication
 
                     ClaimsIdentity userIdentity = new ClaimsIdentity("Bearer", CustomClaimNames.name, CustomClaimNames.role);
 
-                    Guid tenantId;
-                    using (MD5 md5 = MD5.Create())
-                    {
-                        byte[] hash = md5.ComputeHash(Encoding.Default.GetBytes(userId));
-                        tenantId = new Guid(hash);
-                    }
+                    Guid tenantId = IdGenerator.Create(userId);
                     ////Guid tenantId = Guid.Parse("00000000-0000-0000-0000-000000000001");
 
                     userIdentity.AddClaim(new Claim(CustomClaimNames.uid, userId));
                     userIdentity.AddClaim(new Claim(CustomClaimNames.tid, tenantId.ToString()));
                     userIdentity.AddClaim(new Claim(CustomClaimNames.username, username));
+                    userIdentity.AddClaim(new Claim(CustomClaimNames.email, email));
                     userIdentity.AddClaim(new Claim(CustomClaimNames.name, name));
                     GenericPrincipal userPricipal = new GenericPrincipal(userIdentity, new string[] { "user" });
                     ClaimsPrincipal principal = new ClaimsPrincipal(userPricipal);
 
                     AuthenticationProperties props = new AuthenticationProperties();
-                    props.IssuedUtc = tokenS.IssuedAt;
-                    props.ExpiresUtc = tokenS.ValidTo;
+                    props.IssuedUtc = validatedToken.IssuedAt;
+                    props.ExpiresUtc = validatedToken.ValidTo;
                     props.RedirectUri = General.LoginRedirectPath;
 
                     _log.LogInformation("User {Username} is authenticated.", username);
 
-                    return Task.FromResult(
-                        AuthenticateResult.Success(new AuthenticationTicket(principal, props, _scheme.Name))
-                    );
+                    return  AuthenticateResult.Success(new AuthenticationTicket(principal, props, _scheme.Name));
                 }
                 else
                 {
-                    return Task.FromResult(AuthenticateResult.Fail(new Exception("Cannot get security token.")));
+                    return AuthenticateResult.Fail(new Exception("Cannot validate security token."));
                 }
             }
             else
             {
-                return Task.FromResult(AuthenticateResult.NoResult());
+                return AuthenticateResult.NoResult();
             }
         }
 
@@ -124,7 +137,7 @@ namespace YA.TenantWorker.Infrastructure.Authentication
         {
             HttpContext context = _httpContextAccessor.HttpContext;
 
-            AppSecrets secrets = _configuration.Get<AppSecrets>();
+            AppSecrets secrets = _config.Get<AppSecrets>();
 
             if (context.Request.Host.Host == secrets.ApiGatewayHost && context.Request.Host.Port == secrets.ApiGatewayPort)
             {
@@ -142,6 +155,56 @@ namespace YA.TenantWorker.Infrastructure.Authentication
             HttpContext context = _httpContextAccessor.HttpContext;
             context.Response.StatusCode = StatusCodes.Status403Forbidden;
             return Task.CompletedTask;
+        }
+
+        private async Task<JwtSecurityToken> ValidateTokenAsync(string token, CancellationToken ct = default)
+        {
+            string issuer = _config.Get<AppSecrets>().OidcProviderIssuer;
+            if (string.IsNullOrEmpty(issuer))
+            {
+                throw new ApplicationException("Issuer is empty.");
+            }
+
+            //значения должны быть кешированы большую часть времени (3мс),
+            //поэтому проблемы производительности быть не должно
+            OpenIdConnectConfiguration discoveryDocument = await _configManager.GetConfigurationAsync(ct);
+            System.Collections.Generic.ICollection<SecurityKey> signingKeys = discoveryDocument.SigningKeys;
+
+            TokenValidationParameters validationParameters = new TokenValidationParameters
+            {
+                RequireExpirationTime = true,
+                RequireSignedTokens = true,
+                ValidateIssuer = true,
+                ValidIssuer = issuer,
+                ValidateIssuerSigningKey = true,
+                ValidateAudience = false,
+                ////ValidAudience = "",
+                IssuerSigningKeys = signingKeys,
+                ValidateLifetime = true,
+                ClockSkew = TimeSpan.FromMinutes(2),
+            };
+
+            try
+            {
+                ClaimsPrincipal principal = new JwtSecurityTokenHandler()
+                    .ValidateToken(token, validationParameters, out SecurityToken rawValidatedToken);
+
+                JwtSecurityToken validatedToken = (JwtSecurityToken)rawValidatedToken;
+
+                string expectedAlg = SecurityAlgorithms.RsaSha256; //Okta uses RS256
+
+                if (validatedToken.Header?.Alg == null || validatedToken.Header?.Alg != expectedAlg)
+                {
+                    throw new SecurityTokenValidationException($"The alg must be {expectedAlg}.");
+                }
+
+                return validatedToken;
+            }
+            catch (SecurityTokenValidationException ex)
+            {
+                _log.LogWarning(ex, "Security JWT validation failed for token {Token}.", token);
+                return null;
+            }
         }
     }
 }

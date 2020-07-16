@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Linq;
+using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
 using YA.TenantWorker.Application.Interfaces;
@@ -40,26 +42,50 @@ namespace YA.TenantWorker.Application.Commands
 
         private readonly IMapper<Tenant, TenantVm> _tenantVmMapper;
 
-        public async Task<IActionResult> ExecuteAsync(TenantSm tenantSm, CancellationToken cancellationToken)
+        public async Task<IActionResult> ExecuteAsync(CancellationToken cancellationToken)
         {
-            if (tenantSm.TenantId == Guid.Empty || string.IsNullOrEmpty(tenantSm.TenantName))
+            ClaimsPrincipal user = _actionContextAccessor.ActionContext.HttpContext.User;
+
+            string userId = user.Claims.FirstOrDefault(claim => claim.Type == CustomClaimNames.sub)?.Value;
+            string userEmail = user.Claims.FirstOrDefault(claim => claim.Type == CustomClaimNames.email)?.Value;
+            string emailVerified = user.Claims.FirstOrDefault(claim => claim.Type == CustomClaimNames.email_verified)?.Value;
+
+            bool gotEmailVerification = bool.TryParse(emailVerified, out bool verificationResult);
+            bool isActive = gotEmailVerification ? verificationResult : false;
+
+            if (string.IsNullOrEmpty(userId) && string.IsNullOrEmpty(userEmail))
             {
                 return new BadRequestResult();
             }
 
-            Tenant tenant = _mapper.Map<Tenant>(tenantSm);
-            tenant.TenantType = TenantTypes.Custom;
+            Tenant existingTenant = await _dbContext.GetTenantWithPricingTierAsync(cancellationToken);
+
+            if (existingTenant != null)
+            {
+                return new UnprocessableEntityResult();
+            }
+
+            Guid tenantId = IdGenerator.Create(userId);
+
+            //TenantSm tenantSm = new TenantSm { TenantId = tenantId, TenantName = userEmail, IsActive = isActive };
+
+            Tenant tenant = new Tenant
+            {
+                TenantID = tenantId,
+                TenantName = userEmail,
+                IsActive = isActive,
+                TenantType = TenantTypes.Custom
+            };
 
             Guid defaultPricingTierId = Guid.Parse(SeedData.SeedPricingTierId);
-
             tenant.PricingTierId = defaultPricingTierId;
 
             await _dbContext.CreateTenantAsync(tenant, cancellationToken);
             await _dbContext.ApplyChangesAsync(cancellationToken);
 
-            TenantVm tenantVm = _tenantVmMapper.Map(tenant);
-
             await _messageBus.TenantCreatedV1Async(tenant.TenantID, _mapper.Map<TenantTm>(tenant), cancellationToken);
+
+            TenantVm tenantVm = _tenantVmMapper.Map(tenant);
 
             return new CreatedAtRouteResult(RouteNames.GetTenant, new { TenantId = tenantVm.TenantId, TenantName = tenantVm.TenantName }, tenantVm);
         }

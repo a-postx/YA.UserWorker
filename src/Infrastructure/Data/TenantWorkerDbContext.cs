@@ -219,7 +219,7 @@ namespace YA.TenantWorker.Infrastructure.Data
                 {
                     if (entityType.IsKeyless)
                     {
-                        modelBuilder.Entity<TEntity>().HasQueryFilter(filterExpression);
+                        modelBuilder.Entity<TEntity>().HasNoKey().HasQueryFilter(filterExpression);
                     }
                     else
                     {

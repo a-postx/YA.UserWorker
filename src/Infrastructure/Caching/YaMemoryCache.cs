@@ -14,18 +14,18 @@ namespace YA.TenantWorker.Infrastructure.Caching
             _cache = new MemoryCache(options);
         }
 
-        public async Task<(bool created, T type)> GetOrCreateAsync<T>(object key, Func<Task<T>> createItem, MemoryCacheEntryOptions options) where T : class
+        public async Task<(bool created, T type)> GetOrCreateAsync<T>(object key, Func<Task<T>> createFunc, MemoryCacheEntryOptions options) where T : class
         {
-            if (createItem == null)
+            if (createFunc == null)
             {
-                throw new ArgumentNullException(nameof(createItem));
+                throw new ArgumentNullException(nameof(createFunc));
             }
 
             bool itemExists = _cache.TryGetValue(key, out T cacheEntry);
 
             if (!itemExists)
             {
-                T newItem = await createItem();
+                T newItem = await createFunc();
 
                 MemoryCacheEntryOptions cacheEntryOptions = options;
 

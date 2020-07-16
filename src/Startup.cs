@@ -24,23 +24,18 @@ using YA.TenantWorker.Infrastructure.Authentication;
 using YA.TenantWorker.Infrastructure.Caching;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.AspNetCore.Identity;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.HttpOverrides;
-using YA.TenantWorker.Infrastructure.Logging.MbMessages;
 using Amazon.Extensions.NETCore.Setup;
 using Microsoft.ApplicationInsights.AspNetCore.Extensions;
 using YA.TenantWorker.Application;
-using YA.TenantWorker.Core.Entities;
 using System.Text;
 using YA.TenantWorker.Infrastructure.Messaging.Consumers;
 using AutoMapper;
-using Microsoft.Extensions.Logging;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http;
 using Prometheus;
 using MassTransit.PrometheusIntegration;
+using Microsoft.IdentityModel.Protocols.OpenIdConnect;
+using Microsoft.IdentityModel.Protocols;
 //using Elastic.Apm.NetCoreAll;
 
 namespace YA.TenantWorker
@@ -98,7 +93,7 @@ namespace YA.TenantWorker
 
                 services.AddApplicationInsightsTelemetry(options);
             }
-            
+
             services
                 .AddCorrelationIdFluent()
 
@@ -121,6 +116,13 @@ namespace YA.TenantWorker
                 .AddSingleton<IActionContextAccessor, ActionContextAccessor>()
 
                 .AddCustomApiVersioning();
+
+            services.AddSingleton<IConfigurationManager<OpenIdConnectConfiguration>>(provider =>
+                new ConfigurationManager<OpenIdConnectConfiguration>(
+                    secrets.OidcProviderIssuer + "/.well-known/oauth-authorization-server",
+                    new OpenIdConnectConfigurationRetriever(),
+                    new HttpDocumentRetriever { RequireHttps = true })
+            );
 
             services.AddAuthenticationCore(o =>
             {
@@ -157,9 +159,6 @@ namespace YA.TenantWorker
                     //// we don't need query tracking if dbcontext is disposed on every request
                     //.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking));
 
-            services.AddScoped<TestRequestConsumer>();
-            services.AddScoped<GetPricingTierConsumer>();
-
             services.AddMassTransit(options =>
             {
                 options.UsingRabbitMq((context, cfg) =>
@@ -171,7 +170,6 @@ namespace YA.TenantWorker
                     });
 
                     cfg.UseSerilogMessagePropertiesEnricher();
-
                     cfg.UsePrometheusMetrics();
 
                     cfg.ReceiveEndpoint(MbQueueNames.PrivateServiceQueueName, e =>
@@ -291,6 +289,7 @@ namespace YA.TenantWorker
                     }).RequireCors(CorsPolicyName.AllowAny);
                 })
                 .UseMetricServer()
+                .UseHttpMetrics()
                 .UseHealthChecksPrometheusExporter("/metrics")
 
                 .UseSwagger()

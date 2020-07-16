@@ -13,7 +13,6 @@ using YA.TenantWorker.Application.Models.ViewModels;
 using YA.TenantWorker.Constants;
 using Microsoft.AspNetCore.Authorization;
 using YA.TenantWorker.Application.Models.Dto;
-using Microsoft.AspNetCore.Cors;
 using Delobytes.AspNetCore.Filters;
 
 namespace YA.TenantWorker.Controllers
@@ -154,26 +153,26 @@ namespace YA.TenantWorker.Controllers
         }
 
         /// <summary>
-        /// Create a new tenant.
+        /// Создать арендатора для нового неизвестного пользователя.
         /// </summary>
-        /// <param name="command">Action command.</param>
-        /// <param name="tenantSm">Tenant to create.</param>
-        /// <param name="cancellationToken">Cancellation token used to cancel the HTTP request.</param>
-        /// <returns>201 Created response containing newly created tenant,
-        /// 400 Bad Request if the request is invalid
-        /// or 409 Conflict if the request is a duplicate.</returns>
+        /// <param name="command">Команда.</param>
+        /// <param name="cancellationToken">Токен отмены.</param>
+        /// <returns>Ответ 200 ОК содержащий ИД арендатора,
+        /// 400 Недопустимый Запрос если запрос неправильно оформлен,
+        /// 409 Конфликт если запрос является дубликатом
+        /// или 422 Неперевариваемая Сущность если такой арендатор уже существует.</returns>
         [HttpPost("", Name = RouteNames.PostTenant)]
-        [SwaggerResponse(StatusCodes.Status201Created, "Tenant was created.", typeof(TenantVm))]
-        [SwaggerResponse(StatusCodes.Status400BadRequest, "Request is invalid.", typeof(ProblemDetails))]
-        [SwaggerResponse(StatusCodes.Status406NotAcceptable, "The MIME type in the Accept HTTP header is not acceptable.", typeof(ProblemDetails))]
-        [SwaggerResponse(StatusCodes.Status409Conflict, "Duplicate request.", typeof(ApiProblemDetails))]        
-        [SwaggerResponse(StatusCodes.Status415UnsupportedMediaType, "The MIME type in the Content-Type HTTP header is unsupported.", typeof(ProblemDetails))]
+        [SwaggerResponse(StatusCodes.Status201Created, "Модель созданного арендатора.", typeof(TenantVm))]
+        [SwaggerResponse(StatusCodes.Status400BadRequest, "Недопустимый запрос.", typeof(ProblemDetails))]
+        [SwaggerResponse(StatusCodes.Status406NotAcceptable, "Недопустимый тип MIME в заголовке Accept.", typeof(ProblemDetails))]
+        [SwaggerResponse(StatusCodes.Status409Conflict, "Запрос-дубликат.", typeof(ApiProblemDetails))]        
+        [SwaggerResponse(StatusCodes.Status415UnsupportedMediaType, "Тип MIME в заголовке Content-Type не поддерживается.", typeof(ProblemDetails))]
+        [SwaggerResponse(StatusCodes.Status422UnprocessableEntity, "Арендатор не может быть создан, поскольку уже существует.", typeof(ProblemDetails))]
         public Task<IActionResult> PostTenantAsync(
             [FromServices] IPostTenantCommand command,
-            [FromBody] TenantSm tenantSm,
             CancellationToken cancellationToken)
         {
-            return command.ExecuteAsync(tenantSm, cancellationToken);
+            return command.ExecuteAsync(cancellationToken);
         }
 
         /// <summary>
