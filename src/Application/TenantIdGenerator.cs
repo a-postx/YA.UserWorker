@@ -5,7 +5,7 @@ using System.Text;
 
 namespace YA.TenantWorker.Application
 {
-    public static class IdGenerator
+    public static class TenantIdGenerator
     {
         public static Guid Create(string userId)
         {

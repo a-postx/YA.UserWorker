@@ -102,7 +102,7 @@ namespace YA.TenantWorker.Infrastructure.Authentication
 
                     ClaimsIdentity userIdentity = new ClaimsIdentity("Bearer", CustomClaimNames.name, CustomClaimNames.role);
 
-                    Guid tenantId = IdGenerator.Create(userId);
+                    Guid tenantId = TenantIdGenerator.Create(userId);
                     ////Guid tenantId = Guid.Parse("00000000-0000-0000-0000-000000000001");
 
                     userIdentity.AddClaim(new Claim(CustomClaimNames.uid, userId));
@@ -157,7 +157,7 @@ namespace YA.TenantWorker.Infrastructure.Authentication
             return Task.CompletedTask;
         }
 
-        private async Task<JwtSecurityToken> ValidateTokenAsync(string token, CancellationToken ct = default)
+        private async Task<JwtSecurityToken> ValidateTokenAsync(string token, CancellationToken cancellationToken)
         {
             string issuer = _config.Get<AppSecrets>().OidcProviderIssuer;
             if (string.IsNullOrEmpty(issuer))
@@ -165,9 +165,8 @@ namespace YA.TenantWorker.Infrastructure.Authentication
                 throw new ApplicationException("Issuer is empty.");
             }
 
-            //значения должны быть кешированы большую часть времени (3мс),
-            //поэтому проблемы производительности быть не должно
-            OpenIdConnectConfiguration discoveryDocument = await _configManager.GetConfigurationAsync(ct);
+            //значение кешировано большую часть времени (3мс), поэтому проблемы производительности быть не должно
+            OpenIdConnectConfiguration discoveryDocument = await _configManager.GetConfigurationAsync(cancellationToken);
             System.Collections.Generic.ICollection<SecurityKey> signingKeys = discoveryDocument.SigningKeys;
 
             TokenValidationParameters validationParameters = new TokenValidationParameters

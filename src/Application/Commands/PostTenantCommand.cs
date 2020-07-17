@@ -10,7 +10,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using YA.TenantWorker.Application.Interfaces;
 using YA.TenantWorker.Application.Models.Dto;
-using YA.TenantWorker.Application.Models.SaveModels;
 using YA.TenantWorker.Application.Models.ViewModels;
 using YA.TenantWorker.Constants;
 using YA.TenantWorker.Core.Entities;
@@ -46,14 +45,14 @@ namespace YA.TenantWorker.Application.Commands
         {
             ClaimsPrincipal user = _actionContextAccessor.ActionContext.HttpContext.User;
 
-            string userId = user.Claims.FirstOrDefault(claim => claim.Type == CustomClaimNames.sub)?.Value;
+            string userId = user.Claims.FirstOrDefault(claim => claim.Type == CustomClaimNames.uid)?.Value;
             string userEmail = user.Claims.FirstOrDefault(claim => claim.Type == CustomClaimNames.email)?.Value;
             string emailVerified = user.Claims.FirstOrDefault(claim => claim.Type == CustomClaimNames.email_verified)?.Value;
 
             bool gotEmailVerification = bool.TryParse(emailVerified, out bool verificationResult);
             bool isActive = gotEmailVerification ? verificationResult : false;
 
-            if (string.IsNullOrEmpty(userId) && string.IsNullOrEmpty(userEmail))
+            if (string.IsNullOrEmpty(userId) || string.IsNullOrEmpty(userEmail))
             {
                 return new BadRequestResult();
             }
@@ -65,9 +64,7 @@ namespace YA.TenantWorker.Application.Commands
                 return new UnprocessableEntityResult();
             }
 
-            Guid tenantId = IdGenerator.Create(userId);
-
-            //TenantSm tenantSm = new TenantSm { TenantId = tenantId, TenantName = userEmail, IsActive = isActive };
+            Guid tenantId = TenantIdGenerator.Create(userId);
 
             Tenant tenant = new Tenant
             {
