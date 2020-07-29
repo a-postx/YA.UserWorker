@@ -9,7 +9,7 @@ using YA.TenantWorker.Constants;
 namespace YA.TenantWorker.Infrastructure.Logging.Requests
 {
     /// <summary>
-    /// Network context logging middleware. 
+    /// Прослойка логирования сетевого контекста. 
     /// </summary>
     public class NetworkContextLogger
     {

@@ -90,7 +90,7 @@ namespace YA.TenantWorker
                 jsonSystemInputFormatterMediaTypes.Remove("text/json");
                 jsonSystemOutputFormatterMediaTypes.Remove("text/json");
 
-                // Add Problem Details media type (application/problem+json) to the JSON input and output formatters.
+                // Add Problem Details media type (application/problem+json) to the JSON output formatters.
                 // See https://tools.ietf.org/html/rfc7807
                 jsonSystemOutputFormatterMediaTypes.Insert(0, ContentType.ProblemJson);
                 ////xmlOutputFormatterMediaTypes.Insert(0, ContentType.ProblemXml);

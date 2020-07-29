@@ -136,23 +136,27 @@ namespace YA.TenantWorker.Infrastructure.Authentication
         public Task ChallengeAsync(AuthenticationProperties properties)
         {
             HttpContext context = _httpContextAccessor.HttpContext;
-
+            
             AppSecrets secrets = _config.Get<AppSecrets>();
 
             if (context.Request.Host.Host == secrets.ApiGatewayHost && context.Request.Host.Port == secrets.ApiGatewayPort)
             {
+                _log.LogInformation("Challenge: redirected.");
                 context.Response.Redirect(General.LoginRedirectPath);
                 return Task.CompletedTask;
             }
             else
             {
-                return ForbidAsync(properties);
+                _log.LogInformation("Challenge: unauthorized.");
+                context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                return Task.CompletedTask;
             }
         }
 
         public Task ForbidAsync(AuthenticationProperties properties)
         {
             HttpContext context = _httpContextAccessor.HttpContext;
+            _log.LogInformation("Forbid: forbidden.");
             context.Response.StatusCode = StatusCodes.Status403Forbidden;
             return Task.CompletedTask;
         }

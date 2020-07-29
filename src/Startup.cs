@@ -95,6 +95,8 @@ namespace YA.TenantWorker
             }
 
             services
+                //поддерживается при работе по HTTP/2 через SSL, отображается в Фаерфоксе (нужна поддержка АПИ-шлюзом)
+                .AddServerTiming()
                 .AddCorrelationIdFluent()
 
                 ////.AddHttpsRedirection(options =>
@@ -117,6 +119,7 @@ namespace YA.TenantWorker
 
                 .AddCustomApiVersioning();
 
+            //забираем регулярно ротируемые ключи шифрования токенов с сервера провайдера
             services.AddSingleton<IConfigurationManager<OpenIdConnectConfiguration>>(provider =>
                 new ConfigurationManager<OpenIdConnectConfiguration>(
                     secrets.OidcProviderIssuer + "/.well-known/oauth-authorization-server",
@@ -126,8 +129,8 @@ namespace YA.TenantWorker
 
             services.AddAuthenticationCore(o =>
             {
-                o.DefaultScheme = "YaHeaderClaimsScheme";
-                o.AddScheme<YaAuthenticationHandler>("YaHeaderClaimsScheme", "Authentication scheme that use claims extracted from JWT token.");
+                o.DefaultScheme = "YaScheme";
+                o.AddScheme<YaAuthenticationHandler>("YaScheme", "Authentication scheme that use claims extracted from JWT token.");
             });
 
             services
@@ -137,7 +140,7 @@ namespace YA.TenantWorker
                     .AddCustomMvcOptions(_config);
 
             services
-                .AddAuthorizationCore(options => options.AddPolicy("MustBeAdministrator", policy => policy.RequireClaim(CustomClaimNames.role, "Administrator")));
+                .AddAuthorizationCore(options => options.AddPolicy("MustBeAdministrator", policy => { policy.RequireClaim(CustomClaimNames.role, "Administrator"); }));
 
             services.AddAutoMapper(typeof(Startup));
 
@@ -229,6 +232,7 @@ namespace YA.TenantWorker
             AppSecrets secrets = _config.Get<AppSecrets>();
 
             application
+                .UseServerTiming()
                 .UseCorrelationId()
                 ////.UseHttpsRedirection()
                 

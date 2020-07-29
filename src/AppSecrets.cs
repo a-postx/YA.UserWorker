@@ -16,6 +16,7 @@ namespace YA.TenantWorker
         [Obsolete("Jwt signing key is retrieved from OIDC provider")]
         public string JwtSigningKey { get; set; }
         public string OidcProviderIssuer { get; set; }
+        public string SwaggerAuthenticationSchemeName { get; set; }
         public string OauthImplicitAuthorizationUrl { get; set; }
         public string OauthImplicitTokenUrl { get; set; }
         public string OauthImplicitClientId { get; set; }

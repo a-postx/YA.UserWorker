@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 
@@ -6,6 +7,7 @@ namespace YA.TenantWorker.Controllers
 {
     [Route("/")]
     [ApiController]
+    [AllowAnonymous]
     public class HomeController : ControllerBase
     {
         /// <summary>
@@ -14,7 +16,7 @@ namespace YA.TenantWorker.Controllers
         /// <returns>200 OK response.
         /// </returns>
         [HttpGet("")]
-        [SwaggerResponse(StatusCodes.Status200OK, "Empty 200 response.")]
+        [SwaggerResponse(StatusCodes.Status200OK, "Пустой ответ 200.")]
         public IActionResult Get()
         {
             return Ok();

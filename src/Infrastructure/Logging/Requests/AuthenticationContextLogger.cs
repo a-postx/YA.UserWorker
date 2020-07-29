@@ -9,7 +9,7 @@ using YA.TenantWorker.Constants;
 namespace YA.TenantWorker.Infrastructure.Logging.Requests
 {
     /// <summary>
-    /// Authentication context logging middleware. 
+    /// Прослойка логирования контекста аутентификации. 
     /// </summary>
     public class AuthenticationContextLogger
     {
@@ -26,9 +26,9 @@ namespace YA.TenantWorker.Infrastructure.Logging.Requests
             
             if (context.User.Identity.IsAuthenticated)
             {
-                using (logger.BeginScopeWith((Logs.TenantId, context.User.GetClaimValue<Guid>(CustomClaimNames.tid))))
-                using (logger.BeginScopeWith((Logs.UserId, context.User.GetClaimValue<string>(CustomClaimNames.uid))))
-                using (logger.BeginScopeWith((Logs.Username, context.User.GetClaimValue<string>(CustomClaimNames.username))))
+                using (logger.BeginScopeWith((Logs.TenantId, context.User.GetClaimValue<Guid>(CustomClaimNames.tid)),
+                    (Logs.Username, context.User.GetClaimValue<string>(CustomClaimNames.username)),
+                    (Logs.UserId, context.User.GetClaimValue<string>(CustomClaimNames.uid))))
                 {
                     await _next(context);
                 }

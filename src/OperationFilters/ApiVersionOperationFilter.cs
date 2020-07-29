@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.OpenApi.Any;
@@ -8,10 +8,10 @@ using Swashbuckle.AspNetCore.SwaggerGen;
 namespace YA.TenantWorker.OperationFilters
 {
     /// <summary>
-    /// An Open API operation filter used to document the implicit API version parameter.
+    /// Добавляет фильтр для документирования параметра предполагаемой версии АПИ.
     /// </summary>
-    /// <remarks>This <see cref="IOperationFilter"/> is only required due to bugs in the <see cref="SwaggerGenerator"/>.
-    /// Once they are fixed and published, this class can be removed. See:
+    /// <remarks>Фильтр <see cref="IOperationFilter"/> требуется только из-за багов в <see cref="SwaggerGenerator"/>.
+    /// Когда починят и опубликуют, фильтр можно будет убрать. См:
     /// - https://github.com/domaindrivendev/Swashbuckle.AspNetCore/issues/412
     /// - https://github.com/domaindrivendev/Swashbuckle.AspNetCore/pull/413</remarks>
     public class ApiVersionOperationFilter : IOperationFilter

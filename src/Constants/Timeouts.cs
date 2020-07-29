@@ -2,6 +2,6 @@
 {
     public static class Timeouts
     {
-        public const int ApiRequestFiterMs = 120000;
+        public const int ApiRequestFilterMs = 60000;
     }
 }

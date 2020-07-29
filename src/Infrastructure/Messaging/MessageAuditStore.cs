@@ -4,11 +4,15 @@ using MassTransit.Audit;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using YA.Common;
 using YA.TenantWorker.Application.Enums;
 using YA.TenantWorker.Constants;
 
 namespace YA.TenantWorker.Infrastructure.Messaging
 {
+    /// <summary>
+    /// Хранилище данных аудита сообщений шины данных, использующее простое логирование
+    /// </summary>
     public class MessageAuditStore : IMessageAuditStore
     {
         public MessageAuditStore(ILogger<MessageAuditStore> logger)
@@ -28,11 +32,19 @@ namespace YA.TenantWorker.Infrastructure.Messaging
                 savedMessage = savedMessage.Substring(0, General.MaxLogFieldLength);
             }
 
-            //CorrelationID being overwritten if exist
-            _log.LogInformation("{LogType}{MessageBusContextType}{MessageBusDestinationAddress}{MessageBusSourceAddress}{CorrelationId}{MessageBusConversationId}{MessageBusMessage}",
-                LogTypes.MessageBusMessage.ToString(), metadata.ContextType, metadata.DestinationAddress, metadata.SourceAddress,
-                metadata.CorrelationId, metadata.ConversationId, savedMessage);
-            
+            //оценка целесообразности: корреляционный идентификатор переписывается, если уже существует
+            using (_log.BeginScopeWith((Logs.LogType, LogTypes.MessageBusMessage.ToString()),
+                (Logs.MessageBusContextType, metadata.ContextType),
+                (Logs.MessageBusSourceAddress, metadata.SourceAddress),
+                (Logs.MessageBusDestinationAddress, metadata.DestinationAddress),
+                (Logs.MessageBusMessageId, metadata.MessageId),
+                (Logs.CorrelationId, metadata.CorrelationId),
+                (Logs.MessageBusConversationId, metadata.ConversationId),
+                (Logs.MessageBusMessage, savedMessage)))
+            {
+                _log.LogInformation("{MessageBusContextType} message bus message {MessageBusMessageId}", metadata.ContextType, metadata.MessageId);
+            }
+
             return Task.CompletedTask;
         }
     }

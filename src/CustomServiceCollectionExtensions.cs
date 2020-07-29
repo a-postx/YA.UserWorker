@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO.Compression;
 using System.Linq;
@@ -194,66 +194,39 @@ namespace YA.TenantWorker
         public static IServiceCollection AddCustomSwagger(this IServiceCollection services, AppSecrets secrets)
         {
             return services.AddSwaggerGen(options =>
-                {
-                    Assembly assembly = typeof(Startup).Assembly;
-                    string assemblyProduct = assembly.GetCustomAttribute<AssemblyProductAttribute>().Product;
-                    string assemblyDescription = assembly.GetCustomAttribute<AssemblyDescriptionAttribute>().Description;
+            {
+                Assembly assembly = typeof(Startup).Assembly;
+                string assemblyProduct = assembly.GetCustomAttribute<AssemblyProductAttribute>().Product;
+                string assemblyDescription = assembly.GetCustomAttribute<AssemblyDescriptionAttribute>().Description;
 
-                    options.DescribeAllParametersInCamelCase();
-                    options.EnableAnnotations();
+                options.DescribeAllParametersInCamelCase();
+                options.EnableAnnotations();
 
-                    // Add the XML comment file for this assembly, so its contents can be displayed.
-                    options.IncludeXmlCommentsIfExists(assembly);
+                // Add the XML comment file for this assembly, so its contents can be displayed.
+                options.IncludeXmlCommentsIfExists(assembly);
 
-                    options.OperationFilter<ApiVersionOperationFilter>();
-                    options.OperationFilter<CorrelationIdOperationFilter>();
-                    options.OperationFilter<ContentTypeOperationFilter>();
-                    options.OperationFilter<ClaimsOperationFilter>();
-                    options.OperationFilter<ForbiddenResponseOperationFilter>();
-                    options.OperationFilter<UnauthorizedResponseOperationFilter>();
+                options.OperationFilter<ApiVersionOperationFilter>();
+                options.OperationFilter<CorrelationIdOperationFilter>(General.CorrelationIdHeader);
+                options.OperationFilter<ContentTypeOperationFilter>(true);
+                options.OperationFilter<ClaimsOperationFilter>(secrets.SwaggerAuthenticationSchemeName);
+                options.OperationFilter<SecurityRequirementsOperationFilter>(true, secrets.SwaggerAuthenticationSchemeName);
 
-                    options.OperationFilter<AuthorizeCheckOperationFilter>();
-
-                    // Show an example model for JsonPatchDocument<T>.
-                    options.SchemaFilter<JsonPatchDocumentSchemaFilter>();
-
-                    IApiVersionDescriptionProvider provider = services.BuildServiceProvider().GetRequiredService<IApiVersionDescriptionProvider>();
-
-                    foreach (ApiVersionDescription apiVersionDescription in provider.ApiVersionDescriptions)
-                    {
-                        OpenApiInfo info = new OpenApiInfo()
-                        {
-                            Title = assemblyProduct,
-                            Description = apiVersionDescription.IsDeprecated
-                                ? $"{assemblyDescription} This API version has been deprecated."
-                                : assemblyDescription,
-                            Version = apiVersionDescription.ApiVersion.ToString(),
-                        };
-                        options.SwaggerDoc(apiVersionDescription.GroupName, info);
-                    }
-
-                    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
-                    {
-                        In = ParameterLocation.Header,
-                        Description = "JWT Authorization header using the Bearer scheme. Example: \"Authorization: Bearer {token}\"",
-                        Name = "Authorization",
-                        Type = SecuritySchemeType.ApiKey
-                    });
-
-                    options.AddSecurityRequirement(new OpenApiSecurityRequirement {
+                options.AddSecurityRequirement(new OpenApiSecurityRequirement {
                         {
                             new OpenApiSecurityScheme
                             {
                                 Reference = new OpenApiReference
                                 {
                                     Type = ReferenceType.SecurityScheme,
-                                    Id = "Bearer"
+                                    Id = secrets.SwaggerAuthenticationSchemeName
                                 }
                             },
                             Array.Empty<string>()
                         }
                     });
 
+                if (secrets.SwaggerAuthenticationSchemeName == "oauth2")
+                {
                     options.AddSecurityDefinition("oauth2", new OpenApiSecurityScheme
                     {
                         Type = SecuritySchemeType.OAuth2,
@@ -267,7 +240,39 @@ namespace YA.TenantWorker
                             }
                         }
                     });
-                });
+                }
+
+                if (secrets.SwaggerAuthenticationSchemeName == "Bearer")
+                {
+                    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+                    {
+                        In = ParameterLocation.Header,
+                        Description = "Заголовок JWT \"Authorization\" используя схему Bearer. Пример: \"Bearer {token}\"",
+                        Name = "Authorization",
+                        Type = SecuritySchemeType.ApiKey,
+                        Scheme = "bearer",
+                        BearerFormat = "JWT"
+                    });
+                }
+
+                // Show an example model for JsonPatchDocument<T>.
+                options.SchemaFilter<JsonPatchDocumentSchemaFilter>();
+
+                IApiVersionDescriptionProvider provider = services.BuildServiceProvider().GetRequiredService<IApiVersionDescriptionProvider>();
+
+                foreach (ApiVersionDescription apiVersionDescription in provider.ApiVersionDescriptions)
+                {
+                    OpenApiInfo info = new OpenApiInfo()
+                    {
+                        Title = assemblyProduct,
+                        Description = apiVersionDescription.IsDeprecated
+                            ? $"{assemblyDescription} This API version has been deprecated."
+                            : assemblyDescription,
+                        Version = apiVersionDescription.ApiVersion.ToString(),
+                    };
+                    options.SwaggerDoc(apiVersionDescription.GroupName, info);
+                }
+            });
         }
     }
 }

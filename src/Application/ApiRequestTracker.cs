@@ -11,8 +11,8 @@ using YA.TenantWorker.Core.Entities;
 namespace YA.TenantWorker.Application
 {
     /// <summary>
-    /// Track API request state.
-    /// TODO: change store to a high write throughput one (Redis, Mongo etc.) or leave just in-memory caching
+    /// Отслеживает АПИ-запросы. На машине разработчика даёт +50мс к запросу, поэтому нужно подумать о смене хранилища
+    /// на что-то с хорошей скоростью записи (Редис, Монго и т.п.) или оставить кеширование в памяти
     /// </summary>
     public class ApiRequestTracker : IApiRequestTracker
     {
