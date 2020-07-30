@@ -89,7 +89,28 @@ namespace YA.TenantWorker.Application.ActionFilters
                         switch (context.Result)
                         {
                             case ObjectResult objectRequestResult when objectRequestResult.Value is ApiProblemDetails apiError:
+                                ////if (apiError.Code == ApiErrorCodes.DUPLICATE_API_CALL)
+                                ////{
+                                ////    if (request.ResponseBody != null)
+                                ////    {
+                                ////        try
+                                ////        {
+                                ////            JToken token = JToken.Parse(request.ResponseBody);
+                                ////            JObject json = JObject.Parse((string)token);
 
+                                ////            ObjectResult previousResult = new ObjectResult(json)
+                                ////            {
+                                ////                StatusCode = request.ResponseStatusCode
+                                ////            };
+
+                                ////            context.Result = previousResult;
+                                ////        }
+                                ////        catch (JsonReaderException)
+                                ////        {
+                                ////            //ignore object parsing exception as we return ApiError object in this case
+                                ////        }
+                                ////    }
+                                ////}
                                 break;
                             case ObjectResult objectRequestResult:
                                 {

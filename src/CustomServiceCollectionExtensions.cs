@@ -19,7 +19,6 @@ using Delobytes.AspNetCore.Swagger.SchemaFilters;
 using YA.TenantWorker.Health;
 using YA.TenantWorker.OperationFilters;
 using YA.TenantWorker.Options;
-using Swashbuckle.AspNetCore.Swagger;
 using YA.TenantWorker.Constants;
 using YA.TenantWorker.Health.Services;
 using YA.TenantWorker.Health.System;

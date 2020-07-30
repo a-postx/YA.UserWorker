@@ -36,6 +36,9 @@ using Prometheus;
 using MassTransit.PrometheusIntegration;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.IdentityModel.Protocols;
+using FluentValidation.AspNetCore;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.DataProtection.Repositories;
 //using Elastic.Apm.NetCoreAll;
 
 namespace YA.TenantWorker
@@ -95,8 +98,6 @@ namespace YA.TenantWorker
             }
 
             services
-                //поддерживается при работе по HTTP/2 через SSL, отображается в Фаерфоксе (нужна поддержка АПИ-шлюзом)
-                .AddServerTiming()
                 .AddCorrelationIdFluent()
 
                 ////.AddHttpsRedirection(options =>
@@ -135,12 +136,34 @@ namespace YA.TenantWorker
 
             services
                 .AddControllers()
+                    .AddFluentValidation(fv =>
+                    {
+                        fv.RegisterValidatorsFromAssemblyContaining<Startup>();
+                        //fv.RunDefaultMvcValidationAfterFluentValidationExecutes = false;
+                        fv.ImplicitlyValidateChildProperties = false;
+                    })
+                    
                     .AddCustomJsonOptions(_webHostEnvironment)
                     ////.AddXmlDataContractSerializerFormatters()
-                    .AddCustomMvcOptions(_config);
+                    .AddCustomMvcOptions(_config)
+                    //не работает
+                    ////.ConfigureApiBehaviorOptions(options =>
+                    ////{
+                    ////    options.InvalidModelStateResponseFactory = context =>
+                    ////    {
+                    ////        var problemDetails = new ValidationProblemDetails(context.ModelState)
+                    ////        {
+                    ////            Instance = context.HttpContext.Request.Path,
+                    ////            Status = StatusCodes.Status400BadRequest,
+                    ////            Detail = "Please refer to the errors property for additional details."
+                    ////        };
+                    ////        return new BadRequestObjectResult(problemDetails)
+                    ////        ;
+                    ////    };
+                    ////});
 
             services
-                .AddAuthorizationCore(options => options.AddPolicy("MustBeAdministrator", policy => { policy.RequireClaim(CustomClaimNames.role, "Administrator"); }));
+                .AddAuthorizationCore(options => options.AddPolicy("MustBeAdministrator", policy => policy.RequireClaim(CustomClaimNames.role, "Administrator")));
 
             services.AddAutoMapper(typeof(Startup));
 
@@ -158,9 +181,6 @@ namespace YA.TenantWorker
                         sqlOptions.EnableRetryOnFailure().CommandTimeout(General.SqlCommandTimeout))
                     .ConfigureWarnings(x => x.Throw(RelationalEventId.QueryPossibleExceptionWithAggregateOperatorWarning))
                     .EnableSensitiveDataLogging(_webHostEnvironment.IsDevelopment()));
-                    //// useful for API-related projects that only read data
-                    //// we don't need query tracking if dbcontext is disposed on every request
-                    //.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking));
 
             services.AddMassTransit(options =>
             {
@@ -232,7 +252,6 @@ namespace YA.TenantWorker
             AppSecrets secrets = _config.Get<AppSecrets>();
 
             application
-                .UseServerTiming()
                 .UseCorrelationId()
                 ////.UseHttpsRedirection()
                 
