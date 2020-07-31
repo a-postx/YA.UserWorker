@@ -21,18 +21,18 @@ namespace YA.TenantWorker.Application.ActionFilters
     {
         public ApiRequestFilter(IApiRequestTracker apiRequestTracker, IRuntimeContextAccessor runtimeContextAccessor)
         {
-            _runtimeContext = runtimeContextAccessor ?? throw new ArgumentNullException(nameof(runtimeContextAccessor));
+            _runtimeCtx = runtimeContextAccessor ?? throw new ArgumentNullException(nameof(runtimeContextAccessor));
             _apiRequestTracker = apiRequestTracker ?? throw new ArgumentNullException(nameof(apiRequestTracker));
         }
 
-        private readonly IRuntimeContextAccessor _runtimeContext;
+        private readonly IRuntimeContextAccessor _runtimeCtx;
         private readonly IApiRequestTracker _apiRequestTracker;
 
         public override async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
         {
             string method = context.HttpContext.Request.Method;
 
-            Guid correlationId = _runtimeContext.GetCorrelationId();
+            Guid correlationId = _runtimeCtx.GetCorrelationId();
 
             if (correlationId != Guid.Empty)
             {
@@ -42,9 +42,16 @@ namespace YA.TenantWorker.Application.ActionFilters
 
                     if (!requestCreated)
                     {
-                        ApiProblemDetails apiError = new ApiProblemDetails("https://tools.ietf.org/html/rfc7231#section-6.5.8", StatusCodes.Status409Conflict,
-                                context.HttpContext.Request.HttpContext.Request.Path.Value, "Запрос уже существует.", null, request.ApiRequestID.ToString(),
-                                context.HttpContext.Request.HttpContext.TraceIdentifier);
+                        ProblemDetails apiError = new ProblemDetails
+                        {
+                            Type = "https://tools.ietf.org/html/rfc7231#section-6.5.8",
+                            Status = StatusCodes.Status409Conflict,
+                            Instance = context.HttpContext.Request.HttpContext.Request.Path.Value,
+                            Title = "Запрос уже существует.",
+                            Detail = null
+                        };
+                        apiError.Extensions.Add("correlationId", request.ApiRequestID.ToString());
+                        apiError.Extensions.Add("traceId", _runtimeCtx.GetTraceId().ToString());
 
                         context.Result = new ConflictObjectResult(apiError);
                         return;
@@ -57,14 +64,15 @@ namespace YA.TenantWorker.Application.ActionFilters
                 {
                     Instance = context.HttpContext.Request.Path,
                     Status = StatusCodes.Status400BadRequest,
-                    Detail = $"Запрос не содержит заголовка {General.CorrelationIdHeader} или значение в нём неверно."
+                    Title = $"Запрос не содержит заголовка {General.CorrelationIdHeader} или значение в нём неверно."
                 };
+                problemDetails.Extensions.Add("traceId", _runtimeCtx.GetTraceId().ToString());
 
                 context.Result = new BadRequestObjectResult(problemDetails);
                 return;
             }
 
-            if (_runtimeContext.GetTenantId() == Guid.Empty)
+            if (_runtimeCtx.GetTenantId() == Guid.Empty)
             {
                 context.Result = new UnauthorizedResult();
                 return;
@@ -76,7 +84,7 @@ namespace YA.TenantWorker.Application.ActionFilters
         public override async Task OnResultExecutionAsync(ResultExecutingContext context, ResultExecutionDelegate next)
         {
             string method = context.HttpContext.Request.Method;
-            Guid correlationId = _runtimeContext.GetCorrelationId();
+            Guid correlationId = _runtimeCtx.GetCorrelationId();
 
             if (correlationId != Guid.Empty)
             {
@@ -88,7 +96,7 @@ namespace YA.TenantWorker.Application.ActionFilters
                     {
                         switch (context.Result)
                         {
-                            case ObjectResult objectRequestResult when objectRequestResult.Value is ApiProblemDetails apiError:
+                            case ObjectResult objectRequestResult when objectRequestResult.Value is ProblemDetails apiError:
                                 ////if (apiError.Code == ApiErrorCodes.DUPLICATE_API_CALL)
                                 ////{
                                 ////    if (request.ResponseBody != null)

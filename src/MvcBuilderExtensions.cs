@@ -1,6 +1,7 @@
-using System.Collections.Generic;
-using Delobytes.AspNetCore;
+﻿using Delobytes.AspNetCore;
+using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Formatters;
@@ -8,13 +9,18 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Primitives;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.Unicode;
+using YA.TenantWorker.Application.Interfaces;
+using YA.TenantWorker.Constants;
 using YA.TenantWorker.Options;
 
 namespace YA.TenantWorker
@@ -187,6 +193,36 @@ namespace YA.TenantWorker
             return mvcOptions.OutputFormatters
                 .OfType<NewtonsoftJsonOutputFormatter>()
                 .Last();
+        }
+
+        public static IMvcBuilder AddCustomModelValidation(this IMvcBuilder builder)
+        {
+            return builder
+                .AddFluentValidation(fv =>
+                {
+                    fv.RegisterValidatorsFromAssemblyContaining<Startup>();
+                    fv.RunDefaultMvcValidationAfterFluentValidationExecutes = false;
+                    fv.ImplicitlyValidateChildProperties = true;
+                })
+                .ConfigureApiBehaviorOptions(options =>
+                {
+                    options.InvalidModelStateResponseFactory = context =>
+                    {
+                        IRuntimeContextAccessor runtimeCtx = context.HttpContext.RequestServices.GetRequiredService<IRuntimeContextAccessor>();
+
+                        ValidationProblemDetails problemDetails = new ValidationProblemDetails(context.ModelState)
+                        {
+                            Title = "Произошла ошибка валидации данных модели.",
+                            Status = StatusCodes.Status400BadRequest,
+                            Detail = "Обратитесь к свойству errors за дополнительной информацией.",
+                            Instance = context.HttpContext.Request.Path
+                        };
+                        problemDetails.Extensions.Add("traceId", runtimeCtx.GetTraceId());
+                        problemDetails.Extensions.Add("correlationId", runtimeCtx.GetCorrelationId());
+
+                        return new BadRequestObjectResult(problemDetails);
+                    };
+                });
         }
     }
 }

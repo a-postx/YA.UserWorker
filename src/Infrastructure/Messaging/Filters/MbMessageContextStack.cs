@@ -1,6 +1,5 @@
 ﻿using GreenPipes;
 using System;
-using YA.TenantWorker.Application.Runtime;
 
 namespace YA.TenantWorker.Infrastructure.Messaging.Filters
 {

@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Collections.Immutable;
-using System.Linq;
 using System.Threading;
 
-namespace YA.TenantWorker.Application.Runtime
+namespace YA.TenantWorker.Infrastructure.Messaging.Filters
 {
     /// <summary>
     /// Manages a Logical Call Context variable containing a stack of <typeparamref name="T"/> instances.

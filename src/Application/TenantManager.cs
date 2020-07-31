@@ -18,14 +18,14 @@ namespace YA.TenantWorker.Application
             IMessageBus messageBus)
         {
             _log = logger ?? throw new ArgumentNullException(nameof(logger));
-            _runtimeContext = runtimeContextAccessor ?? throw new ArgumentNullException(nameof(runtimeContextAccessor));
+            _runtimeCtx = runtimeContextAccessor ?? throw new ArgumentNullException(nameof(runtimeContextAccessor));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
             _dbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
             _messageBus = messageBus ?? throw new ArgumentNullException(nameof(messageBus));
         }
 
         private readonly ILogger<TenantManager> _log;
-        private readonly IRuntimeContextAccessor _runtimeContext;
+        private readonly IRuntimeContextAccessor _runtimeCtx;
         private readonly IMapper _mapper;
         private readonly ITenantWorkerDbContext _dbContext;
         private readonly IMessageBus _messageBus;

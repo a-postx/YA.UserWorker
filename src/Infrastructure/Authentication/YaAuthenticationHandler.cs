@@ -203,9 +203,14 @@ namespace YA.TenantWorker.Infrastructure.Authentication
 
                 return validatedToken;
             }
+            catch (SecurityTokenExpiredException)
+            {
+                _log.LogInformation("Security token expired.");
+                return null;
+            }
             catch (SecurityTokenValidationException ex)
             {
-                _log.LogWarning(ex, "Security JWT validation failed for token {Token}.", token);
+                _log.LogWarning(ex, "Security token validation failed for JWT {Token}.", token);
                 return null;
             }
         }

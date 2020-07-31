@@ -7,13 +7,13 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json;
 using Serilog;
 using Serilog.Context;
 using YA.TenantWorker.Application.Enums;
 using YA.TenantWorker.Application.Interfaces;
-using YA.TenantWorker.Application.Models.Dto;
 using YA.TenantWorker.Constants;
 
 namespace YA.TenantWorker.Infrastructure.Logging.Requests
@@ -30,7 +30,7 @@ namespace YA.TenantWorker.Infrastructure.Logging.Requests
 
         private readonly RequestDelegate _next;
 
-        public async Task InvokeAsync(HttpContext httpContext, IHostEnvironment env, IRuntimeContextAccessor runtimeContextAccessor)
+        public async Task InvokeAsync(HttpContext httpContext, IHostEnvironment env, IRuntimeContextAccessor runtimeCtx)
         {
             HttpContext context = httpContext ?? throw new ArgumentNullException(nameof(httpContext));
 
@@ -78,14 +78,16 @@ namespace YA.TenantWorker.Infrastructure.Logging.Requests
                         string errorMessage = ex.Message;
                         Log.Error(ex.Demystify(), "{ErrorMessage}", errorMessage);
 
-                        ApiProblemDetails unknownError = new ApiProblemDetails("https://tools.ietf.org/html/rfc7231#section-6.6.1",
-                            StatusCodes.Status500InternalServerError,
-                            context.Request.HttpContext.Request.Path,
-                            errorMessage,
-                            env.IsDevelopment() ? ex.Demystify().StackTrace : null,
-                            runtimeContextAccessor.GetCorrelationId().ToString(),
-                            context.Request.HttpContext.TraceIdentifier
-                        );
+                        ProblemDetails unknownError = new ProblemDetails
+                        {
+                            Type = "https://tools.ietf.org/html/rfc7231#section-6.6.1",
+                            Status = StatusCodes.Status500InternalServerError,
+                            Instance = context.Request.HttpContext.Request.Path,
+                            Title = errorMessage,
+                            Detail = env.IsDevelopment() ? ex.Demystify().StackTrace : null
+                        };
+                        unknownError.Extensions.Add("correlationId", runtimeCtx.GetCorrelationId().ToString());
+                        unknownError.Extensions.Add("traceId", runtimeCtx.GetTraceId().ToString());
 
                         string errorResponseBody = JsonConvert.SerializeObject(unknownError);
                         context.Response.ContentType = "application/problem+json";
@@ -108,8 +110,7 @@ namespace YA.TenantWorker.Infrastructure.Logging.Requests
 
                         if (Enumerable.Range(400, 599).Contains(context.Response.StatusCode) && responseBody.Contains("traceId", StringComparison.InvariantCultureIgnoreCase))
                         {
-                            ApiProblemDetails problem = JsonConvert.DeserializeObject<ApiProblemDetails>(responseBody);
-                            LogContext.PushProperty(Logs.TraceId, problem.TraceId);
+                            LogContext.PushProperty(Logs.TraceId, runtimeCtx.GetTraceId());
                         }
 
                         string endResponseBody = (responseBody.Length > General.MaxLogFieldLength) ?

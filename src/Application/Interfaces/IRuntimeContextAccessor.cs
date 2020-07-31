@@ -6,5 +6,6 @@ namespace YA.TenantWorker.Application.Interfaces
     {
         Guid GetCorrelationId();
         Guid GetTenantId();
+        string GetTraceId();
     }
 }

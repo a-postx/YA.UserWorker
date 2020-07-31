@@ -6,7 +6,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using YA.TenantWorker.Application.ActionFilters;
 using YA.TenantWorker.Application.Commands;
-using YA.TenantWorker.Application.Models.Dto;
 using YA.TenantWorker.Application.Models.SaveModels;
 using YA.TenantWorker.Application.Models.ViewModels;
 using YA.TenantWorker.Constants;
@@ -32,7 +31,7 @@ namespace YA.TenantWorker.Controllers
         [HttpPost("", Name = RouteNames.GetToken)]
         [SwaggerResponse(StatusCodes.Status200OK, "Token has been created.", typeof(TokenVm))]
         [SwaggerResponse(StatusCodes.Status400BadRequest, "Request is invalid.")]
-        [SwaggerResponse(StatusCodes.Status409Conflict, "Duplicate request.", typeof(ApiProblemDetails))]
+        [SwaggerResponse(StatusCodes.Status409Conflict, "Duplicate request.", typeof(ProblemDetails))]
         public Task<IActionResult> GetTokenAsync(
             [FromServices] IAuthenticateCommand command,
             [FromBody] CredentialsSm credentials,
