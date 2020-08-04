@@ -258,7 +258,10 @@ namespace YA.TenantWorker
                 ////.UseIf(_webHostEnvironment.IsDevelopment(),
                 ////    x => x.UseDeveloperErrorPages())
 
-                ////.UseHttpsRedirection()
+                .UseHealthChecksPrometheusExporter("/metrics")
+                .UseMetricServer()
+                .UseHttpMetrics()
+
                 .UseAuthentication()
                 .UseAuthenticationContextLogging()
                 .UseAuthorization()
@@ -286,9 +289,6 @@ namespace YA.TenantWorker
                         await context.Response.WriteAsync(Node.Id, Encoding.UTF8);
                     }).RequireCors(CorsPolicyNames.AllowAny);
                 })
-                .UseMetricServer()
-                .UseHttpMetrics()
-                .UseHealthChecksPrometheusExporter("/metrics")
 
                 .UseSwagger()
                 .UseCustomSwaggerUI(secrets);
