@@ -8,7 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using YA.TenantWorker.Application.Interfaces;
+using YA.Common.Constants;
 using YA.TenantWorker.Application.Models.ViewModels;
 using YA.TenantWorker.Constants;
 using YA.TenantWorker.Core.Entities;
@@ -68,7 +68,7 @@ namespace YA.TenantWorker.Application.Commands
             PaginatedResult<TenantVm> paginatedResult= new PaginatedResult<TenantVm>(_linkGenerator, pageOptions, hasNextPage,
                 hasPreviousPage, totalCount, startCursor, endCursor, _httpContextAccessor.HttpContext, RouteNames.GetTenantPage, itemVms);
 
-            _httpContextAccessor.HttpContext.Response.Headers.Add(CustomHeaderNames.Link, paginatedResult.PageInfo.ToLinkHttpHeaderValue());
+            _httpContextAccessor.HttpContext.Response.Headers.Add(YaHeaderKeys.Link, paginatedResult.PageInfo.ToLinkHttpHeaderValue());
 
             return new OkObjectResult(paginatedResult);
         }

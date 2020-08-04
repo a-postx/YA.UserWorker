@@ -9,18 +9,16 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
-using Microsoft.Extensions.Primitives;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using System.Collections.Generic;
-using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.Unicode;
 using YA.TenantWorker.Application.Interfaces;
-using YA.TenantWorker.Constants;
 using YA.TenantWorker.Options;
 
 namespace YA.TenantWorker
@@ -203,6 +201,8 @@ namespace YA.TenantWorker
                     fv.RegisterValidatorsFromAssemblyContaining<Startup>();
                     fv.RunDefaultMvcValidationAfterFluentValidationExecutes = false;
                     fv.ImplicitlyValidateChildProperties = true;
+                    fv.LocalizationEnabled = true;
+                    fv.ValidatorOptions.LanguageManager.Culture = new CultureInfo("ru");
                 })
                 .ConfigureApiBehaviorOptions(options =>
                 {

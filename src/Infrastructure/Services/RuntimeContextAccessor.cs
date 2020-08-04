@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Diagnostics;
+using YA.Common.Constants;
 using YA.TenantWorker.Application.Interfaces;
 using YA.TenantWorker.Constants;
 using YA.TenantWorker.Infrastructure.Messaging.Filters;
@@ -11,7 +12,7 @@ using YA.TenantWorker.Infrastructure.Messaging.Filters;
 namespace YA.TenantWorker.Infrastructure.Services
 {
     /// <summary>
-    /// Отслеживает состояние контекста исполнения
+    /// Предоставляет доступ к контексту исполнения
     /// </summary>
     public class RuntimeContextAccessor : IRuntimeContextAccessor
     {
@@ -87,7 +88,7 @@ namespace YA.TenantWorker.Infrastructure.Services
             //веб-запрос
             if (_httpCtx.HttpContext != null && mbMessageContext == null)
             {
-                Guid httpTenantId = _httpCtx.HttpContext.User.GetClaimValue<Guid>(CustomClaimNames.tid);
+                Guid httpTenantId = _httpCtx.HttpContext.User.GetClaimValue<Guid>(YaClaimNames.tid);
 
                 if (httpTenantId == Guid.Empty)
                 {

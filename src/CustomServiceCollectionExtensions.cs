@@ -1,30 +1,31 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO.Compression;
-using System.Linq;
-using System.Reflection;
+﻿using CorrelationId.DependencyInjection;
+using Delobytes.AspNetCore;
+using Delobytes.AspNetCore.Swagger;
+using Delobytes.AspNetCore.Swagger.OperationFilters;
+using Delobytes.AspNetCore.Swagger.SchemaFilters;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.AspNetCore.ResponseCompression;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Options;
-using Delobytes.AspNetCore;
-using Delobytes.AspNetCore.Swagger;
-using Delobytes.AspNetCore.Swagger.OperationFilters;
-using Delobytes.AspNetCore.Swagger.SchemaFilters;
-using YA.TenantWorker.Health;
-using YA.TenantWorker.OperationFilters;
-using YA.TenantWorker.Options;
+using Microsoft.OpenApi.Models;
+using System;
+using System.Collections.Generic;
+using System.IO.Compression;
+using System.Linq;
+using System.Reflection;
+using YA.Common.Constants;
 using YA.TenantWorker.Constants;
+using YA.TenantWorker.Health;
 using YA.TenantWorker.Health.Services;
 using YA.TenantWorker.Health.System;
-using Microsoft.OpenApi.Models;
-using Microsoft.AspNetCore.Server.Kestrel.Core;
-using CorrelationId.DependencyInjection;
+using YA.TenantWorker.OperationFilters;
+using YA.TenantWorker.Options;
 
 namespace YA.TenantWorker
 {
@@ -39,7 +40,7 @@ namespace YA.TenantWorker
             {
                 options.CorrelationIdGenerator = () => "";
                 options.AddToLoggingScope = true;
-                options.LoggingScopeKey = Logs.CorrelationId;
+                options.LoggingScopeKey = YaLogKeys.CorrelationId;
                 options.EnforceHeader = false;
                 options.IgnoreRequestHeader = false;
                 options.IncludeInResponse = false;
@@ -90,7 +91,7 @@ namespace YA.TenantWorker
                 // Create named CORS policies here which you can consume using application.UseCors("PolicyName")
                 // or a [EnableCors("PolicyName")] attribute on your controller or action.
                 options.AddPolicy(
-                    CorsPolicyName.AllowAny,
+                    CorsPolicyNames.AllowAny,
                     x => x
                         .AllowAnyOrigin()
                         .AllowAnyMethod()

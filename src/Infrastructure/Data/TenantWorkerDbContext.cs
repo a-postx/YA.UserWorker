@@ -1,18 +1,19 @@
-﻿using System;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
+using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Storage;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Storage;
-using YA.TenantWorker.Core.Entities;
-using YA.TenantWorker.Application.Interfaces;
-using Microsoft.EntityFrameworkCore.ChangeTracking;
 using YA.Common;
-using Microsoft.EntityFrameworkCore.Metadata;
-using System.Reflection;
+using YA.Common.Extensions;
+using YA.TenantWorker.Application.Interfaces;
+using YA.TenantWorker.Core.Entities;
 
 namespace YA.TenantWorker.Infrastructure.Data
 {

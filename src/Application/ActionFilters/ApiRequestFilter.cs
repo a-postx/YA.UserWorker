@@ -17,7 +17,7 @@ namespace YA.TenantWorker.Application.ActionFilters
     /// Фильтр идемпотентности: не допускает запросов без корелляционного идентификатора
     /// и сохраняет запрос и результат чтобы вернуть тот же ответ в случае запроса-дубликата.
     /// </summary>
-    public sealed class ApiRequestFilter : ActionFilterAttribute
+    public class ApiRequestFilter : ActionFilterAttribute
     {
         public ApiRequestFilter(IApiRequestTracker apiRequestTracker, IRuntimeContextAccessor runtimeContextAccessor)
         {

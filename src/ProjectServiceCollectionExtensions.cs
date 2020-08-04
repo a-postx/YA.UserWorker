@@ -28,7 +28,6 @@ namespace YA.TenantWorker
         public static IServiceCollection AddProjectCommands(this IServiceCollection services)
         {
             return services
-                .AddScoped<IAuthenticateCommand, AuthenticateCommand>()
                 .AddScoped<IGetTenantCommand, GetTenantCommand>()
                 .AddScoped<IGetTenantByIdCommand, GetTenantByIdCommand>()
                 .AddScoped<IGetTenantAllPageCommand, GetTenantAllPageCommand>()

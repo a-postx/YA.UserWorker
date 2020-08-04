@@ -7,7 +7,6 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -23,7 +22,6 @@ using YA.TenantWorker.Infrastructure.Messaging.Test;
 using YA.TenantWorker.Infrastructure.Authentication;
 using YA.TenantWorker.Infrastructure.Caching;
 using Microsoft.EntityFrameworkCore.Diagnostics;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.HttpOverrides;
 using Amazon.Extensions.NETCore.Setup;
 using Microsoft.ApplicationInsights.AspNetCore.Extensions;
@@ -36,9 +34,7 @@ using Prometheus;
 using MassTransit.PrometheusIntegration;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.IdentityModel.Protocols;
-using FluentValidation.AspNetCore;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.DataProtection.Repositories;
+using YA.Common.Constants;
 //using Elastic.Apm.NetCoreAll;
 
 namespace YA.TenantWorker
@@ -142,7 +138,7 @@ namespace YA.TenantWorker
                     .AddCustomModelValidation();
 
             services
-                .AddAuthorizationCore(options => options.AddPolicy("MustBeAdministrator", policy => policy.RequireClaim(CustomClaimNames.role, "Administrator")));
+                .AddAuthorizationCore(options => options.AddPolicy("MustBeAdministrator", policy => policy.RequireClaim(YaClaimNames.role, "Administrator")));
 
             services.AddAutoMapper(typeof(Startup));
 
@@ -251,7 +247,7 @@ namespace YA.TenantWorker
                 .UseHttpContextLogging()
 
                 .UseRouting()
-                .UseCors(CorsPolicyName.AllowAny)
+                .UseCors(CorsPolicyNames.AllowAny)
                 .UseStaticFilesWithCacheControl()
                 .UseRouteParamsLogging()
 
@@ -269,26 +265,26 @@ namespace YA.TenantWorker
 
                 .UseEndpoints(endpoints =>
                 {
-                    endpoints.MapControllers().RequireCors(CorsPolicyName.AllowAny);
+                    endpoints.MapControllers().RequireCors(CorsPolicyNames.AllowAny);
                     endpoints.MapHealthChecks("/status", new HealthCheckOptions()
                     {
                         ResponseWriter = HealthResponse.WriteResponseAsync
-                    }).RequireCors(CorsPolicyName.AllowAny);
+                    }).RequireCors(CorsPolicyNames.AllowAny);
                     endpoints.MapHealthChecks("/status/ready", new HealthCheckOptions()
                     {
                         Predicate = (check) => check.Tags.Contains("ready"),
                         ResponseWriter = HealthResponse.WriteResponseAsync
-                    }).RequireCors(CorsPolicyName.AllowAny);
+                    }).RequireCors(CorsPolicyNames.AllowAny);
                     endpoints.MapHealthChecks("/status/live", new HealthCheckOptions()
                     {
                         // Exclude all checks and return a 200-Ok.
                         Predicate = (_) => false,
                         ResponseWriter = HealthResponse.WriteResponseAsync
-                    }).RequireCors(CorsPolicyName.AllowAny);
+                    }).RequireCors(CorsPolicyNames.AllowAny);
                     endpoints.MapGet("/nodeid", async (context) =>
                     {
                         await context.Response.WriteAsync(Node.Id, Encoding.UTF8);
-                    }).RequireCors(CorsPolicyName.AllowAny);
+                    }).RequireCors(CorsPolicyNames.AllowAny);
                 })
                 .UseMetricServer()
                 .UseHttpMetrics()

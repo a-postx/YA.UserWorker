@@ -4,6 +4,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using YA.Common;
+using YA.Common.Extensions;
 using YA.TenantWorker.Application.Interfaces;
 using YA.TenantWorker.Constants;
 

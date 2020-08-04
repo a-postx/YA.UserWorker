@@ -25,7 +25,7 @@ namespace YA.TenantWorker.Controllers
     [Authorize]
     [NoCache]
     [ServiceFilter(typeof(ApiRequestFilter))]
-    [SwaggerResponse(StatusCodes.Status500InternalServerError, HttpCodeMessages.Code500ErrorMessage, typeof(ProblemDetails))]
+    [SwaggerResponse(StatusCodes.Status500InternalServerError, SwaggerResponseDescriptions.Code500, typeof(ProblemDetails))]
     public class TenantsController : ControllerBase
     {
         /// <summary>

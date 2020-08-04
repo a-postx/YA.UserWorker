@@ -3,7 +3,8 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 using System;
 using System.Threading.Tasks;
-using YA.Common;
+using YA.Common.Constants;
+using YA.Common.Extensions;
 using YA.TenantWorker.Constants;
 
 namespace YA.TenantWorker.Infrastructure.Logging.Requests
@@ -28,7 +29,7 @@ namespace YA.TenantWorker.Infrastructure.Logging.Requests
             {
                 string clientIp = forwardedValue.ToString().Split(':')[0];
 
-                using (logger.BeginScopeWith((Logs.ClientIP, !string.IsNullOrEmpty(clientIp) ? clientIp : "unknown")))
+                using (logger.BeginScopeWith((YaLogKeys.ClientIP, !string.IsNullOrEmpty(clientIp) ? clientIp : "unknown")))
                 {
                     await _next(context);
                 }
@@ -37,7 +38,7 @@ namespace YA.TenantWorker.Infrastructure.Logging.Requests
             {
                 string clientIp = httpContext.Connection.RemoteIpAddress.ToString();
 
-                using (logger.BeginScopeWith((Logs.ClientIP, !string.IsNullOrEmpty(clientIp) ? clientIp : "unknown")))
+                using (logger.BeginScopeWith((YaLogKeys.ClientIP, !string.IsNullOrEmpty(clientIp) ? clientIp : "unknown")))
                 {
                     await _next(context);
                 }

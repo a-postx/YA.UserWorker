@@ -3,10 +3,10 @@ using MbCommands;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Threading.Tasks;
-using YA.Common;
+using YA.Common.Constants;
+using YA.Common.Extensions;
 using YA.TenantWorker.Application.Interfaces;
 using YA.TenantWorker.Application.Models.Dto;
-using YA.TenantWorker.Constants;
 using YA.TenantWorker.Infrastructure.Messaging.Messages;
 
 namespace YA.TenantWorker.Infrastructure.Messaging.Consumers
@@ -40,7 +40,7 @@ namespace YA.TenantWorker.Infrastructure.Messaging.Consumers
                 //await _messageBus.PricingTierSentV1Async(_runtimeContext.GetCorrelationId(),
                 //    _runtimeCtx.GetTenantId(), pricingTierTm, context.CancellationToken);
             }
-            catch (Exception e) when (_log.LogException(e, (Logs.MbMessage, context.Message.ToJson())))
+            catch (Exception e) when (_log.LogException(e, (YaLogKeys.MbMessage, context.Message.ToJson())))
             {
                 throw;
             }

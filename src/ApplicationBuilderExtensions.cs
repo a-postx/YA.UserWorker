@@ -1,18 +1,18 @@
-using System;
-using System.Linq;
-using System.Reflection;
+using Delobytes.AspNetCore;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
-using Microsoft.Extensions.DependencyInjection;
-using Delobytes.AspNetCore;
-using YA.TenantWorker.Constants;
-using YA.TenantWorker.Options;
-using YA.TenantWorker.Infrastructure.Logging.Requests;
-using Serilog;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.DependencyInjection;
+using Serilog;
+using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+using YA.Common.Constants;
+using YA.TenantWorker.Infrastructure.Logging.Requests;
+using YA.TenantWorker.Options;
 
 namespace YA.TenantWorker
 {
@@ -35,7 +35,7 @@ namespace YA.TenantWorker
             CacheProfile cacheProfile = application
                 .ApplicationServices
                 .GetRequiredService<CacheProfileOptions>()
-                .Where(x => string.Equals(x.Key, CacheProfileName.StaticFiles, StringComparison.Ordinal))
+                .Where(x => string.Equals(x.Key, CacheProfileNames.StaticFiles, StringComparison.Ordinal))
                 .Select(x => x.Value)
                 .SingleOrDefault();
 

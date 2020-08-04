@@ -3,8 +3,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Threading.Tasks;
-using YA.Common;
-using YA.TenantWorker.Constants;
+using YA.Common.Constants;
+using YA.Common.Extensions;
 
 namespace YA.TenantWorker.Infrastructure.Logging.Requests
 {
@@ -26,9 +26,9 @@ namespace YA.TenantWorker.Infrastructure.Logging.Requests
             
             if (context.User.Identity.IsAuthenticated)
             {
-                using (logger.BeginScopeWith((Logs.TenantId, context.User.GetClaimValue<Guid>(CustomClaimNames.tid)),
-                    (Logs.Username, context.User.GetClaimValue<string>(CustomClaimNames.username)),
-                    (Logs.UserId, context.User.GetClaimValue<string>(CustomClaimNames.uid))))
+                using (logger.BeginScopeWith((YaLogKeys.TenantId, context.User.GetClaimValue<Guid>(YaClaimNames.tid)),
+                    (YaLogKeys.Username, context.User.GetClaimValue<string>(YaClaimNames.username)),
+                    (YaLogKeys.UserId, context.User.GetClaimValue<string>(YaClaimNames.uid))))
                 {
                     await _next(context);
                 }

@@ -4,7 +4,8 @@ using MassTransit.Audit;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using YA.Common;
+using YA.Common.Constants;
+using YA.Common.Extensions;
 using YA.TenantWorker.Application.Enums;
 using YA.TenantWorker.Constants;
 
@@ -33,14 +34,14 @@ namespace YA.TenantWorker.Infrastructure.Messaging
             }
 
             //оценка целесообразности: корреляционный идентификатор переписывается, если уже существует
-            using (_log.BeginScopeWith((Logs.LogType, LogTypes.MessageBusMessage.ToString()),
-                (Logs.MessageBusContextType, metadata.ContextType),
-                (Logs.MessageBusSourceAddress, metadata.SourceAddress),
-                (Logs.MessageBusDestinationAddress, metadata.DestinationAddress),
-                (Logs.MessageBusMessageId, metadata.MessageId),
-                (Logs.CorrelationId, metadata.CorrelationId),
-                (Logs.MessageBusConversationId, metadata.ConversationId),
-                (Logs.MessageBusMessage, savedMessage)))
+            using (_log.BeginScopeWith((YaLogKeys.LogType, LogTypes.MessageBusMessage.ToString()),
+                (YaLogKeys.MessageBusContextType, metadata.ContextType),
+                (YaLogKeys.MessageBusSourceAddress, metadata.SourceAddress),
+                (YaLogKeys.MessageBusDestinationAddress, metadata.DestinationAddress),
+                (YaLogKeys.MessageBusMessageId, metadata.MessageId),
+                (YaLogKeys.CorrelationId, metadata.CorrelationId),
+                (YaLogKeys.MessageBusConversationId, metadata.ConversationId),
+                (YaLogKeys.MessageBusMessage, savedMessage)))
             {
                 _log.LogInformation("{MessageBusContextType} message bus message {MessageBusMessageId}", metadata.ContextType, metadata.MessageId);
             }

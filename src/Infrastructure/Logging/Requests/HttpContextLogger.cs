@@ -12,6 +12,7 @@ using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json;
 using Serilog;
 using Serilog.Context;
+using YA.Common.Constants;
 using YA.TenantWorker.Application.Enums;
 using YA.TenantWorker.Application.Interfaces;
 using YA.TenantWorker.Constants;
@@ -34,7 +35,7 @@ namespace YA.TenantWorker.Infrastructure.Logging.Requests
         {
             HttpContext context = httpContext ?? throw new ArgumentNullException(nameof(httpContext));
 
-            using (LogContext.PushProperty(Logs.LogType, LogTypes.ApiRequest.ToString()))
+            using (LogContext.PushProperty(YaLogKeys.LogType, LogTypes.ApiRequest.ToString()))
             {
                 httpContext.Request.EnableBuffering();
                 Stream body = httpContext.Request.Body;
@@ -51,15 +52,15 @@ namespace YA.TenantWorker.Infrastructure.Logging.Requests
                 }
 
                 //у МС нет автоматического деструктурирования, поэтому используем Серилог ценой дырки в абстрации
-                Log.ForContext(Logs.RequestHeaders, context.Request.Headers.ToDictionary(h => h.Key, h => h.Value.ToString()), true)
-                    .ForContext(Logs.RequestBody, initialRequestBody)
-                    .ForContext(Logs.RequestProtocol, context.Request.Protocol)
-                    .ForContext(Logs.RequestScheme, context.Request.Scheme)
-                    .ForContext(Logs.RequestHost, context.Request.Host.Value)
-                    .ForContext(Logs.RequestMethod, context.Request.Method)
-                    .ForContext(Logs.RequestPath, context.Request.Path)
-                    .ForContext(Logs.RequestQuery, context.Request.QueryString)
-                    .ForContext(Logs.RequestPathAndQuery, GetFullPath(context))
+                Log.ForContext(YaLogKeys.RequestHeaders, context.Request.Headers.ToDictionary(h => h.Key, h => h.Value.ToString()), true)
+                    .ForContext(YaLogKeys.RequestBody, initialRequestBody)
+                    .ForContext(YaLogKeys.RequestProtocol, context.Request.Protocol)
+                    .ForContext(YaLogKeys.RequestScheme, context.Request.Scheme)
+                    .ForContext(YaLogKeys.RequestHost, context.Request.Host.Value)
+                    .ForContext(YaLogKeys.RequestMethod, context.Request.Method)
+                    .ForContext(YaLogKeys.RequestPath, context.Request.Path)
+                    .ForContext(YaLogKeys.RequestQuery, context.Request.QueryString)
+                    .ForContext(YaLogKeys.RequestPathAndQuery, GetFullPath(context))
                     .Information("{RequestMethod} {RequestPath}", context.Request.Method, context.Request.Path);
 
                 using (MemoryStream responseBodyMemoryStream = new MemoryStream())
@@ -105,28 +106,22 @@ namespace YA.TenantWorker.Infrastructure.Logging.Requests
                     using (StreamReader sr = new StreamReader(context.Response.Body))
                     {
                         responseBody = await sr.ReadToEndAsync();
-
                         context.Response.Body.Seek(0, SeekOrigin.Begin);
-
-                        if (Enumerable.Range(400, 599).Contains(context.Response.StatusCode) && responseBody.Contains("traceId", StringComparison.InvariantCultureIgnoreCase))
-                        {
-                            LogContext.PushProperty(Logs.TraceId, runtimeCtx.GetTraceId());
-                        }
 
                         string endResponseBody = (responseBody.Length > General.MaxLogFieldLength) ?
                             responseBody.Substring(0, General.MaxLogFieldLength) : responseBody;
 
-                        Log.ForContext(Logs.ResponseHeaders, context.Response.Headers.ToDictionary(h => h.Key, h => h.Value.ToString()), true)
-                            .ForContext(Logs.StatusCode, context.Response.StatusCode)
-                            .ForContext(Logs.ResponseBody, endResponseBody)
-                            .ForContext(Logs.ElapsedMilliseconds, elapsedMs)
-                            .ForContext(Logs.RequestProtocol, context.Request.Protocol)
-                            .ForContext(Logs.RequestScheme, context.Request.Scheme)
-                            .ForContext(Logs.RequestHost, context.Request.Host.Value)
-                            .ForContext(Logs.RequestMethod, context.Request.Method)
-                            .ForContext(Logs.RequestPath, context.Request.Path)
-                            .ForContext(Logs.RequestQuery, context.Request.QueryString)
-                            .ForContext(Logs.RequestPathAndQuery, GetFullPath(context))
+                        Log.ForContext(YaLogKeys.ResponseHeaders, context.Response.Headers.ToDictionary(h => h.Key, h => h.Value.ToString()), true)
+                            .ForContext(YaLogKeys.StatusCode, context.Response.StatusCode)
+                            .ForContext(YaLogKeys.ResponseBody, endResponseBody)
+                            .ForContext(YaLogKeys.ElapsedMilliseconds, elapsedMs)
+                            .ForContext(YaLogKeys.RequestProtocol, context.Request.Protocol)
+                            .ForContext(YaLogKeys.RequestScheme, context.Request.Scheme)
+                            .ForContext(YaLogKeys.RequestHost, context.Request.Host.Value)
+                            .ForContext(YaLogKeys.RequestMethod, context.Request.Method)
+                            .ForContext(YaLogKeys.RequestPath, context.Request.Path)
+                            .ForContext(YaLogKeys.RequestQuery, context.Request.QueryString)
+                            .ForContext(YaLogKeys.RequestPathAndQuery, GetFullPath(context))
                             .Information("{RequestMethod} {RequestPath} - {StatusCode} in {ElapsedMilliseconds} ms", context.Request.Method, context.Request.Path, context.Response.StatusCode, elapsedMs);
 
                         await responseBodyMemoryStream.CopyToAsync(originalResponseBodyReference);
