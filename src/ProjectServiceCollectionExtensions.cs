@@ -35,7 +35,9 @@ namespace YA.TenantWorker
                 .AddScoped<IPatchTenantByIdCommand, PatchTenantByIdCommand>()
                 .AddScoped<IPatchTenantCommand, PatchTenantCommand>()
                 .AddScoped<IDeleteTenantByIdCommand, DeleteTenantByIdCommand>()
-                .AddScoped<IDeleteTenantCommand, DeleteTenantCommand>();
+                .AddScoped<IDeleteTenantCommand, DeleteTenantCommand>()
+
+                .AddScoped<IPostClientInfoCommand, PostClientInfoCommand>();
         }
 
         /// <summary>

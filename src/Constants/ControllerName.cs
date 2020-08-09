@@ -4,5 +4,6 @@ namespace YA.TenantWorker.Constants
     {
         public const string Tenants = nameof(Tenants);
         public const string Token = nameof(Token);
+        public const string ClientInfo = nameof(ClientInfo);
     }
 }

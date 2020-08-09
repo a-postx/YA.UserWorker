@@ -3,6 +3,7 @@
     public static class RouteNames
     {
         public const string GetToken = ControllerName.Token + nameof(GetToken);
+
         public const string GetTenant = ControllerName.Tenants + nameof(GetTenant);
         public const string GetTenantById = ControllerName.Tenants + nameof(GetTenantById);
         public const string GetTenantPage = ControllerName.Tenants + nameof(GetTenantPage);
@@ -17,5 +18,8 @@
         public const string PatchTenant = ControllerName.Tenants + nameof(PatchTenant);
         public const string DeleteTenantById = ControllerName.Tenants + nameof(DeleteTenantById);
         public const string DeleteTenant = ControllerName.Tenants + nameof(DeleteTenant);
+
+        public const string OptionsClientInfo = ControllerName.ClientInfo + nameof(OptionsClientInfo);
+        public const string PostClientInfo = ControllerName.ClientInfo + nameof(PostClientInfo);
     }
 }

@@ -1,12 +1,12 @@
 ﻿namespace YA.TenantWorker.Application.Models.SaveModels
 {
     /// <summary>
-    /// Tenant model from external API call.
+    /// Арендатор, модель сохранения.
     /// </summary>
     public class TenantSm
     {
         /// <summary>
-        /// Tenant name.
+        /// Имя арендатора.
         /// </summary>
         public string TenantName { get; set; }
 
