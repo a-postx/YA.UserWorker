@@ -7,45 +7,43 @@ using YA.Common;
 using YA.Common.Extensions;
 using YA.TenantWorker.Application.Interfaces;
 using YA.TenantWorker.Constants;
+using YA.TenantWorker.Infrastructure.Services.GeoDataModels;
 
 namespace YA.TenantWorker.Infrastructure.Services
 {
-    public class IpApiRuntimeGeoData : IRuntimeGeoDataService
+    public class SypexRuntimeGeoData : IRuntimeGeoDataService
     {
-        public IpApiRuntimeGeoData(ILogger<IpApiRuntimeGeoData> logger)
+        public SypexRuntimeGeoData(ILogger<SypexRuntimeGeoData> logger)
         {
             _log = logger ?? throw new ArgumentNullException(nameof(logger));
-            ProviderUrl = "http://ip-api.com";
+            ProviderUrl = "https://api.sypexgeo.net/Z8BXz/json";
         }
 
-        private readonly ILogger<IpApiRuntimeGeoData> _log;
+        private readonly ILogger<SypexRuntimeGeoData> _log;
 
         private string ProviderUrl { get; set; }
-        private GeoData Data { get; set; }
 
         public async Task<Countries> GetCountryCodeAsync()
         {
             Countries result = Countries.UN;
 
-            Data = await GetGeoDataAsync();
+            SypexGeoData geoData = await GetGeoDataAsync();
 
-            if (Data != null)
+            if (geoData != null)
             {
-                bool success = Enum.TryParse(Data.CountryCode, out Countries parseResult);
-
-                if (success)
+                if (Enum.TryParse(geoData.country.iso, out Countries parseResult))
                 {
                     result = parseResult;
-                    _log.LogInformation("Geodata received successfully, application country is {Country}", result.ToString());
+                    _log.LogInformation("Geodata received successfully, runtime country is {Country}", result.ToString());
                 }
             }
 
             return result;
         }
 
-        private async Task<GeoData> GetGeoDataAsync()
+        private async Task<SypexGeoData> GetGeoDataAsync()
         {
-            GeoData result = null;
+            SypexGeoData result = null;
 
             try
             {
@@ -57,7 +55,7 @@ namespace YA.TenantWorker.Infrastructure.Services
                     {
                         if (response.StatusCode == HttpStatusCode.OK)
                         {
-                            GeoData data = await response.Content.ReadAsJsonAsync<GeoData>();
+                            SypexGeoData data = await response.Content.ReadAsJsonAsync<SypexGeoData>();
 
                             if (data != null)
                             {
