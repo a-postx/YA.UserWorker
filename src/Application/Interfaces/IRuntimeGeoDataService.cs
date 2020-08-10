@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Threading;
+using System.Threading.Tasks;
 
 namespace YA.TenantWorker.Application.Interfaces
 {
@@ -23,6 +24,6 @@ namespace YA.TenantWorker.Application.Interfaces
         /// <summary>
         /// Get country code of the application location (ISO 3166).
         /// </summary>
-        Task<Countries> GetCountryCodeAsync();
+        Task<Countries> GetCountryCodeAsync(CancellationToken cancellationToken);
     }
 }

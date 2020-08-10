@@ -14,6 +14,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
+using Swashbuckle.AspNetCore.Swagger;
 using System;
 using System.Collections.Generic;
 using System.IO.Compression;
@@ -201,6 +202,7 @@ namespace YA.TenantWorker
 
                 options.DescribeAllParametersInCamelCase();
                 options.EnableAnnotations();
+                options.AddFluentValidationRules();
 
                 // Add the XML comment file for this assembly, so its contents can be displayed.
                 options.IncludeXmlCommentsIfExists(assembly);

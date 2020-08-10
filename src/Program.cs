@@ -127,7 +127,10 @@ namespace YA.TenantWorker
                 RuntimeInformation.OSDescription, RuntimeInformation.OSArchitecture, Environment.ProcessorCount);
 
             IRuntimeGeoDataService geoService = host.Services.GetService<IRuntimeGeoDataService>();
-            Country = await geoService.GetCountryCodeAsync();
+            using (CancellationTokenSource cts = new CancellationTokenSource(TimeSpan.FromSeconds(Timeouts.RuntimeGeoDetectionTimeoutSec)))
+            {
+                Country = await geoService.GetCountryCodeAsync(cts.Token);
+            }
 
             IHostApplicationLifetime hostLifetime = host.Services.GetService<IHostApplicationLifetime>();
             hostLifetime.ApplicationStopping.Register(() =>
