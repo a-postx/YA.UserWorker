@@ -29,7 +29,7 @@ namespace YA.TenantWorker.Application.Commands
                 return new BadRequestResult();
             }
 
-            await Task.Delay(10);
+            await Task.Delay(10, cancellationToken);
 
             using (_log.BeginScopeWith(("Browser", clientInfoSm.Browser), ("BrowserVersion", clientInfoSm.BrowserVersion),
                     ("Os", clientInfoSm.Os), ("OsVersion", clientInfoSm.OsVersion),

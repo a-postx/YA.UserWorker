@@ -199,7 +199,7 @@ namespace YA.TenantWorker
 
                 // Used for IIS and IIS Express for in-process hosting. Use UseIISIntegration for out-of-process hosting.
                 .UseIIS()
-                .UseShutdownTimeout(TimeSpan.FromSeconds(General.WebHostShutdownTimeoutSec))
+                .UseShutdownTimeout(TimeSpan.FromSeconds(Timeouts.WebHostShutdownTimeoutSec))
                 .UseStartup<Startup>();
         }
 

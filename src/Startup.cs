@@ -79,7 +79,7 @@ namespace YA.TenantWorker
 
             services.Configure<HostOptions>(options =>
             {
-                options.ShutdownTimeout = TimeSpan.FromSeconds(General.HostShutdownTimeoutSec);
+                options.ShutdownTimeout = TimeSpan.FromSeconds(Timeouts.HostShutdownTimeoutSec);
             });
 
             if (!string.IsNullOrEmpty(secrets.AppInsightsInstrumentationKey))
@@ -153,7 +153,7 @@ namespace YA.TenantWorker
                 .AddEntityFrameworkSqlServer()
                 .AddDbContext<TenantWorkerDbContext>(options =>
                     options.UseSqlServer(secrets.TenantWorkerConnStr, sqlOptions => 
-                        sqlOptions.EnableRetryOnFailure().CommandTimeout(General.SqlCommandTimeout))
+                        sqlOptions.EnableRetryOnFailure().CommandTimeout(Timeouts.SqlCommandTimeoutSec))
                     .ConfigureWarnings(x => x.Throw(RelationalEventId.QueryPossibleExceptionWithAggregateOperatorWarning))
                     .EnableSensitiveDataLogging(_webHostEnvironment.IsDevelopment()));
 

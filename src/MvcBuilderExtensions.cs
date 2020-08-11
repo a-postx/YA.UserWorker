@@ -94,16 +94,16 @@ namespace YA.TenantWorker
                 jsonSystemInputFormatterMediaTypes.Remove("text/json");
                 jsonSystemOutputFormatterMediaTypes.Remove("text/json");
 
-                // Add Problem Details media type (application/problem+json) to the JSON output formatters.
-                // See https://tools.ietf.org/html/rfc7807
-                jsonSystemOutputFormatterMediaTypes.Insert(0, ContentType.ProblemJson);
-                ////xmlOutputFormatterMediaTypes.Insert(0, ContentType.ProblemXml);
-
                 // Add RESTful JSON media type (application/vnd.restful+json) to the JSON input and output formatters.
                 // See http://restfuljson.org/
                 jsonSystemInputFormatterMediaTypes.Insert(0, ContentType.RestfulJson);
                 jsonSystemOutputFormatterMediaTypes.Insert(0, ContentType.RestfulJson);
 
+                // Add Problem Details media type (application/problem+json) to the JSON output formatters.
+                // See https://tools.ietf.org/html/rfc7807
+                // проблема: свагер берёт первый форматировщик независимо от указанного в интерфейсе
+                jsonSystemOutputFormatterMediaTypes.Insert(0, ContentType.ProblemJson);
+                ////xmlOutputFormatterMediaTypes.Insert(0, ContentType.ProblemXml);
 
                 // Add support for Newtonsoft JSON Patch (application/json-patch+json), configure formatters and make Newtonsoft default.
                 options.InputFormatters.Insert(0, GetJsonPatchInputFormatter());
@@ -124,9 +124,9 @@ namespace YA.TenantWorker
                 jsonNewtonsoftInputFormatterMediaTypes.Remove("text/json");
                 jsonNewtonsoftOutputFormatterMediaTypes.Remove("text/json");
 
-                jsonNewtonsoftOutputFormatterMediaTypes.Insert(0, ContentType.ProblemJson);
                 jsonNewtonsoftInputFormatterMediaTypes.Insert(0, ContentType.RestfulJson);
                 jsonNewtonsoftOutputFormatterMediaTypes.Insert(0, ContentType.RestfulJson);
+                jsonNewtonsoftOutputFormatterMediaTypes.Insert(0, ContentType.ProblemJson);
 
                 // Returns a 406 Not Acceptable if the MIME type in the Accept HTTP header is not valid.
                 options.ReturnHttpNotAcceptable = true;
