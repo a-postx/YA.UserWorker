@@ -17,7 +17,7 @@ using Delobytes.AspNetCore.Filters;
 namespace YA.TenantWorker.Controllers
 {
     /// <summary>
-    /// Control requests handling for tenant objects.
+    /// Обрабатывает запросы при работе с арендаторами.
     /// </summary>
     [Route("[controller]")]
     [ApiController]
@@ -29,12 +29,12 @@ namespace YA.TenantWorker.Controllers
     public class TenantsController : ControllerBase
     {
         /// <summary>
-        /// Return Allow HTTP header with allowed HTTP methods for all tenants.
+        /// Получить заголовок Allow с доступными методами для всех арендаторов.
         /// </summary>
-        /// <returns>200 OK response.</returns>
+        /// <returns>Ответ 200 OK.</returns>
         [HttpOptions("all", Name = RouteNames.OptionsTenantAll)]
         [Authorize(Policy = "MustBeAdministrator")]
-        [SwaggerResponse(StatusCodes.Status200OK, "Allowed HTTP methods.")]
+        [SwaggerResponse(StatusCodes.Status200OK, "Доступные HTTP методы.")]
         public IActionResult OptionsAll()
         {
             HttpContext.Response.Headers.AppendCommaSeparatedValues(
@@ -46,12 +46,12 @@ namespace YA.TenantWorker.Controllers
         }
 
         /// <summary>
-        /// Return Allow HTTP header with allowed HTTP methods for tenants by id.
+        /// Получить заголовок Allow с доступными методами для арендатора с указанным идентификатором.
         /// </summary>
-        /// <returns>200 OK response.</returns>
+        /// <returns>Ответ 200 OK.</returns>
         [HttpOptions("{tenantId}", Name = RouteNames.OptionsTenantById)]
         [Authorize(Policy = "MustBeAdministrator")]
-        [SwaggerResponse(StatusCodes.Status200OK, "Allowed HTTP methods.")]
+        [SwaggerResponse(StatusCodes.Status200OK, "Доступные HTTP методы.")]
         public IActionResult OptionsById()
         {
             HttpContext.Response.Headers.AppendCommaSeparatedValues(
@@ -64,12 +64,12 @@ namespace YA.TenantWorker.Controllers
         }
 
         /// <summary>
-        /// Return Allow HTTP header with allowed HTTP methods for current tenant.
+        /// Получить заголовок Allow с доступными методами для текущего арендатора.
         /// </summary>
-        /// <returns>200 OK response.</returns>
+        /// <returns>Ответ 200 OK.</returns>
         [HttpOptions("", Name = RouteNames.OptionsTenant)]
-        [SwaggerResponse(StatusCodes.Status200OK, "Allowed HTTP methods.")]
-        [SwaggerResponse(StatusCodes.Status404NotFound, "Tenant could not be found.")]
+        [SwaggerResponse(StatusCodes.Status200OK, "Доступные HTTP методы.")]
+        [SwaggerResponse(StatusCodes.Status404NotFound, "Арендатор не найден.")]
         public IActionResult OptionsTenant()
         {
             HttpContext.Response.Headers.AppendCommaSeparatedValues(
@@ -83,42 +83,42 @@ namespace YA.TenantWorker.Controllers
         }
 
         /// <summary>
-        /// Get current tenant with pricing tier.
+        /// Получить текущего арендатора с тарифным планом.
         /// </summary>
-        /// <param name="command">Action command.</param>
-        /// <param name="cancellationToken">Cancellation token used to cancel the HTTP request.</param>
-        /// <returns>200 OK response containing the tenant,
-        /// 404 Not Found if the current tenant was not found
-        /// or 409 Conflict if the request is a duplicate.</returns>
+        /// <param name="command">Команда.</param>
+        /// <param name="cancellationToken">Токен отмены.</param>
+        /// <returns>200 OK содержащий арендатора,
+        /// 404 Не Найдено если арендатор не был найден
+        /// или 409 Конфликт если запрос является дубликатом.</returns>
         [HttpGet("", Name = RouteNames.GetTenant)]
         [HttpHead("", Name = RouteNames.HeadTenant)]
-        [SwaggerResponse(StatusCodes.Status200OK, "Current tenant.", typeof(TenantVm))]
-        [SwaggerResponse(StatusCodes.Status304NotModified, "The tenant has not changed since the date given in the If-Modified-Since HTTP header.")]
-        [SwaggerResponse(StatusCodes.Status404NotFound, "Current tenant could not be found.")]
-        [SwaggerResponse(StatusCodes.Status406NotAcceptable, "The MIME type in the Accept HTTP header is not acceptable.", typeof(ProblemDetails))]
-        [SwaggerResponse(StatusCodes.Status409Conflict, "Duplicate request.", typeof(ProblemDetails))]
+        [SwaggerResponse(StatusCodes.Status200OK, "Текущий арендатор.", typeof(TenantVm))]
+        [SwaggerResponse(StatusCodes.Status304NotModified, "Арендатор не изменён с даты в заголовке If-Modified-Since.")]
+        [SwaggerResponse(StatusCodes.Status404NotFound, "Арендатор не найден.")]
+        [SwaggerResponse(StatusCodes.Status406NotAcceptable, "Недопустимый тип MIME в заголовке Accept.", typeof(ProblemDetails))]
+        [SwaggerResponse(StatusCodes.Status409Conflict, "Запрос-дубликат.", typeof(ProblemDetails))]
         public Task<IActionResult> GetTenantAsync([FromServices] IGetTenantCommand command, CancellationToken cancellationToken)
         {
             return command.ExecuteAsync(cancellationToken);
         }
 
         /// <summary>
-        /// Get tenant with the specified unique identifier.
+        /// Получить арендатора с указанным идентификатором.
         /// </summary>
-        /// <param name="command">Action command.</param>
-        /// <param name="tenantId">Tenant unique identifier.</param>
-        /// <param name="cancellationToken">Cancellation token used to cancel the HTTP request.</param>
-        /// <returns>200 OK response containing the tenant,
-        /// 404 Not Found if tenant with the specified unique identifier was not found
-        /// or 409 Conflict if the request is a duplicate.</returns>
+        /// <param name="command">Команда.</param>
+        /// <param name="tenantId">Идентификатор арендатора.</param>
+        /// <param name="cancellationToken">Токен отмены.</param>
+        /// <returns>200 OK содержащий модель арендатора,
+        /// 404 Не Найдено если арендатор с таким идентификатором не найден
+        /// или 409 Конфликт если запрос является дубликатом.</returns>
         [HttpGet("{tenantId}", Name = RouteNames.GetTenantById)]
         [HttpHead("{tenantId}", Name = RouteNames.HeadTenantById)]
         [Authorize(Policy = "MustBeAdministrator")]
-        [SwaggerResponse(StatusCodes.Status200OK, "Current tenant.", typeof(TenantVm))]
-        [SwaggerResponse(StatusCodes.Status304NotModified, "The tenant has not changed since the date given in the If-Modified-Since HTTP header.")]
-        [SwaggerResponse(StatusCodes.Status404NotFound, "Current tenant could not be found.")]
-        [SwaggerResponse(StatusCodes.Status406NotAcceptable, "The MIME type in the Accept HTTP header is not acceptable.", typeof(ProblemDetails))]
-        [SwaggerResponse(StatusCodes.Status409Conflict, "Duplicate request.", typeof(ProblemDetails))]
+        [SwaggerResponse(StatusCodes.Status200OK, "Арендатор с указанным идентификатором.", typeof(TenantVm))]
+        [SwaggerResponse(StatusCodes.Status304NotModified, "Арендатор не изменён с даты в заголовке If-Modified-Since.")]
+        [SwaggerResponse(StatusCodes.Status404NotFound, "Арендатор не найден.")]
+        [SwaggerResponse(StatusCodes.Status406NotAcceptable, "Недопустимый тип MIME в заголовке Accept.", typeof(ProblemDetails))]
+        [SwaggerResponse(StatusCodes.Status409Conflict, "Запрос-дубликат.", typeof(ProblemDetails))]
         public Task<IActionResult> GetTenantByIdAsync([FromServices] IGetTenantByIdCommand command,
             Guid tenantId, 
             CancellationToken cancellationToken)
@@ -127,22 +127,23 @@ namespace YA.TenantWorker.Controllers
         }
 
         /// <summary>
-        /// Get a collection of tenants using the specified paging options.
+        /// Получить список арендаторов, используя указанные настройки постраничного вывода.
         /// </summary>
-        /// <param name="command">Action command.</param>
-        /// <param name="pageOptions">Page options.</param>
-        /// <param name="cancellationToken">Cancellation token used to cancel the HTTP request.</param>
-        /// <returns>200 OK response containing a collection of tenants, 400 Bad Request if the page request parameters are invalid,
-        /// 404 Not Found if a page with the specified page number was not found
-        /// or 409 Conflict if the request is a duplicate.</returns>
+        /// <param name="command">Команда.</param>
+        /// <param name="pageOptions">Настройки постраничного вывода.</param>
+        /// <param name="cancellationToken">Токен отмены.</param>
+        /// <returns>Ответ 200 OK содержащий список арендаторов,
+        /// 400 Недопустимый Запрос если параметры запроса неверны,
+        /// 404 Не Найдено если страница с указанным номером не была найдена
+        /// или 409 Конфликт если запрос является дубликатом.</returns>
         [HttpGet("all", Name = RouteNames.GetTenantPage)]
         [HttpHead("all", Name = RouteNames.HeadTenantPage)]
         [Authorize(Policy = "MustBeAdministrator")]
-        [SwaggerResponse(StatusCodes.Status200OK, "Collection of tenants for the specified page.", typeof(PaginatedResult<TenantVm>))]
-        [SwaggerResponse(StatusCodes.Status400BadRequest, "Page request parameters are invalid.", typeof(ProblemDetails))]
-        [SwaggerResponse(StatusCodes.Status404NotFound, "Page with the specified page number was not found.", typeof(ProblemDetails))]
-        [SwaggerResponse(StatusCodes.Status406NotAcceptable, "The MIME type in the Accept HTTP header is not acceptable.", typeof(ProblemDetails))]
-        [SwaggerResponse(StatusCodes.Status409Conflict, "Duplicate request.", typeof(ProblemDetails))]
+        [SwaggerResponse(StatusCodes.Status200OK, "Список арендаторов на указанной странице.", typeof(PaginatedResult<TenantVm>))]
+        [SwaggerResponse(StatusCodes.Status400BadRequest, "Параметры запроса неверны.", typeof(ProblemDetails))]
+        [SwaggerResponse(StatusCodes.Status404NotFound, "Страница с указанным номером не найдена.", typeof(ProblemDetails))]
+        [SwaggerResponse(StatusCodes.Status406NotAcceptable, "Недопустимый тип MIME в заголовке Accept.", typeof(ProblemDetails))]
+        [SwaggerResponse(StatusCodes.Status409Conflict, "Запрос-дубликат.", typeof(ProblemDetails))]
         public Task<IActionResult> GetTenantAllPageAsync(
             [FromServices] IGetTenantAllPageCommand command,
             [FromQuery] PageOptions pageOptions,
@@ -152,7 +153,7 @@ namespace YA.TenantWorker.Controllers
         }
 
         /// <summary>
-        /// Создать арендатора для нового неизвестного пользователя.
+        /// Создать арендатора для текущего пользователя.
         /// </summary>
         /// <param name="command">Команда.</param>
         /// <param name="cancellationToken">Токен отмены.</param>
@@ -175,21 +176,22 @@ namespace YA.TenantWorker.Controllers
         }
 
         /// <summary>
-        /// Update current tenant.
+        /// Обновить текущего арендатора.
         /// </summary>
-        /// <param name="command">Action command.</param>
-        /// <param name="patch">Patch document. See http://jsonpatch.com.</param>
-        /// <param name="cancellationToken">Cancellation token used to cancel the HTTP request.</param>
-        /// <returns>200 OK if the tenant was patched, 400 Bad Request if the patch was invalid,
-        /// 404 Not Found if the tenant was not found
-        /// or 409 Conflict if the request is a duplicate.</returns>
+        /// <param name="command">Команда.</param>
+        /// <param name="patch">Патч-документ. См. http://jsonpatch.com.</param>
+        /// <param name="cancellationToken">Токен отмены.</param>
+        /// <returns>Ответ 200 OK если арендатор был изменён,
+        /// 400 Недопустимый Запрос если параметры запроса неверны,
+        /// 404 Не Найдено если текущий арендатор не был найден
+        /// или 409 Конфликт если запрос является дубликатом.</returns>
         [HttpPatch("", Name = RouteNames.PatchTenant)]
-        [SwaggerResponse(StatusCodes.Status200OK, "Updated current tenant.", typeof(TenantVm))]
-        [SwaggerResponse(StatusCodes.Status400BadRequest, "Patch document is invalid.", typeof(ProblemDetails))]
-        [SwaggerResponse(StatusCodes.Status404NotFound, "Tenant could not be found.")]
-        [SwaggerResponse(StatusCodes.Status406NotAcceptable, "The MIME type in the Accept HTTP header is not acceptable.", typeof(ProblemDetails))]
-        [SwaggerResponse(StatusCodes.Status409Conflict, "Duplicate request.", typeof(ProblemDetails))]
-        [SwaggerResponse(StatusCodes.Status415UnsupportedMediaType, "The MIME type in the Content-Type HTTP header is unsupported.", typeof(ProblemDetails))]
+        [SwaggerResponse(StatusCodes.Status200OK, "Модель изменённого арендатора.", typeof(TenantVm))]
+        [SwaggerResponse(StatusCodes.Status400BadRequest, "Патч-документ неверен.", typeof(ProblemDetails))]
+        [SwaggerResponse(StatusCodes.Status404NotFound, "Арендатор не найден.")]
+        [SwaggerResponse(StatusCodes.Status406NotAcceptable, "Недопустимый тип MIME в заголовке Accept.", typeof(ProblemDetails))]
+        [SwaggerResponse(StatusCodes.Status409Conflict, "Запрос-дубликат.", typeof(ProblemDetails))]
+        [SwaggerResponse(StatusCodes.Status415UnsupportedMediaType, "Тип MIME в заголовке Content-Type не поддерживается.", typeof(ProblemDetails))]
         public Task<IActionResult> PatchTenantAsync(
             [FromServices] IPatchTenantCommand command,
             [FromBody] JsonPatchDocument<TenantSm> patch,
@@ -199,23 +201,24 @@ namespace YA.TenantWorker.Controllers
         }
 
         /// <summary>
-        /// Update tenant with the specified unique identifier.
+        /// Обновить арендатора с указанным идентификатором.
         /// </summary>
-        /// <param name="command">Action command.</param>
-        /// <param name="tenantId">Tenant unique identifier.</param>
-        /// <param name="patch">Patch document. See http://jsonpatch.com.</param>
-        /// <param name="cancellationToken">Cancellation token used to cancel the HTTP request.</param>
-        /// <returns>200 OK if the tenant was patched, 400 Bad Request if the patch was invalid,
-        /// 404 Not Found if the tenant was not found
-        /// or 409 Conflict if the request is a duplicate.</returns>
+        /// <param name="command">Команда.</param>
+        /// <param name="tenantId">Идентификатор арендатора.</param>
+        /// <param name="patch">Патч-документ. См. http://jsonpatch.com.</param>
+        /// <param name="cancellationToken">Токен отмены.</param>
+        /// <returns>Ответ 200 OK если арендатор был изменён,
+        /// 400 Недопустимый Запрос если параметры запроса неверны,
+        /// 404 Не Найдено если арендатор с указанным идентификатором не был найден
+        /// или 409 Конфликт если запрос является дубликатом.</returns>
         [HttpPatch("{tenantId}", Name = RouteNames.PatchTenantById)]
         [Authorize(Policy = "MustBeAdministrator")]
-        [SwaggerResponse(StatusCodes.Status200OK, "Tenant patched.", typeof(TenantVm))]
-        [SwaggerResponse(StatusCodes.Status400BadRequest, "Patch document is invalid.", typeof(ProblemDetails))]
-        [SwaggerResponse(StatusCodes.Status404NotFound, "Tenant could not be found.")]
-        [SwaggerResponse(StatusCodes.Status406NotAcceptable, "The MIME type in the Accept HTTP header is not acceptable.", typeof(ProblemDetails))]
-        [SwaggerResponse(StatusCodes.Status409Conflict, "Duplicate request.", typeof(ProblemDetails))]
-        [SwaggerResponse(StatusCodes.Status415UnsupportedMediaType, "The MIME type in the Content-Type HTTP header is unsupported.", typeof(ProblemDetails))]
+        [SwaggerResponse(StatusCodes.Status200OK, "Арендатор обновлён", typeof(TenantVm))]
+        [SwaggerResponse(StatusCodes.Status400BadRequest, "Патч-документ неверен.", typeof(ProblemDetails))]
+        [SwaggerResponse(StatusCodes.Status404NotFound, "Арендатор с указанным идентификатором не найден.")]
+        [SwaggerResponse(StatusCodes.Status406NotAcceptable, "Недопустимый тип MIME в заголовке Accept.", typeof(ProblemDetails))]
+        [SwaggerResponse(StatusCodes.Status409Conflict, "Запрос-дубликат.", typeof(ProblemDetails))]
+        [SwaggerResponse(StatusCodes.Status415UnsupportedMediaType, "Тип MIME в заголовке Content-Type не поддерживается.", typeof(ProblemDetails))]
         public Task<IActionResult> PatchTenantByIdAsync(
             [FromServices] IPatchTenantByIdCommand command,
             Guid tenantId,
@@ -226,17 +229,17 @@ namespace YA.TenantWorker.Controllers
         }
 
         /// <summary>
-        /// Delete current tenant.
+        /// Удалить текущего арендатора.
         /// </summary>
-        /// <param name="command">Action command.</param>
-        /// <param name="cancellationToken">Cancellation token used to cancel the HTTP request.</param>
-        /// <returns>204 No Content response if the tenant was deleted
-        /// 404 Not Found if the tenant was not found
-        /// or 409 Conflict if the request is a duplicate.</returns>
+        /// <param name="command">Команда.</param>
+        /// <param name="cancellationToken">Токен отмены.</param>
+        /// <returns>Ответ 204 Без Содержимого если арендатор был удалён
+        /// 404 Не Найден если текущий арендатор не был найден
+        /// или 409 Конфликт если запрос является дубликатом.</returns>
         [HttpDelete("", Name = RouteNames.DeleteTenant)]
-        [SwaggerResponse(StatusCodes.Status204NoContent, "Tenant was deleted.")]
-        [SwaggerResponse(StatusCodes.Status404NotFound, "Tenant was not found.")]
-        [SwaggerResponse(StatusCodes.Status409Conflict, "Duplicate request.", typeof(ProblemDetails))]
+        [SwaggerResponse(StatusCodes.Status204NoContent, "Арендатор был удалён.")]
+        [SwaggerResponse(StatusCodes.Status404NotFound, "Арендатор не найден.")]
+        [SwaggerResponse(StatusCodes.Status409Conflict, "Запрос-дубликат.", typeof(ProblemDetails))]
         public Task<IActionResult> DeleteTenantAsync(
             [FromServices] IDeleteTenantCommand command,
             CancellationToken cancellationToken)
@@ -245,19 +248,19 @@ namespace YA.TenantWorker.Controllers
         }
 
         /// <summary>
-        /// Delete tenant with the specified unique identifier.
+        /// Удалить арендатора с указанным идентификатором.
         /// </summary>
-        /// <param name="command">Action command.</param>
-        /// <param name="tenantId">Tenant unique identifier.</param>
-        /// <param name="cancellationToken">Cancellation token used to cancel the HTTP request.</param>
-        /// <returns>204 No Content response if the tenant was deleted
-        /// 404 Not Found if tenant with the specified unique identifier was not found
-        /// or 409 Conflict if the request is a duplicate.</returns>
+        /// <param name="command">Команда.</param>
+        /// <param name="tenantId">Идентификатор арендатора.</param>
+        /// <param name="cancellationToken">Токен отмены.</param>
+        /// <returns>Ответ 204 Без Содержимого если арендатор был удалён
+        /// 404 Не Найден если арендатора с указанным идентификатором не было найдено
+        /// или 409 Конфликт если запрос является дубликатом.</returns>
         [HttpDelete("{tenantId}", Name = RouteNames.DeleteTenantById)]
         [Authorize(Policy = "MustBeAdministrator")]
-        [SwaggerResponse(StatusCodes.Status204NoContent, "Tenant with the specified unique identifier was deleted.")]
-        [SwaggerResponse(StatusCodes.Status404NotFound, "Tenant with the specified unique identifier was not found.")]
-        [SwaggerResponse(StatusCodes.Status409Conflict, "Duplicate request.", typeof(ProblemDetails))]
+        [SwaggerResponse(StatusCodes.Status204NoContent, "Арендатор с указанным идентификатором был удалён.")]
+        [SwaggerResponse(StatusCodes.Status404NotFound, "Арендатор с указанным идентификатором не найден.")]
+        [SwaggerResponse(StatusCodes.Status409Conflict, "Запрос-дубликат.", typeof(ProblemDetails))]
         public Task<IActionResult> DeleteTenantByIdAsync(
             [FromServices] IDeleteTenantByIdCommand command,
             Guid tenantId,
