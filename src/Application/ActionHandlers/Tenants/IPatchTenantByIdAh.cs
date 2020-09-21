@@ -3,9 +3,9 @@ using Microsoft.AspNetCore.JsonPatch;
 using System;
 using YA.TenantWorker.Application.Models.SaveModels;
 
-namespace YA.TenantWorker.Application.Commands
+namespace YA.TenantWorker.Application.ActionHandlers.Tenants
 {
-    public interface IPatchTenantCommand : IAsyncCommand<JsonPatchDocument<TenantSm>>
+    public interface IPatchTenantByIdAh : IAsyncCommand<Guid, JsonPatchDocument<TenantSm>>
     {
 
     }

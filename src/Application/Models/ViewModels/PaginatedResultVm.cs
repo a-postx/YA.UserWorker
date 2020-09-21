@@ -5,9 +5,9 @@ using System.Collections.Generic;
 
 namespace YA.TenantWorker.Application.Models.ViewModels
 {
-    public class PaginatedResult<T> : ValueObject where T : class
+    public class PaginatedResultVm<T> : ValueObject where T : class
     {
-        public PaginatedResult(LinkGenerator linkGenerator, PageOptions pageOptions, bool hasNextPage, bool hasPreviousPage,
+        public PaginatedResultVm(LinkGenerator linkGenerator, PageOptions pageOptions, bool hasNextPage, bool hasPreviousPage,
             int totalCount, string startCursor, string endCursor, HttpContext context, string routeName, List<T> items)
         {
             if (linkGenerator == null)

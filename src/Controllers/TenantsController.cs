@@ -7,12 +7,12 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using YA.TenantWorker.Application.ActionFilters;
-using YA.TenantWorker.Application.Commands;
 using YA.TenantWorker.Application.Models.SaveModels;
 using YA.TenantWorker.Application.Models.ViewModels;
 using YA.TenantWorker.Constants;
 using Microsoft.AspNetCore.Authorization;
 using Delobytes.AspNetCore.Filters;
+using YA.TenantWorker.Application.ActionHandlers.Tenants;
 
 namespace YA.TenantWorker.Controllers
 {
@@ -85,7 +85,7 @@ namespace YA.TenantWorker.Controllers
         /// <summary>
         /// Получить текущего арендатора с тарифным планом.
         /// </summary>
-        /// <param name="command">Команда.</param>
+        /// <param name="handler">Обработчик.</param>
         /// <param name="cancellationToken">Токен отмены.</param>
         /// <returns>200 OK содержащий арендатора,
         /// 404 Не Найдено если арендатор не был найден
@@ -97,15 +97,17 @@ namespace YA.TenantWorker.Controllers
         [SwaggerResponse(StatusCodes.Status404NotFound, "Арендатор не найден.")]
         [SwaggerResponse(StatusCodes.Status406NotAcceptable, "Недопустимый тип MIME в заголовке Accept.", typeof(ProblemDetails))]
         [SwaggerResponse(StatusCodes.Status409Conflict, "Запрос-дубликат.", typeof(ProblemDetails))]
-        public Task<IActionResult> GetTenantAsync([FromServices] IGetTenantCommand command, CancellationToken cancellationToken)
+        public Task<IActionResult> GetTenantAsync(
+            [FromServices] IGetTenantAh handler,
+            CancellationToken cancellationToken)
         {
-            return command.ExecuteAsync(cancellationToken);
+            return handler.ExecuteAsync(cancellationToken);
         }
 
         /// <summary>
         /// Получить арендатора с указанным идентификатором.
         /// </summary>
-        /// <param name="command">Команда.</param>
+        /// <param name="handler">Обработчик.</param>
         /// <param name="tenantId">Идентификатор арендатора.</param>
         /// <param name="cancellationToken">Токен отмены.</param>
         /// <returns>200 OK содержащий модель арендатора,
@@ -119,17 +121,18 @@ namespace YA.TenantWorker.Controllers
         [SwaggerResponse(StatusCodes.Status404NotFound, "Арендатор не найден.")]
         [SwaggerResponse(StatusCodes.Status406NotAcceptable, "Недопустимый тип MIME в заголовке Accept.", typeof(ProblemDetails))]
         [SwaggerResponse(StatusCodes.Status409Conflict, "Запрос-дубликат.", typeof(ProblemDetails))]
-        public Task<IActionResult> GetTenantByIdAsync([FromServices] IGetTenantByIdCommand command,
+        public Task<IActionResult> GetTenantByIdAsync(
+            [FromServices] IGetTenantByIdAh handler,
             Guid tenantId, 
             CancellationToken cancellationToken)
         {
-            return command.ExecuteAsync(tenantId, cancellationToken);
+            return handler.ExecuteAsync(tenantId, cancellationToken);
         }
 
         /// <summary>
         /// Получить список арендаторов, используя указанные настройки постраничного вывода.
         /// </summary>
-        /// <param name="command">Команда.</param>
+        /// <param name="handler">Обработчик.</param>
         /// <param name="pageOptions">Настройки постраничного вывода.</param>
         /// <param name="cancellationToken">Токен отмены.</param>
         /// <returns>Ответ 200 OK содержащий список арендаторов,
@@ -139,23 +142,23 @@ namespace YA.TenantWorker.Controllers
         [HttpGet("all", Name = RouteNames.GetTenantPage)]
         [HttpHead("all", Name = RouteNames.HeadTenantPage)]
         [Authorize(Policy = "MustBeAdministrator")]
-        [SwaggerResponse(StatusCodes.Status200OK, "Список арендаторов на указанной странице.", typeof(PaginatedResult<TenantVm>))]
+        [SwaggerResponse(StatusCodes.Status200OK, "Список арендаторов на указанной странице.", typeof(PaginatedResultVm<TenantVm>))]
         [SwaggerResponse(StatusCodes.Status400BadRequest, "Параметры запроса неверны.", typeof(ProblemDetails))]
         [SwaggerResponse(StatusCodes.Status404NotFound, "Страница с указанным номером не найдена.", typeof(ProblemDetails))]
         [SwaggerResponse(StatusCodes.Status406NotAcceptable, "Недопустимый тип MIME в заголовке Accept.", typeof(ProblemDetails))]
         [SwaggerResponse(StatusCodes.Status409Conflict, "Запрос-дубликат.", typeof(ProblemDetails))]
         public Task<IActionResult> GetTenantAllPageAsync(
-            [FromServices] IGetTenantAllPageCommand command,
+            [FromServices] IGetTenantAllPageAh handler,
             [FromQuery] PageOptions pageOptions,
             CancellationToken cancellationToken)
         {
-            return command.ExecuteAsync(pageOptions, cancellationToken);
+            return handler.ExecuteAsync(pageOptions, cancellationToken);
         }
 
         /// <summary>
         /// Создать арендатора для текущего пользователя.
         /// </summary>
-        /// <param name="command">Команда.</param>
+        /// <param name="handler">Обработчик.</param>
         /// <param name="cancellationToken">Токен отмены.</param>
         /// <returns>Ответ 200 ОК содержащий ИД арендатора,
         /// 400 Недопустимый Запрос если запрос неправильно оформлен,
@@ -169,16 +172,16 @@ namespace YA.TenantWorker.Controllers
         [SwaggerResponse(StatusCodes.Status415UnsupportedMediaType, "Тип MIME в заголовке Content-Type не поддерживается.", typeof(ProblemDetails))]
         [SwaggerResponse(StatusCodes.Status422UnprocessableEntity, "Арендатор не может быть создан, поскольку уже существует.", typeof(ProblemDetails))]
         public Task<IActionResult> PostTenantAsync(
-            [FromServices] IPostTenantCommand command,
+            [FromServices] IPostTenantAh handler,
             CancellationToken cancellationToken)
         {
-            return command.ExecuteAsync(cancellationToken);
+            return handler.ExecuteAsync(cancellationToken);
         }
 
         /// <summary>
         /// Обновить текущего арендатора.
         /// </summary>
-        /// <param name="command">Команда.</param>
+        /// <param name="handler">Обработчик.</param>
         /// <param name="patch">Патч-документ. См. http://jsonpatch.com.</param>
         /// <param name="cancellationToken">Токен отмены.</param>
         /// <returns>Ответ 200 OK если арендатор был изменён,
@@ -193,17 +196,17 @@ namespace YA.TenantWorker.Controllers
         [SwaggerResponse(StatusCodes.Status409Conflict, "Запрос-дубликат.", typeof(ProblemDetails))]
         [SwaggerResponse(StatusCodes.Status415UnsupportedMediaType, "Тип MIME в заголовке Content-Type не поддерживается.", typeof(ProblemDetails))]
         public Task<IActionResult> PatchTenantAsync(
-            [FromServices] IPatchTenantCommand command,
+            [FromServices] IPatchTenantAh handler,
             [FromBody] JsonPatchDocument<TenantSm> patch,
             CancellationToken cancellationToken)
         {
-            return command.ExecuteAsync(patch, cancellationToken);
+            return handler.ExecuteAsync(patch, cancellationToken);
         }
 
         /// <summary>
         /// Обновить арендатора с указанным идентификатором.
         /// </summary>
-        /// <param name="command">Команда.</param>
+        /// <param name="handler">Обработчик.</param>
         /// <param name="tenantId">Идентификатор арендатора.</param>
         /// <param name="patch">Патч-документ. См. http://jsonpatch.com.</param>
         /// <param name="cancellationToken">Токен отмены.</param>
@@ -220,18 +223,18 @@ namespace YA.TenantWorker.Controllers
         [SwaggerResponse(StatusCodes.Status409Conflict, "Запрос-дубликат.", typeof(ProblemDetails))]
         [SwaggerResponse(StatusCodes.Status415UnsupportedMediaType, "Тип MIME в заголовке Content-Type не поддерживается.", typeof(ProblemDetails))]
         public Task<IActionResult> PatchTenantByIdAsync(
-            [FromServices] IPatchTenantByIdCommand command,
+            [FromServices] IPatchTenantByIdAh handler,
             Guid tenantId,
             [FromBody] JsonPatchDocument<TenantSm> patch,
             CancellationToken cancellationToken)
         {
-            return command.ExecuteAsync(tenantId, patch, cancellationToken);
+            return handler.ExecuteAsync(tenantId, patch, cancellationToken);
         }
 
         /// <summary>
         /// Удалить текущего арендатора.
         /// </summary>
-        /// <param name="command">Команда.</param>
+        /// <param name="handler">Обработчик.</param>
         /// <param name="cancellationToken">Токен отмены.</param>
         /// <returns>Ответ 204 Без Содержимого если арендатор был удалён
         /// 404 Не Найден если текущий арендатор не был найден
@@ -241,16 +244,16 @@ namespace YA.TenantWorker.Controllers
         [SwaggerResponse(StatusCodes.Status404NotFound, "Арендатор не найден.")]
         [SwaggerResponse(StatusCodes.Status409Conflict, "Запрос-дубликат.", typeof(ProblemDetails))]
         public Task<IActionResult> DeleteTenantAsync(
-            [FromServices] IDeleteTenantCommand command,
+            [FromServices] IDeleteTenantAh handler,
             CancellationToken cancellationToken)
         {
-            return command.ExecuteAsync(cancellationToken);
+            return handler.ExecuteAsync(cancellationToken);
         }
 
         /// <summary>
         /// Удалить арендатора с указанным идентификатором.
         /// </summary>
-        /// <param name="command">Команда.</param>
+        /// <param name="handler">Обработчик.</param>
         /// <param name="tenantId">Идентификатор арендатора.</param>
         /// <param name="cancellationToken">Токен отмены.</param>
         /// <returns>Ответ 204 Без Содержимого если арендатор был удалён
@@ -262,11 +265,11 @@ namespace YA.TenantWorker.Controllers
         [SwaggerResponse(StatusCodes.Status404NotFound, "Арендатор с указанным идентификатором не найден.")]
         [SwaggerResponse(StatusCodes.Status409Conflict, "Запрос-дубликат.", typeof(ProblemDetails))]
         public Task<IActionResult> DeleteTenantByIdAsync(
-            [FromServices] IDeleteTenantByIdCommand command,
+            [FromServices] IDeleteTenantByIdAh handler,
             Guid tenantId,
             CancellationToken cancellationToken)
         {
-            return command.ExecuteAsync(tenantId, cancellationToken);
+            return handler.ExecuteAsync(tenantId, cancellationToken);
         }
     }
 }

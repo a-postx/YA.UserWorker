@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using MediatR;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.Logging;
 using System;
@@ -8,19 +9,22 @@ using YA.Common.Extensions;
 using YA.TenantWorker.Application.Models.SaveModels;
 using YA.TenantWorker.Application.Models.ViewModels;
 
-namespace YA.TenantWorker.Application.Commands
+namespace YA.TenantWorker.Application.ActionHandlers.ClientInfos
 {
-    public class PostClientInfoCommand : IPostClientInfoCommand
+    public class PostClientInfoAh : IPostClientInfoAh
     {
-        public PostClientInfoCommand(ILogger<PostClientInfoCommand> logger,
-            IActionContextAccessor actionContextAccessor)
+        public PostClientInfoAh(ILogger<PostClientInfoAh> logger,
+            IActionContextAccessor actionCtx,
+            IMediator mediator)
         {
             _log = logger ?? throw new ArgumentNullException(nameof(logger));
-            _actionContextAccessor = actionContextAccessor ?? throw new ArgumentNullException(nameof(actionContextAccessor));
+            _actionCtx = actionCtx ?? throw new ArgumentNullException(nameof(actionCtx));
+            _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
         }
 
-        private readonly ILogger<PostClientInfoCommand> _log;
-        private readonly IActionContextAccessor _actionContextAccessor;
+        private readonly ILogger<PostClientInfoAh> _log;
+        private readonly IActionContextAccessor _actionCtx;
+        private readonly IMediator _mediator;
 
         public async Task<IActionResult> ExecuteAsync(ClientInfoSm clientInfoSm, CancellationToken cancellationToken)
         {

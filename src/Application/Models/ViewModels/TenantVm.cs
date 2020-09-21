@@ -31,5 +31,15 @@ namespace YA.TenantWorker.Application.Models.ViewModels
         /// Date the pricing tier is valid for
         /// </summary>
         public DateTime PricingTierActivatedUntil { get; set; }
+
+        /// <summary>
+        /// Дата создания объекта.
+        /// </summary>
+        public DateTime CreatedDateTime { get; set; }
+
+        /// <summary>
+        /// Дата последней модификации объекта.
+        /// </summary>
+        public DateTime LastModifiedDateTime { get; set; }
     }
 }

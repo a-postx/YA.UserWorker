@@ -1,16 +1,16 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Delobytes.AspNetCore.Filters;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Net.Http.Headers;
 using Swashbuckle.AspNetCore.Annotations;
 using System.Threading;
 using System.Threading.Tasks;
 using YA.TenantWorker.Application.ActionFilters;
-using YA.TenantWorker.Application.Commands;
+using YA.TenantWorker.Application.ActionHandlers.ClientInfos;
+using YA.TenantWorker.Application.Models.SaveModels;
 using YA.TenantWorker.Application.Models.ViewModels;
 using YA.TenantWorker.Constants;
-using Microsoft.AspNetCore.Authorization;
-using Delobytes.AspNetCore.Filters;
-using YA.TenantWorker.Application.Models.SaveModels;
 
 namespace YA.TenantWorker.Controllers
 {
@@ -44,7 +44,7 @@ namespace YA.TenantWorker.Controllers
         /// <summary>
         /// Создать событие публикации информации о клиенте.
         /// </summary>
-        /// <param name="command">Команда.</param>
+        /// <param name="handler">Обработчик.</param>
         /// <param name="clientInfoSm">Информация о клиенте.</param>
         /// <param name="cancellationToken">Токен отмены.</param>
         /// <returns>Ответ 200 ОК содержащий результат публикации,
@@ -57,11 +57,11 @@ namespace YA.TenantWorker.Controllers
         [SwaggerResponse(StatusCodes.Status409Conflict, "Запрос-дубликат.", typeof(ProblemDetails))]        
         [SwaggerResponse(StatusCodes.Status415UnsupportedMediaType, "Тип MIME в заголовке Content-Type не поддерживается.", typeof(ProblemDetails))]
         public Task<IActionResult> PostClientInfoAsync(
-            [FromServices] IPostClientInfoCommand command,
+            [FromServices] IPostClientInfoAh handler,
             [FromBody] ClientInfoSm clientInfoSm,
             CancellationToken cancellationToken)
         {
-            return command.ExecuteAsync(clientInfoSm, cancellationToken);
+            return handler.ExecuteAsync(clientInfoSm, cancellationToken);
         }
     }
 }

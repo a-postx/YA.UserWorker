@@ -35,6 +35,8 @@ using MassTransit.PrometheusIntegration;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.IdentityModel.Protocols;
 using YA.Common.Constants;
+using System.Reflection;
+using MediatR;
 //using Elastic.Apm.NetCoreAll;
 
 namespace YA.TenantWorker
@@ -141,9 +143,10 @@ namespace YA.TenantWorker
                 .AddAuthorizationCore(options => options.AddPolicy("MustBeAdministrator", policy => policy.RequireClaim(YaClaimNames.role, "Administrator")));
 
             services.AddAutoMapper(typeof(Startup));
+            services.AddMediatR(Assembly.GetExecutingAssembly());
 
             services
-                .AddProjectCommands()
+                .AddProjectActionHandlers()
                 .AddProjectComponents()
                 .AddProjectMappers()
                 .AddProjectRepositories()

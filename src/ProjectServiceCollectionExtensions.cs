@@ -1,7 +1,8 @@
 using Delobytes.Mapper;
 using Microsoft.Extensions.DependencyInjection;
 using YA.TenantWorker.Application;
-using YA.TenantWorker.Application.Commands;
+using YA.TenantWorker.Application.ActionHandlers.ClientInfos;
+using YA.TenantWorker.Application.ActionHandlers.Tenants;
 using YA.TenantWorker.Application.Interfaces;
 using YA.TenantWorker.Application.Mappers;
 using YA.TenantWorker.Application.Models.ViewModels;
@@ -23,21 +24,21 @@ namespace YA.TenantWorker
     public static class ProjectServiceCollectionExtensions
     {
         /// <summary>
-        /// Add available commands to the service collection.
+        /// Add available action handlers to the service collection.
         /// </summary>
-        public static IServiceCollection AddProjectCommands(this IServiceCollection services)
+        public static IServiceCollection AddProjectActionHandlers(this IServiceCollection services)
         {
             return services
-                .AddScoped<IGetTenantCommand, GetTenantCommand>()
-                .AddScoped<IGetTenantByIdCommand, GetTenantByIdCommand>()
-                .AddScoped<IGetTenantAllPageCommand, GetTenantAllPageCommand>()
-                .AddScoped<IPostTenantCommand, PostTenantCommand>()
-                .AddScoped<IPatchTenantByIdCommand, PatchTenantByIdCommand>()
-                .AddScoped<IPatchTenantCommand, PatchTenantCommand>()
-                .AddScoped<IDeleteTenantByIdCommand, DeleteTenantByIdCommand>()
-                .AddScoped<IDeleteTenantCommand, DeleteTenantCommand>()
-
-                .AddScoped<IPostClientInfoCommand, PostClientInfoCommand>();
+                .AddScoped<IGetTenantAh, GetTenantAh>()
+                .AddScoped<IGetTenantByIdAh, GetTenantByIdAh>()
+                .AddScoped<IGetTenantAllPageAh, GetTenantAllPageAh>()
+                .AddScoped<IPatchTenantAh, PatchTenantAh>()
+                .AddScoped<IPatchTenantByIdAh, PatchTenantByIdAh>()
+                .AddScoped<IPostTenantAh, PostTenantAh>()
+                .AddScoped<IDeleteTenantAh, DeleteTenantAh>()
+                .AddScoped<IDeleteTenantByIdAh, DeleteTenantByIdAh>()
+                
+                .AddScoped<IPostClientInfoAh, PostClientInfoAh>();
         }
 
         /// <summary>
@@ -75,6 +76,7 @@ namespace YA.TenantWorker
             return services
                 .AddSingleton<IClockService, Clock>()
                 .AddScoped<IMessageBus, MessageBus>()
+                .AddScoped<IValidationProblemDetailsGenerator, ValidationProblemDetailsGenerator>()
                 .AddScoped<IRuntimeContextAccessor, RuntimeContextAccessor>()
                 .AddSingleton<IRuntimeGeoDataService, IpWhoisRuntimeGeoData>()
                 .AddHostedService<MessageBusService>();

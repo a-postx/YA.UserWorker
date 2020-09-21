@@ -208,17 +208,10 @@ namespace YA.TenantWorker
                 {
                     options.InvalidModelStateResponseFactory = context =>
                     {
-                        IRuntimeContextAccessor runtimeCtx = context.HttpContext.RequestServices.GetRequiredService<IRuntimeContextAccessor>();
+                        IValidationProblemDetailsGenerator generator = context.HttpContext.RequestServices
+                            .GetRequiredService<IValidationProblemDetailsGenerator>();
 
-                        ValidationProblemDetails problemDetails = new ValidationProblemDetails(context.ModelState)
-                        {
-                            Title = "Произошла ошибка валидации данных модели.",
-                            Status = StatusCodes.Status400BadRequest,
-                            Detail = "Обратитесь к свойству errors за дополнительной информацией.",
-                            Instance = context.HttpContext.Request.Path
-                        };
-                        problemDetails.Extensions.Add("traceId", runtimeCtx.GetTraceId());
-                        problemDetails.Extensions.Add("correlationId", runtimeCtx.GetCorrelationId());
+                        ValidationProblemDetails problemDetails = generator.Generate(context.ModelState);
 
                         return new BadRequestObjectResult(problemDetails);
                     };
