@@ -37,6 +37,7 @@ using Microsoft.IdentityModel.Protocols;
 using YA.Common.Constants;
 using System.Reflection;
 using MediatR;
+using YA.TenantWorker.Extensions;
 //using Elastic.Apm.NetCoreAll;
 
 namespace YA.TenantWorker

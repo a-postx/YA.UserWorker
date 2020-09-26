@@ -21,7 +21,7 @@ using System.Text.Unicode;
 using YA.TenantWorker.Application.Interfaces;
 using YA.TenantWorker.Options;
 
-namespace YA.TenantWorker
+namespace YA.TenantWorker.Extensions
 {
     internal static class MvcBuilderExtensions
     {

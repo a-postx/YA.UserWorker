@@ -14,7 +14,7 @@ using YA.Common.Constants;
 using YA.TenantWorker.Infrastructure.Logging.Requests;
 using YA.TenantWorker.Options;
 
-namespace YA.TenantWorker
+namespace YA.TenantWorker.Extensions
 {
     internal static class ApplicationBuilderExtensions
     {

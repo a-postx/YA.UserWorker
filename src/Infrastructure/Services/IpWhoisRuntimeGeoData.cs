@@ -5,9 +5,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using YA.Common;
-using YA.Common.Extensions;
 using YA.TenantWorker.Application.Interfaces;
 using YA.TenantWorker.Constants;
+using YA.TenantWorker.Extensions;
 using YA.TenantWorker.Infrastructure.Services.GeoDataModels;
 
 namespace YA.TenantWorker.Infrastructure.Services

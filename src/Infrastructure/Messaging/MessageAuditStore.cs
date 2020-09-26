@@ -5,9 +5,9 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using YA.Common.Constants;
-using YA.Common.Extensions;
 using YA.TenantWorker.Application.Enums;
 using YA.TenantWorker.Constants;
+using YA.TenantWorker.Extensions;
 
 namespace YA.TenantWorker.Infrastructure.Messaging
 {

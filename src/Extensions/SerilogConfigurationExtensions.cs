@@ -4,7 +4,7 @@ using Serilog.Core;
 using System;
 using YA.TenantWorker.Infrastructure.Logging.MbMessages;
 
-namespace YA.TenantWorker
+namespace YA.TenantWorker.Extensions
 {
     /// <summary>
     /// Provides various extension methods for configuring Serilog.

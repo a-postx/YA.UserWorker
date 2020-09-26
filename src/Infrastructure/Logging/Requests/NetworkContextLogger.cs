@@ -4,8 +4,8 @@ using Microsoft.Extensions.Primitives;
 using System;
 using System.Threading.Tasks;
 using YA.Common.Constants;
-using YA.Common.Extensions;
 using YA.TenantWorker.Constants;
+using YA.TenantWorker.Extensions;
 
 namespace YA.TenantWorker.Infrastructure.Logging.Requests
 {

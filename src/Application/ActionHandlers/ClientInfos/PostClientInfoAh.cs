@@ -5,9 +5,9 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using YA.Common.Extensions;
 using YA.TenantWorker.Application.Models.SaveModels;
 using YA.TenantWorker.Application.Models.ViewModels;
+using YA.TenantWorker.Extensions;
 
 namespace YA.TenantWorker.Application.ActionHandlers.ClientInfos
 {

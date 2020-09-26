@@ -14,6 +14,7 @@ using YA.Common;
 using YA.Common.Extensions;
 using YA.TenantWorker.Application.Interfaces;
 using YA.TenantWorker.Core.Entities;
+using YA.TenantWorker.Extensions;
 
 namespace YA.TenantWorker.Infrastructure.Data
 {

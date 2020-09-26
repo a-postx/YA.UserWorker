@@ -11,7 +11,7 @@ using YA.TenantWorker.Infrastructure.Data;
 using YA.TenantWorker.Infrastructure.Messaging;
 using YA.TenantWorker.Infrastructure.Services;
 
-namespace YA.TenantWorker
+namespace YA.TenantWorker.Extensions
 {
     /// <summary>
     /// <see cref="IServiceCollection"/> extension methods add project services.

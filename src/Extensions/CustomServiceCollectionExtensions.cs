@@ -28,7 +28,7 @@ using YA.TenantWorker.Health.System;
 using YA.TenantWorker.OperationFilters;
 using YA.TenantWorker.Options;
 
-namespace YA.TenantWorker
+namespace YA.TenantWorker.Extensions
 {
     /// <summary>
     /// <see cref="IServiceCollection"/> extension methods which extend ASP.NET Core services.

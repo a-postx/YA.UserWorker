@@ -4,9 +4,9 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Threading.Tasks;
 using YA.Common.Constants;
-using YA.Common.Extensions;
 using YA.TenantWorker.Application.Interfaces;
 using YA.TenantWorker.Application.Models.Dto;
+using YA.TenantWorker.Extensions;
 using YA.TenantWorker.Infrastructure.Messaging.Messages;
 
 namespace YA.TenantWorker.Infrastructure.Messaging.Consumers

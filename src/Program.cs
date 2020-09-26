@@ -24,6 +24,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using YA.TenantWorker.Application.Interfaces;
 using YA.TenantWorker.Constants;
+using YA.TenantWorker.Extensions;
 using YA.TenantWorker.Infrastructure.Data;
 using YA.TenantWorker.Options;
 

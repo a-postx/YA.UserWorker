@@ -2,7 +2,7 @@
 using System;
 using YA.TenantWorker.Infrastructure.Messaging.Filters;
 
-namespace YA.TenantWorker
+namespace YA.TenantWorker.Extensions
 {
     public static class MassTransitPipeConfiguratorExtensions
     {
