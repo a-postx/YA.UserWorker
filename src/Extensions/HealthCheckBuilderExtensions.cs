@@ -3,7 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using YA.TenantWorker.Health.System;
 
-namespace YA.TenantWorker.Health
+namespace YA.TenantWorker.Extensions
 {
     public static class HealthCheckBuilderExtensions
     {

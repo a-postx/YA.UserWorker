@@ -143,6 +143,7 @@ namespace YA.TenantWorker
             services
                 .AddAuthorizationCore(options => options.AddPolicy("MustBeAdministrator", policy => policy.RequireClaim(YaClaimNames.role, "Administrator")));
 
+            services.AddHttpClient();
             services.AddAutoMapper(typeof(Startup));
             services.AddMediatR(Assembly.GetExecutingAssembly());
 

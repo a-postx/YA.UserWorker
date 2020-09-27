@@ -47,20 +47,17 @@ namespace YA.TenantWorker.Infrastructure.Services
 
             while (!success)
             {
-                bool result = false;
-
                 try
                 {
-                    result = await NetTools.CheckTcpConnectionAsync(secrets.MessageBusHost, General.MessageBusServiceHealthPort);
+                    success = await NetTools.CheckTcpConnectionAsync(secrets.MessageBusHost, General.MessageBusServiceHealthPort);
                 }
                 catch (Exception ex)
                 {
                     _log.LogError(ex, nameof(MessageBusService) + " background service check has failed");
                 }
 
-                if (result)
+                if (success)
                 {
-                    success = true;
                     _messageBusServiceHealthCheck.MessageBusStartupTaskCompleted = true;
 
                     _log.LogInformation(nameof(MessageBusService) + " background service check succeeded.");
