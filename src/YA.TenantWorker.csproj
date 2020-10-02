@@ -85,7 +85,7 @@
     <PackageReference Include="Swashbuckle.AspNetCore" Version="5.6.3" />
     <PackageReference Include="Swashbuckle.AspNetCore.Annotations" Version="5.6.3" />
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="6.7.1" />
-    <PackageReference Include="YA.Common" Version="1.0.0" />
+    <PackageReference Include="YA.Common" Version="1.0.2" />
   </ItemGroup>
 
   <ItemGroup>

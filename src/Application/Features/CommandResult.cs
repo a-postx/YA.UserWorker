@@ -3,7 +3,7 @@ using FluentValidation.Results;
 using YA.TenantWorker.Application.Enums;
 using YA.TenantWorker.Application.Interfaces;
 
-namespace YA.TenantWorker.Application.CommandsAndQueries
+namespace YA.TenantWorker.Application.Features
 {
     public class CommandResult<TResult> : ICommandResult<TResult>
     {

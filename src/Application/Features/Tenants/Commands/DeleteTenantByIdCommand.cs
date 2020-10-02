@@ -9,13 +9,20 @@ using YA.TenantWorker.Application.Interfaces;
 using YA.TenantWorker.Application.Models.Dto;
 using YA.TenantWorker.Core.Entities;
 
-namespace YA.TenantWorker.Application.CommandsAndQueries.Tenants.Commands
+namespace YA.TenantWorker.Application.Features.Tenants.Commands
 {
-    public class DeleteTenantCommand : IRequest<ICommandResult<EmptyCommandResult>>
+    public class DeleteTenantByIdCommand : IRequest<ICommandResult<EmptyCommandResult>>
     {
-        public class DeleteTenantHandler : IRequestHandler<DeleteTenantCommand, ICommandResult<EmptyCommandResult>>
+        public DeleteTenantByIdCommand(Guid id)
         {
-            public DeleteTenantHandler(ILogger<DeleteTenantHandler> logger,
+            Id = id;
+        }
+
+        public Guid Id { get; protected set; }
+
+        public class DeleteTenantByIdHandler : IRequestHandler<DeleteTenantByIdCommand, ICommandResult<EmptyCommandResult>>
+        {
+            public DeleteTenantByIdHandler(ILogger<DeleteTenantByIdHandler> logger,
                 IMapper mapper,
                 ITenantWorkerDbContext dbContext,
                 IMessageBus messageBus)
@@ -26,15 +33,21 @@ namespace YA.TenantWorker.Application.CommandsAndQueries.Tenants.Commands
                 _messageBus = messageBus ?? throw new ArgumentNullException(nameof(messageBus));
             }
 
-            private readonly ILogger<DeleteTenantHandler> _log;
+            private readonly ILogger<DeleteTenantByIdHandler> _log;
             private readonly IMapper _mapper;
             private readonly ITenantWorkerDbContext _dbContext;
             private readonly IMessageBus _messageBus;
 
-            public async Task<ICommandResult<EmptyCommandResult>> Handle(DeleteTenantCommand command, CancellationToken cancellationToken)
+            public async Task<ICommandResult<EmptyCommandResult>> Handle(DeleteTenantByIdCommand command, CancellationToken cancellationToken)
             {
+                Guid tenantId = command.Id;
 
-                Tenant tenant = await _dbContext.GetTenantAsync(cancellationToken);
+                if (tenantId == Guid.Empty)
+                {
+                    return new CommandResult<EmptyCommandResult>(CommandStatuses.BadRequest, null);
+                }
+
+                Tenant tenant = await _dbContext.GetTenantAsync(e => e.TenantID == tenantId, cancellationToken);
 
                 if (tenant == null)
                 {

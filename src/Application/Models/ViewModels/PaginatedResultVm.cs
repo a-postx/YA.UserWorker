@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Routing;
 using System;
 using System.Collections.Generic;
+using YA.TenantWorker.Application.Models.Dto;
 
 namespace YA.TenantWorker.Application.Models.ViewModels
 {

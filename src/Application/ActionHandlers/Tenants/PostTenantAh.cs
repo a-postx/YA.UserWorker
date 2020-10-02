@@ -10,11 +10,13 @@ using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
 using YA.Common.Constants;
-using YA.TenantWorker.Application.CommandsAndQueries.Tenants.Commands;
+using YA.TenantWorker.Application.Features.Tenants.Commands;
 using YA.TenantWorker.Application.Enums;
 using YA.TenantWorker.Application.Interfaces;
 using YA.TenantWorker.Application.Models.ViewModels;
 using YA.TenantWorker.Constants;
+using Delobytes.Mapper;
+using YA.TenantWorker.Core.Entities;
 
 namespace YA.TenantWorker.Application.ActionHandlers.Tenants
 {
@@ -22,16 +24,19 @@ namespace YA.TenantWorker.Application.ActionHandlers.Tenants
     {
         public PostTenantAh(ILogger<PostTenantAh> logger,
             IActionContextAccessor actionCtx,
-            IMediator mediator)
+            IMediator mediator,
+            IMapper<Tenant, TenantVm> tenantVmMapper)
         {
             _log = logger ?? throw new ArgumentNullException(nameof(logger));
             _actionCtx = actionCtx ?? throw new ArgumentNullException(nameof(actionCtx));
             _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
+            _tenantVmMapper = tenantVmMapper ?? throw new ArgumentNullException(nameof(tenantVmMapper));
         }
 
         private readonly ILogger<PostTenantAh> _log;
         private readonly IActionContextAccessor _actionCtx;
         private readonly IMediator _mediator;
+        private readonly IMapper<Tenant, TenantVm> _tenantVmMapper;
 
         public async Task<IActionResult> ExecuteAsync(CancellationToken cancellationToken)
         {
@@ -49,7 +54,7 @@ namespace YA.TenantWorker.Application.ActionHandlers.Tenants
                 return new BadRequestResult();
             }
 
-            ICommandResult<TenantVm> result = await _mediator
+            ICommandResult<Tenant> result = await _mediator
                 .Send(new PostTenantCommand(userId, userEmail), cancellationToken);
 
             switch (result.Status)
@@ -63,7 +68,9 @@ namespace YA.TenantWorker.Application.ActionHandlers.Tenants
                     _actionCtx.ActionContext.HttpContext
                         .Response.Headers.Add(HeaderNames.LastModified, result.Data.LastModifiedDateTime.ToString("R", CultureInfo.InvariantCulture));
 
-                    return new CreatedAtRouteResult(RouteNames.GetTenant, new { TenantId = result.Data.TenantId, TenantName = result.Data.TenantName }, result.Data);
+                    TenantVm tenantVm = _tenantVmMapper.Map(result.Data);
+
+                    return new CreatedAtRouteResult(RouteNames.GetTenant, new { TenantId = tenantVm.TenantId, TenantName = tenantVm.TenantName }, tenantVm);
             }
         }
     }

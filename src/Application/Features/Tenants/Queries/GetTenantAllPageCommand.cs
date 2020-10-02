@@ -1,5 +1,4 @@
-﻿using Delobytes.Mapper;
-using MediatR;
+﻿using MediatR;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -7,14 +6,14 @@ using System.Threading;
 using System.Threading.Tasks;
 using YA.TenantWorker.Application.Enums;
 using YA.TenantWorker.Application.Interfaces;
-using YA.TenantWorker.Application.Models.BusinessModels;
-using YA.TenantWorker.Application.Models.ViewModels;
+using YA.TenantWorker.Application.Models.Dto;
 using YA.TenantWorker.Constants;
+using YA.TenantWorker.Core;
 using YA.TenantWorker.Core.Entities;
 
-namespace YA.TenantWorker.Application.CommandsAndQueries.Tenants.Queries
+namespace YA.TenantWorker.Application.Features.Tenants.Queries
 {
-    public class GetTenantAllPageCommand : IRequest<ICommandResult<PaginatedResultBm<TenantVm>>>
+    public class GetTenantAllPageCommand : IRequest<ICommandResult<PaginatedResult<Tenant>>>
     {
         public GetTenantAllPageCommand(PageOptions pageOptions, DateTimeOffset? createdAfter, DateTimeOffset? createdBefore)
         {
@@ -27,28 +26,25 @@ namespace YA.TenantWorker.Application.CommandsAndQueries.Tenants.Queries
         public DateTimeOffset? CreatedAfter { get; protected set; }
         public DateTimeOffset? CreatedBefore { get; protected set; }
 
-        public class GetTenantAllPageHandler : IRequestHandler<GetTenantAllPageCommand, ICommandResult<PaginatedResultBm<TenantVm>>>
+        public class GetTenantAllPageHandler : IRequestHandler<GetTenantAllPageCommand, ICommandResult<PaginatedResult<Tenant>>>
         {
             public GetTenantAllPageHandler(ILogger<GetTenantAllPageHandler> logger,
-                ITenantWorkerDbContext dbContext,
-                IMapper<Tenant, TenantVm> tenantVmMapper)
+                ITenantWorkerDbContext dbContext)
             {
                 _log = logger ?? throw new ArgumentNullException(nameof(logger));
                 _dbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
-                _tenantVmMapper = tenantVmMapper ?? throw new ArgumentNullException(nameof(tenantVmMapper));
             }
 
             private readonly ILogger<GetTenantAllPageHandler> _log;
             private readonly ITenantWorkerDbContext _dbContext;
-            private readonly IMapper<Tenant, TenantVm> _tenantVmMapper;
 
-            public async Task<ICommandResult<PaginatedResultBm<TenantVm>>> Handle(GetTenantAllPageCommand command, CancellationToken cancellationToken)
+            public async Task<ICommandResult<PaginatedResult<Tenant>>> Handle(GetTenantAllPageCommand command, CancellationToken cancellationToken)
             {
                 PageOptions pageOptions = command.Options;
 
                 if (pageOptions == null)
                 {
-                    return new CommandResult<PaginatedResultBm<TenantVm>>(CommandStatuses.BadRequest, null);
+                    return new CommandResult<PaginatedResult<Tenant>>(CommandStatuses.BadRequest, null);
                 }
 
                 pageOptions.First = !pageOptions.First.HasValue && !pageOptions.Last.HasValue ? General.DefaultPageSizeForPagination : pageOptions.First;
@@ -70,19 +66,18 @@ namespace YA.TenantWorker.Application.CommandsAndQueries.Tenants.Queries
 
                 if (items == null)
                 {
-                    return new CommandResult<PaginatedResultBm<TenantVm>>(CommandStatuses.NotFound, null);
+                    return new CommandResult<PaginatedResult<Tenant>>(CommandStatuses.NotFound, null);
                 }
 
-                List<TenantVm> itemVms = _tenantVmMapper.MapList(items);
 
-                PaginatedResultBm<TenantVm> result = new PaginatedResultBm<TenantVm>(
+                PaginatedResult<Tenant> result = new PaginatedResult<Tenant>(
                     hasNextPage,
                     hasPreviousPage,
                     totalCount,
-                    itemVms
+                    items
                 );
 
-                return new CommandResult<PaginatedResultBm<TenantVm>>(CommandStatuses.Ok, result);
+                return new CommandResult<PaginatedResult<Tenant>>(CommandStatuses.Ok, result);
             }
         }
     }

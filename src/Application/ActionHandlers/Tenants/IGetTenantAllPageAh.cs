@@ -1,5 +1,5 @@
 ﻿using Delobytes.AspNetCore;
-using YA.TenantWorker.Application.Models.ViewModels;
+using YA.TenantWorker.Application.Models.Dto;
 
 namespace YA.TenantWorker.Application.ActionHandlers.Tenants
 {

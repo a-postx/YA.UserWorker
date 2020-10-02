@@ -9,10 +9,12 @@ using System;
 using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
-using YA.TenantWorker.Application.CommandsAndQueries.Tenants.Queries;
+using YA.TenantWorker.Application.Features.Tenants.Queries;
 using YA.TenantWorker.Application.Enums;
 using YA.TenantWorker.Application.Interfaces;
 using YA.TenantWorker.Application.Models.ViewModels;
+using YA.TenantWorker.Core.Entities;
+using Delobytes.Mapper;
 
 namespace YA.TenantWorker.Application.ActionHandlers.Tenants
 {
@@ -20,20 +22,23 @@ namespace YA.TenantWorker.Application.ActionHandlers.Tenants
     {
         public GetTenantAh(ILogger<GetTenantAh> logger,
             IActionContextAccessor actionCtx,
-            IMediator mediator)
+            IMediator mediator,
+            IMapper<Tenant, TenantVm> tenantVmMapper)
         {
             _log = logger ?? throw new ArgumentNullException(nameof(logger));
             _actionCtx = actionCtx ?? throw new ArgumentNullException(nameof(actionCtx));
             _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
+            _tenantVmMapper = tenantVmMapper ?? throw new ArgumentNullException(nameof(tenantVmMapper));
         }
 
         private readonly ILogger<GetTenantAh> _log;
         private readonly IActionContextAccessor _actionCtx;
         private readonly IMediator _mediator;
+        private readonly IMapper<Tenant, TenantVm> _tenantVmMapper;
 
         public async Task<IActionResult> ExecuteAsync(CancellationToken cancellationToken)
         {
-            ICommandResult<TenantVm> result = await _mediator
+            ICommandResult<Tenant> result = await _mediator
                 .Send(new GetTenantCommand(), cancellationToken);
 
             switch (result.Status)
@@ -56,7 +61,9 @@ namespace YA.TenantWorker.Application.ActionHandlers.Tenants
                     _actionCtx.ActionContext.HttpContext
                         .Response.Headers.Add(HeaderNames.LastModified, result.Data.LastModifiedDateTime.ToString("R", CultureInfo.InvariantCulture));
 
-                    return new OkObjectResult(result.Data);
+                    TenantVm tenantViewModel = _tenantVmMapper.Map(result.Data);
+
+                    return new OkObjectResult(tenantViewModel);
             }
         }
     }

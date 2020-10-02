@@ -5,8 +5,8 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using YA.TenantWorker.Application.CommandsAndQueries;
-using YA.TenantWorker.Application.CommandsAndQueries.Tenants.Commands;
+using YA.TenantWorker.Application.Features;
+using YA.TenantWorker.Application.Features.Tenants.Commands;
 using YA.TenantWorker.Application.Enums;
 using YA.TenantWorker.Application.Interfaces;
 

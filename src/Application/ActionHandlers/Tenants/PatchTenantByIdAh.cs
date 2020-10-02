@@ -6,11 +6,13 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using YA.TenantWorker.Application.CommandsAndQueries.Tenants.Commands;
+using YA.TenantWorker.Application.Features.Tenants.Commands;
 using YA.TenantWorker.Application.Enums;
 using YA.TenantWorker.Application.Interfaces;
 using YA.TenantWorker.Application.Models.SaveModels;
 using YA.TenantWorker.Application.Models.ViewModels;
+using YA.TenantWorker.Core.Entities;
+using Delobytes.Mapper;
 
 namespace YA.TenantWorker.Application.ActionHandlers.Tenants
 {
@@ -19,22 +21,25 @@ namespace YA.TenantWorker.Application.ActionHandlers.Tenants
         public PatchTenantByIdAh(ILogger<PatchTenantAh> logger,
             IActionContextAccessor actionCtx,
             IMediator mediator,
-            IValidationProblemDetailsGenerator generator)
+            IValidationProblemDetailsGenerator generator,
+            IMapper<Tenant, TenantVm> tenantVmMapper)
         {
             _log = logger ?? throw new ArgumentNullException(nameof(logger));
             _actionCtx = actionCtx ?? throw new ArgumentNullException(nameof(actionCtx));
             _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
             _problemDetailsGenerator = generator ?? throw new ArgumentNullException(nameof(generator));
+            _tenantVmMapper = tenantVmMapper ?? throw new ArgumentNullException(nameof(tenantVmMapper));
         }
 
         private readonly ILogger<PatchTenantAh> _log;
         private readonly IActionContextAccessor _actionCtx;
         private readonly IMediator _mediator;
         private readonly IValidationProblemDetailsGenerator _problemDetailsGenerator;
+        private readonly IMapper<Tenant, TenantVm> _tenantVmMapper;
 
         public async Task<IActionResult> ExecuteAsync(Guid yaTenantId, JsonPatchDocument<TenantSm> patch, CancellationToken cancellationToken)
         {
-            ICommandResult<TenantVm> result = await _mediator
+            ICommandResult<Tenant> result = await _mediator
                 .Send(new PatchTenantByIdCommand(yaTenantId, patch), cancellationToken);
 
             switch (result.Status)
@@ -50,7 +55,8 @@ namespace YA.TenantWorker.Application.ActionHandlers.Tenants
                 case CommandStatuses.NotFound:
                     return new NotFoundResult();
                 case CommandStatuses.Ok:
-                    return new OkObjectResult(result.Data);
+                    TenantVm tenantVm = _tenantVmMapper.Map(result.Data);
+                    return new OkObjectResult(tenantVm);
             }
         }
     }

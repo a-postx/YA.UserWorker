@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-using Delobytes.Mapper;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using System;
@@ -9,13 +8,12 @@ using YA.Common;
 using YA.TenantWorker.Application.Enums;
 using YA.TenantWorker.Application.Interfaces;
 using YA.TenantWorker.Application.Models.Dto;
-using YA.TenantWorker.Application.Models.ViewModels;
 using YA.TenantWorker.Constants;
 using YA.TenantWorker.Core.Entities;
 
-namespace YA.TenantWorker.Application.CommandsAndQueries.Tenants.Commands
+namespace YA.TenantWorker.Application.Features.Tenants.Commands
 {
-    public class PostTenantCommand : IRequest<ICommandResult<TenantVm>>
+    public class PostTenantCommand : IRequest<ICommandResult<Tenant>>
     {
         public PostTenantCommand(string userId, string userEmail)
         {
@@ -26,28 +24,26 @@ namespace YA.TenantWorker.Application.CommandsAndQueries.Tenants.Commands
         public string UserId { get; protected set; }
         public string UserEmail { get; protected set; }
 
-        public class PostTenantHandler : IRequestHandler<PostTenantCommand, ICommandResult<TenantVm>>
+        public class PostTenantHandler : IRequestHandler<PostTenantCommand, ICommandResult<Tenant>>
         {
             public PostTenantHandler(ILogger<PostTenantHandler> logger,
                 IMapper mapper,
                 ITenantWorkerDbContext dbContext,
-                IMessageBus messageBus,
-                IMapper<Tenant, TenantVm> tenantVmMapper)
+                IMessageBus messageBus)
             {
                 _log = logger ?? throw new ArgumentNullException(nameof(logger));
                 _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
                 _dbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
                 _messageBus = messageBus ?? throw new ArgumentNullException(nameof(messageBus));
-                _tenantVmMapper = tenantVmMapper ?? throw new ArgumentNullException(nameof(tenantVmMapper));
+                
             }
 
             private readonly ILogger<PostTenantHandler> _log;
             private readonly IMapper _mapper;
             private readonly ITenantWorkerDbContext _dbContext;
             private readonly IMessageBus _messageBus;
-            private readonly IMapper<Tenant, TenantVm> _tenantVmMapper;
 
-            public async Task<ICommandResult<TenantVm>> Handle(PostTenantCommand command, CancellationToken cancellationToken)
+            public async Task<ICommandResult<Tenant>> Handle(PostTenantCommand command, CancellationToken cancellationToken)
             {
                 string userId = command.UserId;
                 string userEmail = command.UserEmail;
@@ -56,7 +52,7 @@ namespace YA.TenantWorker.Application.CommandsAndQueries.Tenants.Commands
 
                 if (existingTenant != null)
                 {
-                    return new CommandResult<TenantVm>(CommandStatuses.UnprocessableEntity, null);
+                    return new CommandResult<Tenant>(CommandStatuses.UnprocessableEntity, null);
                 }
 
 
@@ -79,9 +75,7 @@ namespace YA.TenantWorker.Application.CommandsAndQueries.Tenants.Commands
 
                 await _messageBus.TenantCreatedV1Async(tenant.TenantID, _mapper.Map<TenantTm>(tenant), cancellationToken);
 
-                TenantVm tenantVm = _tenantVmMapper.Map(tenant);
-
-                return new CommandResult<TenantVm>(CommandStatuses.Ok, tenantVm);
+                return new CommandResult<Tenant>(CommandStatuses.Ok, tenant);
             }
         }
     }

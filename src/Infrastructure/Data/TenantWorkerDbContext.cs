@@ -78,37 +78,57 @@ namespace YA.TenantWorker.Infrastructure.Data
         public Task<List<T>> GetEntitiesPagedAsync<T>(int? first, DateTimeOffset? createdAfter,
             DateTimeOffset? createdBefore, CancellationToken cancellationToken) where T : class, IAuditedEntityBase, IRowVersionedEntity
         {
-            return Task.FromResult(Set<T>().OrderBy(t => t.tstamp)
+            return Task.FromResult(Set<T>()
+                .OrderBy(t => t.CreatedDateTime)
                 .If(createdAfter.HasValue, x => x.Where(y => y.CreatedDateTime > createdAfter.Value))
                 .If(createdBefore.HasValue, x => x.Where(y => y.CreatedDateTime < createdBefore.Value))
                 .If(first.HasValue, x => x.Take(first.Value))
                 .ToList());
         }
 
-        public Task<List<T>> GetEntitiesPagedReverseAsync<T>(int? last, DateTimeOffset? createdAfter, DateTimeOffset? createdBefore, CancellationToken cancellationToken) where T : class, IAuditedEntityBase, IRowVersionedEntity
+        public Task<List<T>> GetEntitiesPagedReverseAsync<T>(int? last, DateTimeOffset? createdAfter,
+            DateTimeOffset? createdBefore, bool orderDesc, CancellationToken cancellationToken) where T : class, IAuditedEntityBase, IRowVersionedEntity
         {
-            return Task.FromResult(Set<T>().OrderBy(t => t.tstamp)
+            return Task.FromResult(Set<T>()
+                .IfElse(orderDesc,
+                    x => x.OrderByDescending(t => t.CreatedDateTime),
+                    x => x.OrderBy(t => t.CreatedDateTime))
                 .If(createdAfter.HasValue, x => x.Where(y => y.CreatedDateTime > createdAfter.Value))
                 .If(createdBefore.HasValue, x => x.Where(y => y.CreatedDateTime < createdBefore.Value))
-                //converting to Enumerable because of error "This overload of the method 'System.Linq.Queryable.TakeLast' is currently not supported." in v.4.0.3.0
-                .If(last.HasValue, x => x.AsEnumerable().TakeLast(last.Value))
+                //применяем хак, TakeLast не работает в EF - "This overload of the method 'System.Linq.Queryable.TakeLast' is currently not supported." in v.4.2.2.0
+                .If(last.HasValue, x =>
+                    x.IfElse(orderDesc,
+                        y => y.OrderBy(t => t.CreatedDateTime).Take(last.Value).OrderByDescending(t => t.CreatedDateTime),
+                        y => y.OrderByDescending(t => t.CreatedDateTime).Take(last.Value).OrderBy(t => t.CreatedDateTime)))
+                ////x.TakeLast(last.Value))
                 .ToList());
         }
 
         public Task<bool> GetEntitiesPagedHasNextPageAsync<T>(int? first, DateTimeOffset? createdAfter, CancellationToken cancellationToken) where T : class, IAuditedEntityBase, IRowVersionedEntity
         {
-            return Task.FromResult(Set<T>().OrderBy(t => t.tstamp)
+            return Task.FromResult(Set<T>()
+                .OrderBy(t => t.CreatedDateTime)
                 .If(createdAfter.HasValue, x => x.Where(y => y.CreatedDateTime > createdAfter.Value))
                 .Skip(first.Value)
                 .Any());
         }
 
-        public Task<bool> GetEntitiesPagedHasPreviousPageAsync<T>(int? last, DateTimeOffset? createdBefore, CancellationToken cancellationToken) where T : class, IAuditedEntityBase, IRowVersionedEntity
+        public Task<bool> GetEntitiesPagedHasPreviousPageAsync<T>(int? last, DateTimeOffset? borderDate,
+            bool orderDesc, CancellationToken cancellationToken) where T : class, IAuditedEntityBase, IRowVersionedEntity
         {
-            return Task.FromResult(Set<T>().OrderBy(t => t.tstamp)
-                .If(createdBefore.HasValue, x => x.Where(y => y.CreatedDateTime < createdBefore.Value))
-                //converting to Enumerable because of error "This overload of the method 'System.Linq.Queryable.SkipLast' is currently not supported." in v.4.0.3.0
-                .AsEnumerable().SkipLast(last.Value)
+            return Task.FromResult(Set<T>()
+                .IfElse(orderDesc,
+                    x => x.OrderByDescending(t => t.CreatedDateTime),
+                    x => x.OrderBy(t => t.CreatedDateTime))
+                .If(borderDate.HasValue, x =>
+                    x.IfElse(orderDesc,
+                        y => y.Where(y => y.CreatedDateTime > borderDate.Value),
+                        y => y.Where(y => y.CreatedDateTime < borderDate.Value)))
+                //применяем хак, TakeLast не работает в EF - "This overload of the method 'System.Linq.Queryable.TakeLast' is currently not supported." in v.4.2.2.0
+                .IfElse(orderDesc,
+                    x => x.OrderBy(y => y.CreatedDateTime).Skip(last.Value).OrderByDescending(t => t.CreatedDateTime),
+                    x => x.OrderByDescending(y => y.CreatedDateTime).Skip(last.Value).OrderBy(t => t.CreatedDateTime))
+                ////.SkipLast(last.Value)
                 .Any());
         }
 
@@ -123,7 +143,7 @@ namespace YA.TenantWorker.Infrastructure.Data
             }
             else
             {
-                getTenantsTask = GetEntitiesPagedReverseAsync<T>(last, createdAfter, createdBefore, cancellationToken);
+                getTenantsTask = GetEntitiesPagedReverseAsync<T>(last, createdAfter, createdBefore, false, cancellationToken);
             }
 
             return getTenantsTask;
@@ -149,7 +169,7 @@ namespace YA.TenantWorker.Infrastructure.Data
         {
             if (last.HasValue)
             {
-                return await GetEntitiesPagedHasPreviousPageAsync<T>(last, createdBefore, cancellationToken);
+                return await GetEntitiesPagedHasPreviousPageAsync<T>(last, createdBefore, false, cancellationToken);
             }
             else if (createdAfter.HasValue)
             {
