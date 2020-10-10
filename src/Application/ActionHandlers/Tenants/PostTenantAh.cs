@@ -55,7 +55,7 @@ namespace YA.TenantWorker.Application.ActionHandlers.Tenants
             }
 
             ICommandResult<Tenant> result = await _mediator
-                .Send(new PostTenantCommand(userId, userEmail), cancellationToken);
+                .Send(new CreateTenantCommand(userId, userEmail), cancellationToken);
 
             switch (result.Status)
             {

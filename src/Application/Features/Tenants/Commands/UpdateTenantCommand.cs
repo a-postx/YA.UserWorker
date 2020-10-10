@@ -15,18 +15,18 @@ using YA.TenantWorker.Core.Entities;
 
 namespace YA.TenantWorker.Application.Features.Tenants.Commands
 {
-    public class PatchTenantCommand : IRequest<ICommandResult<Tenant>>
+    public class UpdateTenantCommand : IRequest<ICommandResult<Tenant>>
     {
-        public PatchTenantCommand(JsonPatchDocument<TenantSm> patch)
+        public UpdateTenantCommand(JsonPatchDocument<TenantSm> patch)
         {
             Patch = patch;
         }
 
         public JsonPatchDocument<TenantSm> Patch { get; protected set; }
 
-        public class PatchTenantHandler : IRequestHandler<PatchTenantCommand, ICommandResult<Tenant>>
+        public class UpdateTenantHandler : IRequestHandler<UpdateTenantCommand, ICommandResult<Tenant>>
         {
-            public PatchTenantHandler(ILogger<PatchTenantHandler> logger,
+            public UpdateTenantHandler(ILogger<UpdateTenantHandler> logger,
                 IMapper mapper,
                 ITenantWorkerDbContext dbContext,
                 IMessageBus messageBus)
@@ -37,12 +37,12 @@ namespace YA.TenantWorker.Application.Features.Tenants.Commands
                 _messageBus = messageBus ?? throw new ArgumentNullException(nameof(messageBus));
             }
 
-            private readonly ILogger<PatchTenantHandler> _log;
+            private readonly ILogger<UpdateTenantHandler> _log;
             private readonly IMapper _mapper;
             private readonly ITenantWorkerDbContext _dbContext;
             private readonly IMessageBus _messageBus;
 
-            public async Task<ICommandResult<Tenant>> Handle(PatchTenantCommand command, CancellationToken cancellationToken)
+            public async Task<ICommandResult<Tenant>> Handle(UpdateTenantCommand command, CancellationToken cancellationToken)
             {
                 JsonPatchDocument<TenantSm> patch = command.Patch;
 

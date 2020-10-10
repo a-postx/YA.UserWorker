@@ -15,9 +15,9 @@ using YA.TenantWorker.Core.Entities;
 
 namespace YA.TenantWorker.Application.Features.Tenants.Commands
 {
-    public class PatchTenantByIdCommand : IRequest<ICommandResult<Tenant>>
+    public class UpdateTenantByIdCommand : IRequest<ICommandResult<Tenant>>
     {
-        public PatchTenantByIdCommand(Guid tenantId, JsonPatchDocument<TenantSm> patch)
+        public UpdateTenantByIdCommand(Guid tenantId, JsonPatchDocument<TenantSm> patch)
         {
             TenantId = tenantId;
             Patch = patch;
@@ -26,9 +26,9 @@ namespace YA.TenantWorker.Application.Features.Tenants.Commands
         public Guid TenantId { get; protected set; }
         public JsonPatchDocument<TenantSm> Patch { get; protected set; }
 
-        public class PatchTenantByIdHandler : IRequestHandler<PatchTenantByIdCommand, ICommandResult<Tenant>>
+        public class UpdateTenantByIdHandler : IRequestHandler<UpdateTenantByIdCommand, ICommandResult<Tenant>>
         {
-            public PatchTenantByIdHandler(ILogger<PatchTenantByIdHandler> logger,
+            public UpdateTenantByIdHandler(ILogger<UpdateTenantByIdHandler> logger,
                 IMapper mapper,
                 ITenantWorkerDbContext dbContext,
                 IMessageBus messageBus)
@@ -39,12 +39,12 @@ namespace YA.TenantWorker.Application.Features.Tenants.Commands
                 _messageBus = messageBus ?? throw new ArgumentNullException(nameof(messageBus));
             }
 
-            private readonly ILogger<PatchTenantByIdHandler> _log;
+            private readonly ILogger<UpdateTenantByIdHandler> _log;
             private readonly IMapper _mapper;
             private readonly ITenantWorkerDbContext _dbContext;
             private readonly IMessageBus _messageBus;
 
-            public async Task<ICommandResult<Tenant>> Handle(PatchTenantByIdCommand command, CancellationToken cancellationToken)
+            public async Task<ICommandResult<Tenant>> Handle(UpdateTenantByIdCommand command, CancellationToken cancellationToken)
             {
                 Guid tenantId = command.TenantId;
                 JsonPatchDocument<TenantSm> patch = command.Patch;

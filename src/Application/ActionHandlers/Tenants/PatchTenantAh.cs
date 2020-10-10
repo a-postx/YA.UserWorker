@@ -40,7 +40,7 @@ namespace YA.TenantWorker.Application.ActionHandlers.Tenants
         public async Task<IActionResult> ExecuteAsync(JsonPatchDocument<TenantSm> patch, CancellationToken cancellationToken)
         {
             ICommandResult<Tenant> result = await _mediator
-                .Send(new PatchTenantCommand(patch), cancellationToken);
+                .Send(new UpdateTenantCommand(patch), cancellationToken);
 
             switch (result.Status)
             {

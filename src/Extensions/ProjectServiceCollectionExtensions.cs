@@ -1,6 +1,5 @@
 using Delobytes.Mapper;
 using Microsoft.Extensions.DependencyInjection;
-using YA.TenantWorker.Application;
 using YA.TenantWorker.Application.ActionHandlers.ClientInfos;
 using YA.TenantWorker.Application.ActionHandlers.Tenants;
 using YA.TenantWorker.Application.Interfaces;
@@ -39,15 +38,6 @@ namespace YA.TenantWorker.Extensions
                 .AddScoped<IDeleteTenantByIdAh, DeleteTenantByIdAh>()
                 
                 .AddScoped<IPostClientInfoAh, PostClientInfoAh>();
-        }
-
-        /// <summary>
-        /// Add project domain components to the service collection.
-        /// </summary>
-        public static IServiceCollection AddProjectComponents(this IServiceCollection services)
-        {
-            return services
-                .AddScoped<ITenantManager, TenantManager>();
         }
 
         /// <summary>

@@ -149,7 +149,6 @@ namespace YA.TenantWorker
 
             services
                 .AddProjectActionHandlers()
-                .AddProjectComponents()
                 .AddProjectMappers()
                 .AddProjectRepositories()
                 .AddProjectServices();
@@ -202,6 +201,7 @@ namespace YA.TenantWorker
                             x.Interval(2, 500);
                         });
                         e.UseMbContextFilter();
+                        e.UseInMemoryOutbox();
 
                         e.ConfigureConsumer<GetPricingTierConsumer>(context);
                     });

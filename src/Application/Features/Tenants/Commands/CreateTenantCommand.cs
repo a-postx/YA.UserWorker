@@ -13,9 +13,9 @@ using YA.TenantWorker.Core.Entities;
 
 namespace YA.TenantWorker.Application.Features.Tenants.Commands
 {
-    public class PostTenantCommand : IRequest<ICommandResult<Tenant>>
+    public class CreateTenantCommand : IRequest<ICommandResult<Tenant>>
     {
-        public PostTenantCommand(string userId, string userEmail)
+        public CreateTenantCommand(string userId, string userEmail)
         {
             UserId = userId;
             UserEmail = userEmail;
@@ -24,7 +24,7 @@ namespace YA.TenantWorker.Application.Features.Tenants.Commands
         public string UserId { get; protected set; }
         public string UserEmail { get; protected set; }
 
-        public class PostTenantHandler : IRequestHandler<PostTenantCommand, ICommandResult<Tenant>>
+        public class PostTenantHandler : IRequestHandler<CreateTenantCommand, ICommandResult<Tenant>>
         {
             public PostTenantHandler(ILogger<PostTenantHandler> logger,
                 IMapper mapper,
@@ -43,7 +43,7 @@ namespace YA.TenantWorker.Application.Features.Tenants.Commands
             private readonly ITenantWorkerDbContext _dbContext;
             private readonly IMessageBus _messageBus;
 
-            public async Task<ICommandResult<Tenant>> Handle(PostTenantCommand command, CancellationToken cancellationToken)
+            public async Task<ICommandResult<Tenant>> Handle(CreateTenantCommand command, CancellationToken cancellationToken)
             {
                 string userId = command.UserId;
                 string userEmail = command.UserEmail;
