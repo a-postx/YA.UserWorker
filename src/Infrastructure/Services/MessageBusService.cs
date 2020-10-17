@@ -1,15 +1,15 @@
-﻿using System;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using MassTransit;
 using MassTransit.Audit;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using YA.Common;
-using YA.TenantWorker.Constants;
 using YA.TenantWorker.Health.Services;
 using YA.TenantWorker.Infrastructure.Messaging.Test;
+using YA.TenantWorker.Options;
 
 namespace YA.TenantWorker.Infrastructure.Services
 {
@@ -19,20 +19,20 @@ namespace YA.TenantWorker.Infrastructure.Services
     public class MessageBusService : BackgroundService
     {
         public MessageBusService(ILogger<MessageBusService> logger,
-            IConfiguration config,
+            IOptions<AppSecrets> secrets,
             IBusControl busControl,
             IMessageAuditStore auditStore,
             MessageBusServiceHealthCheck messageBusServiceHealthCheck)
         {
             _log = logger ?? throw new ArgumentNullException(nameof(logger));
-            _config = config ?? throw new ArgumentNullException(nameof(config));
+            _appSecrets = secrets.Value;
             _busControl = busControl ?? throw new ArgumentNullException(nameof(busControl));
             _auditStore = auditStore ?? throw new ArgumentNullException(nameof(auditStore));
             _messageBusServiceHealthCheck = messageBusServiceHealthCheck ?? throw new ArgumentNullException(nameof(messageBusServiceHealthCheck));
         }
 
         private readonly ILogger<MessageBusService> _log;
-        private readonly IConfiguration _config;
+        private readonly AppSecrets _appSecrets;
         private readonly IBusControl _busControl;
         private readonly IMessageAuditStore _auditStore;
         private readonly MessageBusServiceHealthCheck _messageBusServiceHealthCheck;
@@ -41,15 +41,13 @@ namespace YA.TenantWorker.Infrastructure.Services
         {
             _log.LogInformation(nameof(MessageBusService) + " background service is starting...");
 
-            AppSecrets secrets = _config.Get<AppSecrets>();
-
             bool success = false;
 
             while (!success)
             {
                 try
                 {
-                    success = await NetTools.CheckTcpConnectionAsync(secrets.MessageBusHost, General.MessageBusServiceHealthPort);
+                    success = await NetTools.CheckTcpConnectionAsync(_appSecrets.MessageBusHost, _appSecrets.MessageBusPort);
                 }
                 catch (Exception ex)
                 {
@@ -64,7 +62,7 @@ namespace YA.TenantWorker.Infrastructure.Services
                 }
                 else
                 {
-                    await Task.Delay(General.StartupServiceCheckRetryIntervalMs, cancellationToken);
+                    await Task.Delay(10000, cancellationToken);
                 }
             }
 

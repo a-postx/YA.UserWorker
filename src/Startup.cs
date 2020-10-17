@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using CorrelationId;
 using GreenPipes;
 using MassTransit;
@@ -38,6 +38,7 @@ using YA.Common.Constants;
 using System.Reflection;
 using MediatR;
 using YA.TenantWorker.Extensions;
+using YA.TenantWorker.Options;
 //using Elastic.Apm.NetCoreAll;
 
 namespace YA.TenantWorker
@@ -75,15 +76,13 @@ namespace YA.TenantWorker
         /// </summary>
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddCustomOptions(_config);
+
+            AppSecrets secrets = _config.GetSection(nameof(AppSecrets)).Get<AppSecrets>();
+            GeneralOptions generalOptions = _config.GetSection(nameof(ApplicationOptions.General)).Get<GeneralOptions>();
+
             AWSOptions awsOptions = _config.GetAWSOptions();
             services.AddDefaultAWSOptions(awsOptions);
-
-            AppSecrets secrets = _config.Get<AppSecrets>();
-
-            services.Configure<HostOptions>(options =>
-            {
-                options.ShutdownTimeout = TimeSpan.FromSeconds(Timeouts.HostShutdownTimeoutSec);
-            });
 
             if (!string.IsNullOrEmpty(secrets.AppInsightsInstrumentationKey))
             {
@@ -97,7 +96,7 @@ namespace YA.TenantWorker
             }
 
             services
-                .AddCorrelationIdFluent()
+                .AddCorrelationIdFluent(generalOptions)
 
                 ////.AddHttpsRedirection(options =>
                 ////{
@@ -106,13 +105,11 @@ namespace YA.TenantWorker
 
                 .AddCustomCaching()
                 .AddCustomCors()
-                .AddCustomOptions(_config)
                 .AddCustomRouting()
                 .AddResponseCaching()
                 .AddCustomResponseCompression(_config)
-
-                .AddCustomHealthChecks(_config)
-                .AddCustomSwagger(secrets)
+                .AddCustomHealthChecks(secrets)
+                .AddCustomSwagger(secrets, generalOptions)
                 .AddHttpContextAccessor()
 
                 .AddSingleton<IActionContextAccessor, ActionContextAccessor>()
@@ -141,7 +138,13 @@ namespace YA.TenantWorker
                     .AddCustomModelValidation();
 
             services
-                .AddAuthorizationCore(options => options.AddPolicy("MustBeAdministrator", policy => policy.RequireClaim(YaClaimNames.role, "Administrator")));
+                .AddAuthorizationCore(options =>
+                {
+                    options.AddPolicy("MustBeAdministrator", policy =>
+                    {
+                        policy.RequireClaim(YaClaimNames.role, "Administrator");
+                    });
+                });
 
             services.AddHttpClient();
             services.AddAutoMapper(typeof(Startup));
@@ -156,7 +159,7 @@ namespace YA.TenantWorker
             services
                 .AddEntityFrameworkSqlServer()
                 .AddDbContext<TenantWorkerDbContext>(options =>
-                    options.UseSqlServer(secrets.TenantWorkerConnStr, sqlOptions => 
+                    options.UseSqlServer(secrets.TenantWorker.ConnectionString, sqlOptions => 
                         sqlOptions.EnableRetryOnFailure().CommandTimeout(Timeouts.SqlCommandTimeoutSec))
                     .ConfigureWarnings(x => x.Throw(RelationalEventId.QueryPossibleExceptionWithAggregateOperatorWarning))
                     .EnableSensitiveDataLogging(_webHostEnvironment.IsDevelopment()));
@@ -229,7 +232,7 @@ namespace YA.TenantWorker
         /// </summary>
         public void Configure(IApplicationBuilder application)
         {
-            AppSecrets secrets = _config.Get<AppSecrets>();
+            OauthOptions oauthOptions = _config.GetSection(nameof(ApplicationOptions.OAuth)).Get<OauthOptions>();
 
             application
                 .UseCorrelationId()
@@ -296,7 +299,7 @@ namespace YA.TenantWorker
                 })
 
                 .UseSwagger()
-                .UseCustomSwaggerUI(secrets);
+                .UseCustomSwaggerUI(oauthOptions);
         }
     }
 }

@@ -1,6 +1,7 @@
-﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
@@ -10,6 +11,7 @@ using YA.TenantWorker.Application.Interfaces;
 using YA.TenantWorker.Application.Models.Dto;
 using YA.TenantWorker.Constants;
 using YA.TenantWorker.Core.Entities;
+using YA.TenantWorker.Options;
 
 namespace YA.TenantWorker.Application.ActionFilters
 {
@@ -19,14 +21,18 @@ namespace YA.TenantWorker.Application.ActionFilters
     /// </summary>
     public class ApiRequestFilter : ActionFilterAttribute
     {
-        public ApiRequestFilter(IApiRequestTracker apiRequestTracker, IRuntimeContextAccessor runtimeContextAccessor)
+        public ApiRequestFilter(IApiRequestTracker apiRequestTracker,
+            IRuntimeContextAccessor runtimeContextAccessor,
+            IOptions<GeneralOptions> options)
         {
             _runtimeCtx = runtimeContextAccessor ?? throw new ArgumentNullException(nameof(runtimeContextAccessor));
             _apiRequestTracker = apiRequestTracker ?? throw new ArgumentNullException(nameof(apiRequestTracker));
+            _generalOptions = options.Value;
         }
 
         private readonly IRuntimeContextAccessor _runtimeCtx;
         private readonly IApiRequestTracker _apiRequestTracker;
+        private readonly GeneralOptions _generalOptions;
 
         public override async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
         {
@@ -64,7 +70,7 @@ namespace YA.TenantWorker.Application.ActionFilters
                 {
                     Instance = context.HttpContext.Request.Path,
                     Status = StatusCodes.Status400BadRequest,
-                    Title = $"Запрос не содержит заголовка {General.CorrelationIdHeader} или значение в нём неверно."
+                    Title = $"Запрос не содержит заголовка {_generalOptions.CorrelationIdHeader} или значение в нём неверно."
                 };
                 problemDetails.Extensions.Add("traceId", _runtimeCtx.GetTraceId().ToString());
 

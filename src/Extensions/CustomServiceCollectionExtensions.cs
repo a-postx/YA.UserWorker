@@ -1,4 +1,9 @@
-﻿using CorrelationId.DependencyInjection;
+using System;
+using System.Collections.Generic;
+using System.IO.Compression;
+using System.Linq;
+using System.Reflection;
+using CorrelationId.DependencyInjection;
 using Delobytes.AspNetCore;
 using Delobytes.AspNetCore.Swagger;
 using Delobytes.AspNetCore.Swagger.OperationFilters;
@@ -12,21 +17,17 @@ using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.Swagger;
-using System;
-using System.Collections.Generic;
-using System.IO.Compression;
-using System.Linq;
-using System.Reflection;
 using YA.Common.Constants;
-using YA.TenantWorker.Constants;
 using YA.TenantWorker.Health;
 using YA.TenantWorker.Health.Services;
 using YA.TenantWorker.Health.System;
 using YA.TenantWorker.OperationFilters;
 using YA.TenantWorker.Options;
+using YA.TenantWorker.Options.Validators;
 
 namespace YA.TenantWorker.Extensions
 {
@@ -35,7 +36,7 @@ namespace YA.TenantWorker.Extensions
     /// </summary>
     internal static class CustomServiceCollectionExtensions
     {
-        public static IServiceCollection AddCorrelationIdFluent(this IServiceCollection services)
+        public static IServiceCollection AddCorrelationIdFluent(this IServiceCollection services, GeneralOptions generalOptions)
         {
             services.AddDefaultCorrelationId(options =>
             {
@@ -45,8 +46,8 @@ namespace YA.TenantWorker.Extensions
                 options.EnforceHeader = false;
                 options.IgnoreRequestHeader = false;
                 options.IncludeInResponse = false;
-                options.RequestHeader = General.CorrelationIdHeader;
-                options.ResponseHeader = General.CorrelationIdHeader;
+                options.RequestHeader = generalOptions.CorrelationIdHeader;
+                options.ResponseHeader = generalOptions.CorrelationIdHeader;
                 options.UpdateTraceIdentifier = false;
             });
 
@@ -107,13 +108,47 @@ namespace YA.TenantWorker.Extensions
         /// </summary>
         public static IServiceCollection AddCustomOptions(this IServiceCollection services, IConfiguration configuration)
         {
-            return services
-                // ConfigureSingleton registers IOptions<T> and also T as a singleton to the services collection.
+            services.AddSingleton<IValidateOptions<HostOptions>, HostOptionsValidator>();
+            services.AddSingleton<IValidateOptions<AwsOptions>, AwsOptionsValidator>();
+            services.AddSingleton<IValidateOptions<OauthOptions>, OauthOptionsValidator>();
+            services.AddSingleton<IValidateOptions<GeneralOptions>, GeneralOptionsValidator>();
+
+            services.AddSingleton<IValidateOptions<TenantWorkerSecrets>, TenantWorkerSecretsValidator>();
+            services.AddSingleton<IValidateOptions<AppSecrets>, AppSecretsValidator>();
+
+            services
                 .ConfigureAndValidateSingleton<ApplicationOptions>(configuration, o => o.BindNonPublicProperties = false)
+                .ConfigureAndValidateSingleton<HostOptions>(configuration.GetSection(nameof(ApplicationOptions.HostOptions)), o => o.BindNonPublicProperties = false)
+                .ConfigureAndValidateSingleton<AwsOptions>(configuration.GetSection(nameof(ApplicationOptions.Aws)), o => o.BindNonPublicProperties = false)
                 .ConfigureAndValidateSingleton<CompressionOptions>(configuration.GetSection(nameof(ApplicationOptions.Compression)), o => o.BindNonPublicProperties = false)
                 .ConfigureAndValidateSingleton<ForwardedHeadersOptions>(configuration.GetSection(nameof(ApplicationOptions.ForwardedHeaders)), o => o.BindNonPublicProperties = false)
                 .ConfigureAndValidateSingleton<CacheProfileOptions>(configuration.GetSection(nameof(ApplicationOptions.CacheProfiles)), o => o.BindNonPublicProperties = false)
-                .ConfigureAndValidateSingleton<KestrelServerOptions>(configuration.GetSection(nameof(ApplicationOptions.Kestrel)), o => o.BindNonPublicProperties = false);
+                .ConfigureAndValidateSingleton<KestrelServerOptions>(configuration.GetSection(nameof(ApplicationOptions.Kestrel)), o => o.BindNonPublicProperties = false)
+                .ConfigureAndValidateSingleton<OauthOptions>(configuration.GetSection(nameof(ApplicationOptions.OAuth)), o => o.BindNonPublicProperties = false)
+                .ConfigureAndValidateSingleton<GeneralOptions>(configuration.GetSection(nameof(ApplicationOptions.General)), o => o.BindNonPublicProperties = false)
+
+                .ConfigureAndValidateSingleton<TenantWorkerSecrets>(configuration.GetSection($"{nameof(AppSecrets)}:{nameof(AppSecrets.TenantWorker)}"), o => o.BindNonPublicProperties = false)
+                .ConfigureAndValidateSingleton<AppSecrets>(configuration.GetSection(nameof(AppSecrets)), o => o.BindNonPublicProperties = false);
+
+            //перместить валидацию в общий процесс прогрева https://andrewlock.net/reducing-latency-by-pre-building-singletons-in-asp-net-core/
+            try
+            {
+                HostOptions hostOptions = services.BuildServiceProvider().GetService<IOptions<HostOptions>>().Value;
+                AwsOptions awsOptions = services.BuildServiceProvider().GetService<IOptions<AwsOptions>>().Value;
+                ApplicationOptions applicationOptions = services.BuildServiceProvider().GetService<IOptions<ApplicationOptions>>().Value;
+                OauthOptions oauthOptions = services.BuildServiceProvider().GetService<IOptions<OauthOptions>>().Value;
+                GeneralOptions generalOptions = services.BuildServiceProvider().GetService<IOptions<GeneralOptions>>().Value;
+
+                AppSecrets appSecrets = services.BuildServiceProvider().GetService<IOptions<AppSecrets>>().Value;
+                TenantWorkerSecrets tenantWorkerSecrets = services.BuildServiceProvider().GetService<IOptions<TenantWorkerSecrets>>().Value;
+            }
+            catch (OptionsValidationException ex)
+            {
+                Console.WriteLine($"Error validating {ex.OptionsType.FullName}: {string.Join(", ", ex.Failures)}");
+                throw;
+            }
+
+            return services;
         }
 
         /// <summary>
@@ -150,7 +185,7 @@ namespace YA.TenantWorker.Extensions
                 });
         }
 
-        public static IServiceCollection AddCustomHealthChecks(this IServiceCollection services, IConfiguration configuration)
+        public static IServiceCollection AddCustomHealthChecks(this IServiceCollection services, AppSecrets secrets)
         {
             // https://github.com/Xabaril/AspNetCore.Diagnostics.HealthChecks
             services
@@ -160,9 +195,8 @@ namespace YA.TenantWorker.Extensions
                     .AddGenericHealthCheck<UptimeHealthCheck>("uptime")
                     .AddMemoryHealthCheck("memory")
                     //system components regular checks
-                    .AddSqlServer(configuration.GetValue<string>(nameof(AppSecrets.TenantWorkerConnStr)),
-                        "SELECT 1;", General.SqlDatabaseHealthCheckName, HealthStatus.Unhealthy, new string[] { "ready" })
-                    .AddGenericHealthCheck<MessageBusServiceHealthCheck>(General.MessageBusServiceHealthCheckName, HealthStatus.Degraded, new[] { "ready" });
+                    .AddSqlServer(secrets.TenantWorker.ConnectionString, "SELECT 1;", "sql_database", HealthStatus.Unhealthy, new string[] { "ready" })
+                    .AddGenericHealthCheck<MessageBusServiceHealthCheck>("message_bus_service", HealthStatus.Degraded, new[] { "ready" });
                     // Ping is not available on Azure Web Apps
                     //.AddNetworkHealthCheck("network");
 
@@ -192,8 +226,10 @@ namespace YA.TenantWorker.Extensions
         /// <summary>
         /// Add and configure Swagger services.
         /// </summary>
-        public static IServiceCollection AddCustomSwagger(this IServiceCollection services, AppSecrets secrets)
+        public static IServiceCollection AddCustomSwagger(this IServiceCollection services, AppSecrets secrets, GeneralOptions appOptions)
         {
+            string swaggerAuthenticationSchemeName = "oauth2";
+
             return services.AddSwaggerGen(options =>
             {
                 Assembly assembly = typeof(Startup).Assembly;
@@ -208,10 +244,10 @@ namespace YA.TenantWorker.Extensions
                 options.IncludeXmlCommentsIfExists(assembly);
 
                 options.OperationFilter<ApiVersionOperationFilter>();
-                options.OperationFilter<CorrelationIdOperationFilter>(General.CorrelationIdHeader);
+                options.OperationFilter<CorrelationIdOperationFilter>(appOptions.CorrelationIdHeader);
                 options.OperationFilter<ContentTypeOperationFilter>(true);
-                options.OperationFilter<ClaimsOperationFilter>(secrets.SwaggerAuthenticationSchemeName);
-                options.OperationFilter<SecurityRequirementsOperationFilter>(true, secrets.SwaggerAuthenticationSchemeName);
+                options.OperationFilter<ClaimsOperationFilter>(swaggerAuthenticationSchemeName);
+                options.OperationFilter<SecurityRequirementsOperationFilter>(true, swaggerAuthenticationSchemeName);
 
                 options.AddSecurityRequirement(new OpenApiSecurityRequirement {
                         {
@@ -220,14 +256,14 @@ namespace YA.TenantWorker.Extensions
                                 Reference = new OpenApiReference
                                 {
                                     Type = ReferenceType.SecurityScheme,
-                                    Id = secrets.SwaggerAuthenticationSchemeName
+                                    Id = swaggerAuthenticationSchemeName
                                 }
                             },
                             Array.Empty<string>()
                         }
                     });
 
-                if (secrets.SwaggerAuthenticationSchemeName == "oauth2")
+                if (swaggerAuthenticationSchemeName == "oauth2")
                 {
                     options.AddSecurityDefinition("oauth2", new OpenApiSecurityScheme
                     {
@@ -244,7 +280,7 @@ namespace YA.TenantWorker.Extensions
                     });
                 }
 
-                if (secrets.SwaggerAuthenticationSchemeName == "Bearer")
+                if (swaggerAuthenticationSchemeName == "Bearer")
                 {
                     options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
                     {
@@ -270,7 +306,7 @@ namespace YA.TenantWorker.Extensions
                         Description = apiVersionDescription.IsDeprecated
                             ? $"{assemblyDescription} This API version has been deprecated."
                             : assemblyDescription,
-                        Version = apiVersionDescription.ApiVersion.ToString(),
+                        Version = apiVersionDescription.ApiVersion.ToString()
                     };
                     options.SwaggerDoc(apiVersionDescription.GroupName, info);
                 }

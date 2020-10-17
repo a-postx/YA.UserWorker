@@ -1,4 +1,3 @@
-﻿using Microsoft.Extensions.Logging;
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
@@ -6,8 +5,8 @@ using System.Net.Http;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using YA.TenantWorker.Application.Interfaces;
-using YA.TenantWorker.Constants;
 using YA.TenantWorker.Infrastructure.Services.GeoDataModels;
 
 namespace YA.TenantWorker.Infrastructure.Services
@@ -51,7 +50,8 @@ namespace YA.TenantWorker.Infrastructure.Services
             {
                 HttpClient client = _httpClientFactory.CreateClient();
                 client.BaseAddress = new Uri(_providerUrl);
-                client.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", General.AppHttpUserAgent);
+                string userAgent = $"{Program.AppName}/{Program.AppVersion}";
+                client.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", userAgent);
                 client.Timeout = TimeSpan.FromSeconds(60);
 
                 HttpResponseMessage response = await client.GetAsync(new Uri("json/?lang=ru&objects=country_code", UriKind.Relative), cancellationToken);

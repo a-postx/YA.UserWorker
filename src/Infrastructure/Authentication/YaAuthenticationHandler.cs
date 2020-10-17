@@ -1,13 +1,3 @@
-﻿using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Headers;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Primitives;
-using Microsoft.IdentityModel.Protocols;
-using Microsoft.IdentityModel.Protocols.OpenIdConnect;
-using Microsoft.IdentityModel.Tokens;
-using Microsoft.Net.Http.Headers;
 using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
@@ -16,9 +6,20 @@ using System.Security.Claims;
 using System.Security.Principal;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Headers;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Primitives;
+using Microsoft.IdentityModel.Protocols;
+using Microsoft.IdentityModel.Protocols.OpenIdConnect;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.Net.Http.Headers;
 using YA.Common;
 using YA.Common.Constants;
 using YA.TenantWorker.Constants;
+using YA.TenantWorker.Options;
 
 namespace YA.TenantWorker.Infrastructure.Authentication
 {
@@ -29,21 +30,23 @@ namespace YA.TenantWorker.Infrastructure.Authentication
     {
         public YaAuthenticationHandler(ILogger<YaAuthenticationHandler> logger,
             IHttpContextAccessor httpContextAccessor,
-            IConfiguration configuration,
+            IOptions<AppSecrets> secrets,
             IConfigurationManager<OpenIdConnectConfiguration> configManager)
         {
             _log = logger ?? throw new ArgumentNullException(nameof(logger));
             _httpContextAccessor = httpContextAccessor ?? throw new ArgumentNullException(nameof(httpContextAccessor));
-            _config = configuration ?? throw new ArgumentNullException(nameof(configuration));
+            _appSecrets = secrets.Value;
             _configManager = configManager ?? throw new ArgumentNullException(nameof(configManager));
         }
 
         private readonly ILogger<YaAuthenticationHandler> _log;
         private readonly IHttpContextAccessor _httpContextAccessor;
-        private readonly IConfiguration _config;
+        private readonly AppSecrets _appSecrets;
         private readonly IConfigurationManager<OpenIdConnectConfiguration> _configManager;
         private AuthenticationScheme _scheme;
         private RequestHeaders _headers;
+
+        private const string _loginRedirectPath = "/authentication/login";
 
         public Task InitializeAsync(AuthenticationScheme scheme, HttpContext context)
         {
@@ -124,7 +127,7 @@ namespace YA.TenantWorker.Infrastructure.Authentication
                     AuthenticationProperties props = new AuthenticationProperties();
                     props.IssuedUtc = validatedToken.IssuedAt;
                     props.ExpiresUtc = validatedToken.ValidTo;
-                    props.RedirectUri = General.LoginRedirectPath;
+                    props.RedirectUri = _loginRedirectPath;
 
                     _log.LogInformation("User {Username} is authenticated.", username);
 
@@ -145,12 +148,10 @@ namespace YA.TenantWorker.Infrastructure.Authentication
         {
             HttpContext context = _httpContextAccessor.HttpContext;
 
-            AppSecrets secrets = _config.Get<AppSecrets>();
-
-            if (context.Request.Host.Host == secrets.ApiGatewayHost && context.Request.Host.Port == secrets.ApiGatewayPort)
+            if (context.Request.Host.Host == _appSecrets.ApiGatewayHost && context.Request.Host.Port == _appSecrets.ApiGatewayPort)
             {
                 _log.LogInformation("Challenge: redirected.");
-                context.Response.Redirect(General.LoginRedirectPath);
+                context.Response.Redirect(_loginRedirectPath);
                 return Task.CompletedTask;
             }
             else
@@ -245,7 +246,7 @@ namespace YA.TenantWorker.Infrastructure.Authentication
         private async Task<TokenValidationParameters> GetValidationParametersAsync(CancellationToken cancellationToken)
         {
             //требуется оценка надёжности: процесс аутентификации завязан на поставщика секретов
-            string issuer = _config.Get<AppSecrets>().OidcProviderIssuer;
+            string issuer = _appSecrets.OidcProviderIssuer;
             if (string.IsNullOrEmpty(issuer))
             {
                 throw new ApplicationException("Issuer is empty.");

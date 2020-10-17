@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
@@ -9,13 +9,14 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using Serilog;
 using Serilog.Context;
 using YA.Common.Constants;
 using YA.TenantWorker.Application.Enums;
 using YA.TenantWorker.Application.Interfaces;
-using YA.TenantWorker.Constants;
+using YA.TenantWorker.Options;
 
 namespace YA.TenantWorker.Infrastructure.Logging.Requests
 {
@@ -31,9 +32,14 @@ namespace YA.TenantWorker.Infrastructure.Logging.Requests
 
         private readonly RequestDelegate _next;
 
-        public async Task InvokeAsync(HttpContext httpContext, IHostEnvironment env, IHostApplicationLifetime lifetime, IRuntimeContextAccessor runtimeCtx)
+        public async Task InvokeAsync(HttpContext httpContext,
+            IHostEnvironment env,
+            IHostApplicationLifetime lifetime,
+            IRuntimeContextAccessor runtimeCtx,
+            IOptions<GeneralOptions> options)
         {
             HttpContext context = httpContext ?? throw new ArgumentNullException(nameof(httpContext));
+            int maxLogFieldLength = options.Value.MaxLogFieldLength;
 
             using (LogContext.PushProperty(YaLogKeys.LogType, LogTypes.ApiRequest.ToString()))
             {
@@ -46,9 +52,9 @@ namespace YA.TenantWorker.Infrastructure.Logging.Requests
                 httpContext.Request.Body = body;
 
                 //logz.io/logstash fields can accept only 32k strings so request/response bodies are cut
-                if (initialRequestBody.Length > General.MaxLogFieldLength)
+                if (initialRequestBody.Length > maxLogFieldLength)
                 {
-                    initialRequestBody = initialRequestBody.Substring(0, General.MaxLogFieldLength);
+                    initialRequestBody = initialRequestBody.Substring(0, maxLogFieldLength);
                 }
 
                 //у МС нет автоматического деструктурирования, поэтому используем Серилог ценой дырки в абстрации
@@ -108,8 +114,8 @@ namespace YA.TenantWorker.Infrastructure.Logging.Requests
                         responseBody = await sr.ReadToEndAsync();
                         context.Response.Body.Seek(0, SeekOrigin.Begin);
 
-                        string endResponseBody = (responseBody.Length > General.MaxLogFieldLength) ?
-                            responseBody.Substring(0, General.MaxLogFieldLength) : responseBody;
+                        string endResponseBody = (responseBody.Length > maxLogFieldLength) ?
+                            responseBody.Substring(0, maxLogFieldLength) : responseBody;
 
                         Log.ForContext(YaLogKeys.ResponseHeaders, context.Response.Headers.ToDictionary(h => h.Key, h => h.Value.ToString()), true)
                             .ForContext(YaLogKeys.StatusCode, context.Response.StatusCode)

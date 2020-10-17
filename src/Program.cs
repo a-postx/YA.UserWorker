@@ -9,6 +9,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Primitives;
 using Serilog;
 using Serilog.Core;
 using Serilog.Events;
@@ -30,7 +32,7 @@ using YA.TenantWorker.Options;
 
 namespace YA.TenantWorker
 {
-    enum OsPlatforms
+    internal enum OsPlatforms
     {
         Unknown = 0,
         Windows = 1,
@@ -54,8 +56,6 @@ namespace YA.TenantWorker
 
             OsPlatform = GetOs();
 
-            Directory.CreateDirectory(Path.Combine(RootPath, General.AppDataFolderName));
-
             IHostBuilder builder = CreateHostBuilder(args);
 
             IHost host;
@@ -68,9 +68,9 @@ namespace YA.TenantWorker
 
                 Console.WriteLine("Host built successfully.");
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                Console.WriteLine($"Error building Host: {e}.");
+                Console.WriteLine($"Error building Host: {ex}.");
                 return 1;
             }
 
@@ -98,9 +98,9 @@ namespace YA.TenantWorker
                     }
                 }
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                Console.WriteLine($"Error applying database migration: {e}.");
+                Console.WriteLine($"Error applying database migration: {ex}.");
                 return 1;
             }
 
@@ -108,9 +108,9 @@ namespace YA.TenantWorker
             {
                 Log.Logger = CreateLogger(host);
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                Console.WriteLine($"Error building logger: {e}.");
+                Console.WriteLine($"Error building logger: {ex}.");
                 return 1;
             }
 
@@ -139,15 +139,22 @@ namespace YA.TenantWorker
                 host.Services.GetRequiredService<ILogger<Startup>>().LogInformation("Shutdown has been initiated.");
             });
 
+            IConfiguration configuration = host.Services.GetRequiredService<IConfiguration>();
+            //вызывается дважды при изменениях на файловой системе https://github.com/dotnet/aspnetcore/issues/2542
+            ChangeToken.OnChange(configuration.GetReloadToken, () =>
+            {
+                host.Services.GetRequiredService<ILogger<Startup>>().LogInformation("Options or secrets has been modified.");
+            });
+
             try
             {
                 await host.RunAsync();
                 Log.Information("{AppName} has stopped.", AppName);
                 return 0;
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                Log.Fatal(e, "{AppName} terminated unexpectedly.", AppName);
+                Log.Fatal(ex, "{AppName} terminated unexpectedly.", AppName);
                 return 1;
             }
             finally
@@ -206,19 +213,12 @@ namespace YA.TenantWorker
 
         private static IConfigurationBuilder AddConfiguration(IConfigurationBuilder configurationBuilder, IHostEnvironment hostingEnvironment, string[] args)
         {
-            configurationBuilder
-                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-                .AddJsonFile($"appsettings.{hostingEnvironment.EnvironmentName}.json", optional: true, reloadOnChange: true)
-                // Add configuration specific to Development, Staging or Production environments
-                // (launchSettings.json for development or Application Settings for Azure)
-                .AddEnvironmentVariables()
-
-                // Add command line options. These take the highest priority.
-                .AddIf(
-                    args != null,
-                    x => x.AddCommandLine(args));
-
             Console.WriteLine("Hosting environment is " + hostingEnvironment.EnvironmentName);
+
+            configurationBuilder
+                .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+                .AddJsonFile($"appsettings.{hostingEnvironment.EnvironmentName}.json", optional: false, reloadOnChange: true)
+                .AddEnvironmentVariables();
 
             IConfigurationRoot tempConfig = new ConfigurationBuilder()
                 .AddJsonFile("appsettings.json")
@@ -231,13 +231,25 @@ namespace YA.TenantWorker
                 Region = RegionEndpoint.GetBySystemName(tempConfig.GetValue<string>("AWS:Region"))
             };
 
+            string awsSharedParameterStorePath = $"/{hostingEnvironment.EnvironmentName.ToLowerInvariant()}";
+
             configurationBuilder.AddSystemsManager(config =>
             {
                 config.AwsOptions = awsOptions;
                 config.Optional = false;
-                config.Path = hostingEnvironment.IsProduction() ? "/production" : "/development";
-                config.ReloadAfter = new TimeSpan(24, 0, 0);
+                config.Path = awsSharedParameterStorePath;
+                config.ReloadAfter = TimeSpan.FromDays(1);
+                config.OnLoadException += exceptionContext =>
+                {
+                    //log
+                };
             });
+
+            // Добавляем параметры командной строки, которые имеют наивысший приоритет.
+            configurationBuilder
+                .AddIf(
+                    args != null,
+                    x => x.AddCommandLine(args));
 
             return configurationBuilder;
         }
@@ -246,8 +258,7 @@ namespace YA.TenantWorker
         {
             IHostEnvironment hostEnv = host.Services.GetRequiredService<IHostEnvironment>();
             IConfiguration configuration = host.Services.GetRequiredService<IConfiguration>();
-
-            AppSecrets secrets = configuration.Get<AppSecrets>();
+            AppSecrets secrets = host.Services.GetRequiredService<IOptions<AppSecrets>>().Value;
 
             LoggerConfiguration loggerConfig = new LoggerConfiguration();
 

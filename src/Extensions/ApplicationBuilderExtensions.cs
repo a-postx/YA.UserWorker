@@ -62,35 +62,35 @@ namespace YA.TenantWorker.Extensions
                 });
         }
 
-        public static IApplicationBuilder UseCustomSwaggerUI(this IApplicationBuilder application, AppSecrets secrets)
+        public static IApplicationBuilder UseCustomSwaggerUI(this IApplicationBuilder application, OauthOptions oauthOptions)
         {
             return application.UseSwaggerUI(options =>
+            {
+                // Set the Swagger UI browser document title.
+                options.DocumentTitle = typeof(Startup).Assembly.GetCustomAttribute<AssemblyProductAttribute>().Product;
+                // Set the Swagger UI to render at '/'.
+                ////options.RoutePrefix = string.Empty;
+
+                options.DisplayOperationId();
+                options.DisplayRequestDuration();
+
+                IApiVersionDescriptionProvider provider = application.ApplicationServices.GetService<IApiVersionDescriptionProvider>();
+
+                foreach (ApiVersionDescription apiVersionDescription in provider.ApiVersionDescriptions.OrderByDescending(x => x.ApiVersion))
                 {
-                    // Set the Swagger UI browser document title.
-                    options.DocumentTitle = typeof(Startup).Assembly.GetCustomAttribute<AssemblyProductAttribute>().Product;
-                    // Set the Swagger UI to render at '/'.
-                    ////options.RoutePrefix = string.Empty;
-                    
-                    options.DisplayOperationId();
-                    options.DisplayRequestDuration();
+                    options.SwaggerEndpoint(
+                        $"/swagger/{apiVersionDescription.GroupName}/swagger.json",
+                        $"Version {apiVersionDescription.ApiVersion}");
+                }
 
-                    IApiVersionDescriptionProvider provider = application.ApplicationServices.GetService<IApiVersionDescriptionProvider>();
-
-                    foreach (ApiVersionDescription apiVersionDescription in provider.ApiVersionDescriptions.OrderByDescending(x => x.ApiVersion))
-                    {
-                        options.SwaggerEndpoint(
-                            $"/swagger/{apiVersionDescription.GroupName}/swagger.json",
-                            $"Version {apiVersionDescription.ApiVersion}");
-                    }
-
-                    options.OAuthClientId(secrets.OauthImplicitClientId);
-                    options.OAuthScopeSeparator(" ");
-                    options.OAuthAdditionalQueryStringParams(new Dictionary<string, string> {
-                        { "response_type", secrets.OauthImplicitResponseType },
-                        { "scope", secrets.OauthImplicitScope },
+                options.OAuthClientId(oauthOptions.ClientId);
+                options.OAuthScopeSeparator(" ");
+                options.OAuthAdditionalQueryStringParams(new Dictionary<string, string> {
+                        { "response_type", "token id_token" },
+                        { "scope", "openid profile email" },
                         { "nonce","nonce" }
                     });
-                });
+            });
         }
 
         public static IApplicationBuilder UseNetworkContextLogging(this IApplicationBuilder application)

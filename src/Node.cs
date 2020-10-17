@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using YA.TenantWorker.Constants;
 
@@ -10,7 +10,11 @@ namespace YA.TenantWorker
 
         private static string GetOrSetNodeId()
         {
-            string filePath = Path.Combine(Program.RootPath, General.AppDataFolderName, "nodeid");
+            string appDataFolder = "AppData";
+
+            Directory.CreateDirectory(Path.Combine(Program.RootPath, appDataFolder));
+
+            string filePath = Path.Combine(Program.RootPath, appDataFolder, "nodeid");
 
             if (!File.Exists(filePath))
             {

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
@@ -24,8 +24,6 @@ namespace YA.TenantWorker.Health.Services
 
         private readonly ILogger<MessageBusServiceHealthCheck> _log;
         private readonly IBus _bus;
-
-        public string Name => General.MessageBusServiceHealthCheckName;
 
         public bool MessageBusStartupTaskCompleted { get; set; }
 
