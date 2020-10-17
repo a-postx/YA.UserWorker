@@ -130,7 +130,14 @@ namespace YA.TenantWorker.Extensions
                 .ConfigureAndValidateSingleton<TenantWorkerSecrets>(configuration.GetSection($"{nameof(AppSecrets)}:{nameof(AppSecrets.TenantWorker)}"), o => o.BindNonPublicProperties = false)
                 .ConfigureAndValidateSingleton<AppSecrets>(configuration.GetSection(nameof(AppSecrets)), o => o.BindNonPublicProperties = false);
 
-            //перместить валидацию в общий процесс прогрева https://andrewlock.net/reducing-latency-by-pre-building-singletons-in-asp-net-core/
+            return services;
+        }
+
+        /// <summary>
+        /// Создаёт экземпляры всех настроек и получает значения, чтобы провести процесс валидации при старте приложения.
+        /// </summary>
+        public static IServiceCollection AddOptionsAndSecretsValidationOnStartup(this IServiceCollection services)
+        {
             try
             {
                 HostOptions hostOptions = services.BuildServiceProvider().GetService<IOptions<HostOptions>>().Value;

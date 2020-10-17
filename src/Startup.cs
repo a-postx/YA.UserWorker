@@ -76,7 +76,9 @@ namespace YA.TenantWorker
         /// </summary>
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddCustomOptions(_config);
+            services
+                .AddCustomOptions(_config)
+                .AddOptionsAndSecretsValidationOnStartup();
 
             AppSecrets secrets = _config.GetSection(nameof(AppSecrets)).Get<AppSecrets>();
             GeneralOptions generalOptions = _config.GetSection(nameof(ApplicationOptions.General)).Get<GeneralOptions>();
