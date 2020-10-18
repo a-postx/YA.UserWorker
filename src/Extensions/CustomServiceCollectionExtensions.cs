@@ -217,7 +217,7 @@ namespace YA.TenantWorker.Extensions
 
             services.AddSingleton<IHealthCheckPublisher, ReadinessPublisher>();
             
-            return services.AddHealthChecks().Services;
+            return services;
         }
 
         public static IServiceCollection AddCustomApiVersioning(this IServiceCollection services)
