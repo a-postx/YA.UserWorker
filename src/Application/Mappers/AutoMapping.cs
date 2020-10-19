@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using YA.TenantWorker.Application.Models.Dto;
 using YA.TenantWorker.Application.Models.SaveModels;
 using YA.TenantWorker.Application.Models.ViewModels;
@@ -10,15 +10,14 @@ namespace YA.TenantWorker.Application.Mappers
     {
         public AutoMapping()
         {
-            CreateMap<Tenant, TenantSm>();
-            CreateMap<TenantSm, Tenant>();
-            CreateMap<Tenant, TenantTm>();
-            CreateMap<TenantTm, Tenant>();
+            CreateMap<Tenant, TenantSm>().ReverseMap();
+            CreateMap<Tenant, TenantTm>().ReverseMap();
 
-            CreateMap<PricingTier, PricingTierTm>();
-            CreateMap<PricingTierTm, PricingTier>();
-            CreateMap<PricingTier, PricingTierVm>();
-            CreateMap<PricingTierVm, PricingTier>();
+            CreateMap<PricingTier, PricingTierTm>().ReverseMap();
+            CreateMap<PricingTier, PricingTierVm>().ReverseMap();
+
+            CreateMap<ClientInfoSm, ClientInfoTm>();
+            CreateMap<ClientInfoTm, YaClientInfo>();
         }
     }
 }

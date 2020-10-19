@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using System;
@@ -24,9 +24,9 @@ namespace YA.TenantWorker.Application.Features.Tenants.Commands
         public string UserId { get; protected set; }
         public string UserEmail { get; protected set; }
 
-        public class PostTenantHandler : IRequestHandler<CreateTenantCommand, ICommandResult<Tenant>>
+        public class CreateTenantHandler : IRequestHandler<CreateTenantCommand, ICommandResult<Tenant>>
         {
-            public PostTenantHandler(ILogger<PostTenantHandler> logger,
+            public CreateTenantHandler(ILogger<CreateTenantHandler> logger,
                 IMapper mapper,
                 ITenantWorkerDbContext dbContext,
                 IMessageBus messageBus)
@@ -38,7 +38,7 @@ namespace YA.TenantWorker.Application.Features.Tenants.Commands
                 
             }
 
-            private readonly ILogger<PostTenantHandler> _log;
+            private readonly ILogger<CreateTenantHandler> _log;
             private readonly IMapper _mapper;
             private readonly ITenantWorkerDbContext _dbContext;
             private readonly IMessageBus _messageBus;

@@ -1,9 +1,10 @@
-﻿using System;
+using System;
 
 namespace YA.TenantWorker.Core.Entities
 {
     public class User : ITenantEntity, IAuditedEntityBase, IRowVersionedEntity, ISoftDeleteEntity
     {
+        public Guid TenantId { get; set; }
         public virtual Tenant Tenant { get; set; }
         public Guid UserID { get; set; }
         public string Username { get; set; }

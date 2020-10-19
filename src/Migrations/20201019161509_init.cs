@@ -72,11 +72,44 @@ namespace YA.TenantWorker.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "ClientInfos",
+                columns: table => new
+                {
+                    YaClientInfoID = table.Column<Guid>(nullable: false),
+                    TenantId = table.Column<Guid>(nullable: false),
+                    Username = table.Column<string>(maxLength: 320, nullable: true),
+                    IpAddress = table.Column<string>(maxLength: 50, nullable: true),
+                    CountryName = table.Column<string>(maxLength: 500, nullable: true),
+                    RegionName = table.Column<string>(maxLength: 500, nullable: true),
+                    Os = table.Column<string>(maxLength: 200, nullable: true),
+                    OsVersion = table.Column<string>(maxLength: 50, nullable: true),
+                    DeviceModel = table.Column<string>(maxLength: 500, nullable: true),
+                    Browser = table.Column<string>(maxLength: 500, nullable: true),
+                    BrowserVersion = table.Column<string>(maxLength: 50, nullable: true),
+                    ScreenResolution = table.Column<string>(maxLength: 50, nullable: true),
+                    ViewportSize = table.Column<string>(maxLength: 50, nullable: true),
+                    Timestamp = table.Column<long>(nullable: false),
+                    CreatedDateTime = table.Column<DateTime>(nullable: false, defaultValueSql: "GETUTCDATE()"),
+                    LastModifiedDateTime = table.Column<DateTime>(nullable: false, defaultValueSql: "GETUTCDATE()"),
+                    tstamp = table.Column<byte[]>(rowVersion: true, nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ClientInfos", x => x.YaClientInfoID);
+                    table.ForeignKey(
+                        name: "FK_ClientInfos_Tenants_TenantId",
+                        column: x => x.TenantId,
+                        principalTable: "Tenants",
+                        principalColumn: "TenantID",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Users",
                 columns: table => new
                 {
                     UserID = table.Column<Guid>(nullable: false),
-                    TenantID = table.Column<Guid>(nullable: false),
+                    TenantId = table.Column<Guid>(nullable: false),
                     Username = table.Column<string>(maxLength: 64, nullable: false),
                     Password = table.Column<string>(maxLength: 50, nullable: true),
                     FirstName = table.Column<string>(maxLength: 255, nullable: true),
@@ -95,8 +128,8 @@ namespace YA.TenantWorker.Migrations
                 {
                     table.PrimaryKey("PK_Users", x => x.UserID);
                     table.ForeignKey(
-                        name: "FK_Users_Tenants_TenantID",
-                        column: x => x.TenantID,
+                        name: "FK_Users_Tenants_TenantId",
+                        column: x => x.TenantId,
                         principalTable: "Tenants",
                         principalColumn: "TenantID",
                         onDelete: ReferentialAction.Cascade);
@@ -115,22 +148,27 @@ namespace YA.TenantWorker.Migrations
             migrationBuilder.InsertData(
                 table: "Tenants",
                 columns: new[] { "TenantID", "IsActive", "IsReadOnly", "PricingTierActivatedDateTime", "PricingTierActivatedUntilDateTime", "PricingTierId", "TenantName", "TenantType" },
-                values: new object[] { new Guid("00000000-0000-0000-0000-000000000001"), true, false, new DateTime(2020, 4, 28, 3, 39, 50, 143, DateTimeKind.Utc).AddTicks(5433), new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new Guid("00000000-0000-0000-0000-000000000001"), "Системный", 0 });
+                values: new object[] { new Guid("00000000-0000-0000-0000-000000000001"), true, false, new DateTime(2020, 10, 19, 16, 15, 9, 56, DateTimeKind.Utc).AddTicks(4850), new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new Guid("00000000-0000-0000-0000-000000000001"), "Системный", 0 });
 
             migrationBuilder.InsertData(
                 table: "Tenants",
                 columns: new[] { "TenantID", "IsActive", "IsReadOnly", "PricingTierActivatedDateTime", "PricingTierActivatedUntilDateTime", "PricingTierId", "TenantName", "TenantType" },
-                values: new object[] { new Guid("00000000-0000-0000-0000-000000000002"), true, false, new DateTime(2020, 4, 28, 3, 39, 50, 143, DateTimeKind.Utc).AddTicks(7261), new DateTime(2020, 5, 28, 3, 39, 50, 143, DateTimeKind.Utc).AddTicks(7271), new Guid("00000000-0000-0000-0000-000000000013"), "Уважаемый", 1 });
+                values: new object[] { new Guid("00000000-0000-0000-0000-000000000002"), true, false, new DateTime(2020, 10, 19, 16, 15, 9, 56, DateTimeKind.Utc).AddTicks(6541), new DateTime(2020, 11, 18, 16, 15, 9, 56, DateTimeKind.Utc).AddTicks(6551), new Guid("00000000-0000-0000-0000-000000000013"), "Уважаемый", 1 });
 
             migrationBuilder.InsertData(
                 table: "Users",
-                columns: new[] { "UserID", "CreatedDateTime", "Email", "FirstName", "IsActive", "IsDeleted", "IsPendingActivation", "LastLoginDate", "LastModifiedDateTime", "LastName", "Password", "Role", "TenantID", "Username" },
-                values: new object[] { new Guid("00000000-0000-0000-0000-000000000011"), new DateTime(2020, 4, 28, 3, 39, 50, 143, DateTimeKind.Utc).AddTicks(8588), "admin@email.com", "My", true, false, false, null, new DateTime(2020, 4, 28, 3, 39, 50, 143, DateTimeKind.Utc).AddTicks(8596), "Admin", "123", "Administrator", new Guid("00000000-0000-0000-0000-000000000001"), "admin@ya.ru" });
+                columns: new[] { "UserID", "CreatedDateTime", "Email", "FirstName", "IsActive", "IsDeleted", "IsPendingActivation", "LastLoginDate", "LastModifiedDateTime", "LastName", "Password", "Role", "TenantId", "Username" },
+                values: new object[] { new Guid("00000000-0000-0000-0000-000000000011"), new DateTime(2020, 10, 19, 16, 15, 9, 56, DateTimeKind.Utc).AddTicks(7752), "admin@email.com", "My", true, false, false, null, new DateTime(2020, 10, 19, 16, 15, 9, 56, DateTimeKind.Utc).AddTicks(7762), "Admin", "123", "Administrator", new Guid("00000000-0000-0000-0000-000000000001"), "admin@ya.ru" });
 
             migrationBuilder.InsertData(
                 table: "Users",
-                columns: new[] { "UserID", "CreatedDateTime", "Email", "FirstName", "IsActive", "IsDeleted", "IsPendingActivation", "LastLoginDate", "LastModifiedDateTime", "LastName", "Password", "Role", "TenantID", "Username" },
-                values: new object[] { new Guid("00000000-0000-0000-0000-000000000012"), new DateTime(2020, 4, 28, 3, 39, 50, 144, DateTimeKind.Utc).AddTicks(809), "user@email.com", "My", true, false, false, null, new DateTime(2020, 4, 28, 3, 39, 50, 144, DateTimeKind.Utc).AddTicks(818), "User", "123", "User", new Guid("00000000-0000-0000-0000-000000000001"), "user@ya.ru" });
+                columns: new[] { "UserID", "CreatedDateTime", "Email", "FirstName", "IsActive", "IsDeleted", "IsPendingActivation", "LastLoginDate", "LastModifiedDateTime", "LastName", "Password", "Role", "TenantId", "Username" },
+                values: new object[] { new Guid("00000000-0000-0000-0000-000000000012"), new DateTime(2020, 10, 19, 16, 15, 9, 56, DateTimeKind.Utc).AddTicks(9691), "user@email.com", "My", true, false, false, null, new DateTime(2020, 10, 19, 16, 15, 9, 56, DateTimeKind.Utc).AddTicks(9700), "User", "123", "User", new Guid("00000000-0000-0000-0000-000000000001"), "user@ya.ru" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ClientInfos_TenantId",
+                table: "ClientInfos",
+                column: "TenantId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Tenants_PricingTierId",
@@ -138,15 +176,18 @@ namespace YA.TenantWorker.Migrations
                 column: "PricingTierId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Users_TenantID",
+                name: "IX_Users_TenantId",
                 table: "Users",
-                column: "TenantID");
+                column: "TenantId");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
                 name: "ApiRequests");
+
+            migrationBuilder.DropTable(
+                name: "ClientInfos");
 
             migrationBuilder.DropTable(
                 name: "Users");

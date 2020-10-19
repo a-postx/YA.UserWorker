@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using System;
 using YA.TenantWorker.Constants;
 using YA.TenantWorker.Core.Entities;
@@ -87,7 +87,7 @@ namespace YA.TenantWorker.Infrastructure.Data
                 new
                 {
                     UserID = seedAdminId,
-                    TenantID = defaultTenantId,
+                    TenantId= defaultTenantId,
                     Username = "admin@ya.ru",
                     Password = "123",
                     FirstName = "My",
@@ -103,7 +103,7 @@ namespace YA.TenantWorker.Infrastructure.Data
                 new
                 {
                     UserID = seedUserId,
-                    TenantID = defaultTenantId,
+                    TenantId = defaultTenantId,
                     Username = "user@ya.ru",
                     Password = "123",
                     FirstName = "My",

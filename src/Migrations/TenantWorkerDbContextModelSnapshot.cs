@@ -15,7 +15,7 @@ namespace YA.TenantWorker.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "3.1.3")
+                .HasAnnotation("ProductVersion", "3.1.9")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128)
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
@@ -186,7 +186,7 @@ namespace YA.TenantWorker.Migrations
                             TenantID = new Guid("00000000-0000-0000-0000-000000000001"),
                             IsActive = true,
                             IsReadOnly = false,
-                            PricingTierActivatedDateTime = new DateTime(2020, 4, 28, 3, 39, 50, 143, DateTimeKind.Utc).AddTicks(5433),
+                            PricingTierActivatedDateTime = new DateTime(2020, 10, 19, 16, 15, 9, 56, DateTimeKind.Utc).AddTicks(4850),
                             PricingTierActivatedUntilDateTime = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             PricingTierId = new Guid("00000000-0000-0000-0000-000000000001"),
                             TenantName = "Системный",
@@ -197,8 +197,8 @@ namespace YA.TenantWorker.Migrations
                             TenantID = new Guid("00000000-0000-0000-0000-000000000002"),
                             IsActive = true,
                             IsReadOnly = false,
-                            PricingTierActivatedDateTime = new DateTime(2020, 4, 28, 3, 39, 50, 143, DateTimeKind.Utc).AddTicks(7261),
-                            PricingTierActivatedUntilDateTime = new DateTime(2020, 5, 28, 3, 39, 50, 143, DateTimeKind.Utc).AddTicks(7271),
+                            PricingTierActivatedDateTime = new DateTime(2020, 10, 19, 16, 15, 9, 56, DateTimeKind.Utc).AddTicks(6541),
+                            PricingTierActivatedUntilDateTime = new DateTime(2020, 11, 18, 16, 15, 9, 56, DateTimeKind.Utc).AddTicks(6551),
                             PricingTierId = new Guid("00000000-0000-0000-0000-000000000013"),
                             TenantName = "Уважаемый",
                             TenantType = 1
@@ -254,7 +254,7 @@ namespace YA.TenantWorker.Migrations
                     b.Property<string>("Role")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<Guid>("TenantID")
+                    b.Property<Guid>("TenantId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Username")
@@ -269,7 +269,7 @@ namespace YA.TenantWorker.Migrations
 
                     b.HasKey("UserID");
 
-                    b.HasIndex("TenantID");
+                    b.HasIndex("TenantId");
 
                     b.ToTable("Users");
 
@@ -277,35 +277,124 @@ namespace YA.TenantWorker.Migrations
                         new
                         {
                             UserID = new Guid("00000000-0000-0000-0000-000000000011"),
-                            CreatedDateTime = new DateTime(2020, 4, 28, 3, 39, 50, 143, DateTimeKind.Utc).AddTicks(8588),
+                            CreatedDateTime = new DateTime(2020, 10, 19, 16, 15, 9, 56, DateTimeKind.Utc).AddTicks(7752),
                             Email = "admin@email.com",
                             FirstName = "My",
                             IsActive = true,
                             IsDeleted = false,
                             IsPendingActivation = false,
-                            LastModifiedDateTime = new DateTime(2020, 4, 28, 3, 39, 50, 143, DateTimeKind.Utc).AddTicks(8596),
+                            LastModifiedDateTime = new DateTime(2020, 10, 19, 16, 15, 9, 56, DateTimeKind.Utc).AddTicks(7762),
                             LastName = "Admin",
                             Password = "123",
                             Role = "Administrator",
-                            TenantID = new Guid("00000000-0000-0000-0000-000000000001"),
+                            TenantId = new Guid("00000000-0000-0000-0000-000000000001"),
                             Username = "admin@ya.ru"
                         },
                         new
                         {
                             UserID = new Guid("00000000-0000-0000-0000-000000000012"),
-                            CreatedDateTime = new DateTime(2020, 4, 28, 3, 39, 50, 144, DateTimeKind.Utc).AddTicks(809),
+                            CreatedDateTime = new DateTime(2020, 10, 19, 16, 15, 9, 56, DateTimeKind.Utc).AddTicks(9691),
                             Email = "user@email.com",
                             FirstName = "My",
                             IsActive = true,
                             IsDeleted = false,
                             IsPendingActivation = false,
-                            LastModifiedDateTime = new DateTime(2020, 4, 28, 3, 39, 50, 144, DateTimeKind.Utc).AddTicks(818),
+                            LastModifiedDateTime = new DateTime(2020, 10, 19, 16, 15, 9, 56, DateTimeKind.Utc).AddTicks(9700),
                             LastName = "User",
                             Password = "123",
                             Role = "User",
-                            TenantID = new Guid("00000000-0000-0000-0000-000000000001"),
+                            TenantId = new Guid("00000000-0000-0000-0000-000000000001"),
                             Username = "user@ya.ru"
                         });
+                });
+
+            modelBuilder.Entity("YA.TenantWorker.Core.Entities.YaClientInfo", b =>
+                {
+                    b.Property<Guid>("YaClientInfoID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Browser")
+                        .HasColumnType("nvarchar(500)")
+                        .HasMaxLength(500)
+                        .IsUnicode(true);
+
+                    b.Property<string>("BrowserVersion")
+                        .HasColumnType("nvarchar(50)")
+                        .HasMaxLength(50)
+                        .IsUnicode(true);
+
+                    b.Property<string>("CountryName")
+                        .HasColumnType("nvarchar(500)")
+                        .HasMaxLength(500)
+                        .IsUnicode(true);
+
+                    b.Property<DateTime>("CreatedDateTime")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETUTCDATE()");
+
+                    b.Property<string>("DeviceModel")
+                        .HasColumnType("nvarchar(500)")
+                        .HasMaxLength(500)
+                        .IsUnicode(true);
+
+                    b.Property<string>("IpAddress")
+                        .HasColumnType("nvarchar(50)")
+                        .HasMaxLength(50)
+                        .IsUnicode(true);
+
+                    b.Property<DateTime>("LastModifiedDateTime")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETUTCDATE()");
+
+                    b.Property<string>("Os")
+                        .HasColumnType("nvarchar(200)")
+                        .HasMaxLength(200)
+                        .IsUnicode(true);
+
+                    b.Property<string>("OsVersion")
+                        .HasColumnType("nvarchar(50)")
+                        .HasMaxLength(50)
+                        .IsUnicode(true);
+
+                    b.Property<string>("RegionName")
+                        .HasColumnType("nvarchar(500)")
+                        .HasMaxLength(500)
+                        .IsUnicode(true);
+
+                    b.Property<string>("ScreenResolution")
+                        .HasColumnType("nvarchar(50)")
+                        .HasMaxLength(50)
+                        .IsUnicode(true);
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<long>("Timestamp")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("Username")
+                        .HasColumnType("nvarchar(320)")
+                        .HasMaxLength(320)
+                        .IsUnicode(true);
+
+                    b.Property<string>("ViewportSize")
+                        .HasColumnType("nvarchar(50)")
+                        .HasMaxLength(50)
+                        .IsUnicode(true);
+
+                    b.Property<byte[]>("tstamp")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.HasKey("YaClientInfoID");
+
+                    b.HasIndex("TenantId");
+
+                    b.ToTable("ClientInfos");
                 });
 
             modelBuilder.Entity("YA.TenantWorker.Core.Entities.Tenant", b =>
@@ -321,7 +410,16 @@ namespace YA.TenantWorker.Migrations
                 {
                     b.HasOne("YA.TenantWorker.Core.Entities.Tenant", "Tenant")
                         .WithMany("Users")
-                        .HasForeignKey("TenantID")
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("YA.TenantWorker.Core.Entities.YaClientInfo", b =>
+                {
+                    b.HasOne("YA.TenantWorker.Core.Entities.Tenant", "Tenant")
+                        .WithMany()
+                        .HasForeignKey("TenantId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });

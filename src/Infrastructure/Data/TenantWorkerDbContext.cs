@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Storage;
@@ -34,6 +34,7 @@ namespace YA.TenantWorker.Infrastructure.Data
         public DbSet<Tenant> Tenants { get; set; }
         public DbSet<PricingTier> PricingTiers { get; set; }
         public DbSet<User> Users { get; set; }
+        public DbSet<YaClientInfo> ClientInfos { get; set; }
 
         private readonly Guid _tenantId;
         private IDbContextTransaction _currentTransaction;
@@ -43,7 +44,7 @@ namespace YA.TenantWorker.Infrastructure.Data
         private static bool IsMustHaveTenantFilterEnabled => true;
         private static bool IsSoftDeleteFilterEnabled => true;
 
-        private static MethodInfo ConfigureGlobalFiltersMethodInfo = typeof(TenantWorkerDbContext).GetMethod(nameof(ConfigureGlobalFilters), BindingFlags.Instance | BindingFlags.NonPublic);
+        private static readonly MethodInfo ConfigureGlobalFiltersMethodInfo = typeof(TenantWorkerDbContext).GetMethod(nameof(ConfigureGlobalFilters), BindingFlags.Instance | BindingFlags.NonPublic);
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -65,6 +66,11 @@ namespace YA.TenantWorker.Infrastructure.Data
         }
 
         #region Generics
+        public async Task CreateEntityAsync<T>(T item, CancellationToken cancellationToken) where T : class, ITenantEntity
+        {
+            await Set<T>().AddAsync(item, cancellationToken);
+        }
+
         public async Task<T> GetEntityWithTenantAsync<T>(Expression<Func<T, bool>> predicate, CancellationToken cancellationToken) where T : class, ITenantEntity
         {
             return await Set<T>().Include(nameof(Tenant)).SingleOrDefaultAsync(predicate, cancellationToken);
@@ -233,7 +239,7 @@ namespace YA.TenantWorker.Infrastructure.Data
         #region Filtering
         private void ConfigureGlobalFilters<TEntity>(ModelBuilder modelBuilder, IMutableEntityType entityType) where TEntity : class
         {
-            if (entityType.BaseType == null && ShouldFilterEntity<TEntity>(entityType))
+            if (entityType.BaseType == null && ShouldFilterEntity<TEntity>())
             {
                 Expression<Func<TEntity, bool>> filterExpression = CreateFilterExpression<TEntity>();
 
@@ -251,7 +257,7 @@ namespace YA.TenantWorker.Infrastructure.Data
             }
         }
 
-        private bool ShouldFilterEntity<TEntity>(IMutableEntityType entityType) where TEntity : class
+        private bool ShouldFilterEntity<TEntity>() where TEntity : class
         {
             if (typeof(ITenantEntity).IsAssignableFrom(typeof(TEntity)))
             {
@@ -323,6 +329,7 @@ namespace YA.TenantWorker.Infrastructure.Data
 
         private void ApplyConceptsForAddedEntity(EntityEntry entry)
         {
+            SetCreationTenantProperties(entry.Entity);
             SetCreationAuditProperties(entry.Entity);
         }
 
@@ -335,6 +342,15 @@ namespace YA.TenantWorker.Infrastructure.Data
         {
             CancelDeletionForSoftDelete(entry);
             SetDeletionAuditProperties(entry.Entity);
+        }
+
+        private void SetCreationTenantProperties(object entityAsObj)
+        {
+            if (entityAsObj is ITenantEntity)
+            {
+                ITenantEntity tenantEntity = entityAsObj.As<ITenantEntity>();
+                tenantEntity.TenantId = _tenantId;
+            }
         }
 
         private static void SetCreationAuditProperties(object entityAsObj)
@@ -417,7 +433,10 @@ namespace YA.TenantWorker.Infrastructure.Data
         #region Transactions
         public async Task<IDbContextTransaction> BeginTransactionAsync()
         {
-            if (_currentTransaction != null) return null;
+            if (_currentTransaction != null)
+            {
+                return null;
+            }
 
             _currentTransaction = await Database.BeginTransactionAsync(IsolationLevel.ReadCommitted);
 
@@ -426,8 +445,15 @@ namespace YA.TenantWorker.Infrastructure.Data
 
         public async Task CommitTransactionAsync(IDbContextTransaction transaction)
         {
-            if (transaction == null) throw new ArgumentNullException(nameof(transaction));
-            if (transaction != _currentTransaction) throw new InvalidOperationException($"Transaction {transaction.TransactionId} is not current");
+            if (transaction == null)
+            {
+                throw new ArgumentNullException(nameof(transaction));
+            }
+
+            if (transaction != _currentTransaction)
+            {
+                throw new InvalidOperationException($"Transaction {transaction.TransactionId} is not current");
+            }
 
             try
             {
