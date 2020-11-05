@@ -1,4 +1,4 @@
-﻿using System.Threading;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace YA.TenantWorker.Application.Interfaces
@@ -19,7 +19,7 @@ namespace YA.TenantWorker.Application.Interfaces
     /// <summary>
     /// Retrieves geodata for the current application.
     /// </summary>
-    interface IRuntimeGeoDataService
+    public interface IRuntimeGeoDataService
     {
         /// <summary>
         /// Get country code of the application location (ISO 3166).

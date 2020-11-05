@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using MassTransit;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
-using YA.TenantWorker.Constants;
 using YA.TenantWorker.Infrastructure.Messaging.Test;
 
 namespace YA.TenantWorker.Health.Services
@@ -24,8 +23,6 @@ namespace YA.TenantWorker.Health.Services
 
         private readonly ILogger<MessageBusServiceHealthCheck> _log;
         private readonly IBus _bus;
-
-        public bool MessageBusStartupTaskCompleted { get; set; }
 
         public async Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken = default)
         {
@@ -55,7 +52,7 @@ namespace YA.TenantWorker.Health.Services
                 healthData.Add("Delay, msec", mbSw.ElapsedMilliseconds);
             }
 
-            if (MessageBusStartupTaskCompleted && response?.Message?.GotIt == now)
+            if (response?.Message?.GotIt == now)
             {
                 return HealthCheckResult.Healthy("Message Bus is available.", healthData);
             }

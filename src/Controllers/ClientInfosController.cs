@@ -1,4 +1,4 @@
-﻿using Delobytes.AspNetCore.Filters;
+using Delobytes.AspNetCore.Filters;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -6,7 +6,7 @@ using Microsoft.Net.Http.Headers;
 using Swashbuckle.AspNetCore.Annotations;
 using System.Threading;
 using System.Threading.Tasks;
-using YA.TenantWorker.Application.ActionFilters;
+using YA.TenantWorker.Application.Middlewares.ActionFilters;
 using YA.TenantWorker.Application.ActionHandlers.ClientInfos;
 using YA.TenantWorker.Application.Models.SaveModels;
 using YA.TenantWorker.Application.Models.ViewModels;

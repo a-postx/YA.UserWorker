@@ -1,19 +1,18 @@
+using System;
+using System.Text.Json;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.Options;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using System;
-using System.Threading;
-using System.Threading.Tasks;
 using YA.TenantWorker.Application.Interfaces;
 using YA.TenantWorker.Application.Models.Dto;
 using YA.TenantWorker.Constants;
 using YA.TenantWorker.Core.Entities;
 using YA.TenantWorker.Options;
 
-namespace YA.TenantWorker.Application.ActionFilters
+namespace YA.TenantWorker.Application.Middlewares.ActionFilters
 {
     /// <summary>
     /// Фильтр идемпотентности: не допускает запросов без корелляционного идентификатора
@@ -23,16 +22,19 @@ namespace YA.TenantWorker.Application.ActionFilters
     {
         public ApiRequestFilter(IApiRequestTracker apiRequestTracker,
             IRuntimeContextAccessor runtimeContextAccessor,
-            IOptions<GeneralOptions> options)
+            IOptions<GeneralOptions> options,
+            IProblemDetailsFactory problemDetailsFactory)
         {
             _runtimeCtx = runtimeContextAccessor ?? throw new ArgumentNullException(nameof(runtimeContextAccessor));
             _apiRequestTracker = apiRequestTracker ?? throw new ArgumentNullException(nameof(apiRequestTracker));
             _generalOptions = options.Value;
+            _pdFactory = problemDetailsFactory ?? throw new ArgumentNullException(nameof(problemDetailsFactory));
         }
 
         private readonly IRuntimeContextAccessor _runtimeCtx;
         private readonly IApiRequestTracker _apiRequestTracker;
         private readonly GeneralOptions _generalOptions;
+        private readonly IProblemDetailsFactory _pdFactory;
 
         public override async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
         {
@@ -48,16 +50,8 @@ namespace YA.TenantWorker.Application.ActionFilters
 
                     if (!requestCreated)
                     {
-                        ProblemDetails apiError = new ProblemDetails
-                        {
-                            Type = "https://tools.ietf.org/html/rfc7231#section-6.5.8",
-                            Status = StatusCodes.Status409Conflict,
-                            Instance = context.HttpContext.Request.HttpContext.Request.Path.Value,
-                            Title = "Запрос уже существует.",
-                            Detail = null
-                        };
-                        apiError.Extensions.Add("correlationId", request.ApiRequestID.ToString());
-                        apiError.Extensions.Add("traceId", _runtimeCtx.GetTraceId().ToString());
+                        ProblemDetails apiError = _pdFactory.CreateProblemDetails(context.HttpContext, StatusCodes.Status409Conflict,
+                            "Запрос уже существует.", null, null, context.HttpContext.Request.Path);
 
                         context.Result = new ConflictObjectResult(apiError);
                         return;
@@ -66,13 +60,9 @@ namespace YA.TenantWorker.Application.ActionFilters
             }
             else
             {
-                ProblemDetails problemDetails = new ProblemDetails()
-                {
-                    Instance = context.HttpContext.Request.Path,
-                    Status = StatusCodes.Status400BadRequest,
-                    Title = $"Запрос не содержит заголовка {_generalOptions.CorrelationIdHeader} или значение в нём неверно."
-                };
-                problemDetails.Extensions.Add("traceId", _runtimeCtx.GetTraceId().ToString());
+                ProblemDetails problemDetails = _pdFactory.CreateProblemDetails(context.HttpContext, StatusCodes.Status400BadRequest,
+                            $"Запрос не содержит заголовка {_generalOptions.CorrelationIdHeader} или значение в нём неверно.",
+                            null, null, context.HttpContext.Request.Path);
 
                 context.Result = new BadRequestObjectResult(problemDetails);
                 return;
@@ -127,20 +117,20 @@ namespace YA.TenantWorker.Application.ActionFilters
                                 ////}
                                 break;
                             case ObjectResult objectRequestResult:
-                                {
-                                    string body = JToken.Parse(JsonConvert.SerializeObject(objectRequestResult.Value)).ToString(Formatting.None);
-                                    ApiRequestResult apiRequestResult = new ApiRequestResult(objectRequestResult.StatusCode, body);
+                            {
+                                string body = JsonSerializer.Serialize(objectRequestResult.Value);
+                                ApiRequestResult apiRequestResult = new ApiRequestResult(objectRequestResult.StatusCode, body);
 
-                                    await _apiRequestTracker.SetResultAsync(request, apiRequestResult, cts.Token);
-                                    break;
-                                }
+                                await _apiRequestTracker.SetResultAsync(request, apiRequestResult, cts.Token);
+                                break;
+                            }
                             case OkResult okResult:
-                                {
-                                    ApiRequestResult result = new ApiRequestResult(okResult.StatusCode, null);
+                            {
+                                ApiRequestResult result = new ApiRequestResult(okResult.StatusCode, null);
 
-                                    await _apiRequestTracker.SetResultAsync(request, result, cts.Token);
-                                    break;
-                                }
+                                await _apiRequestTracker.SetResultAsync(request, result, cts.Token);
+                                break;
+                            }
                         }
                     }
                 }

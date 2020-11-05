@@ -1,10 +1,9 @@
 using System;
+using System.Text.Json;
 using System.Threading.Tasks;
 using MassTransit.Audit;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using YA.Common.Constants;
 using YA.TenantWorker.Application.Enums;
 using YA.TenantWorker.Extensions;
@@ -28,9 +27,9 @@ namespace YA.TenantWorker.Infrastructure.Messaging
 
         public Task StoreMessage<T>(T message, MessageAuditMetadata metadata) where T : class
         {
-            string savedMessage = JToken.Parse(JsonConvert.SerializeObject(message)).ToString(Formatting.Indented);
+            string savedMessage = JsonSerializer.Serialize(message, new JsonSerializerOptions { WriteIndented = true });
 
-            //logz.io/logstash fields can accept only 32k strings so request/response bodies are cut
+            // поля logz.io/logstash поддерживают только строки длиной до 32тыс, поэтому обрезаем тела запросов/ответов
             if (savedMessage.Length > _maxLogFieldLength)
             {
                 savedMessage = savedMessage.Substring(0, _maxLogFieldLength);

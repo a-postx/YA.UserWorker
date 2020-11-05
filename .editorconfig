@@ -124,6 +124,19 @@ dotnet_diagnostic.IDE1006.severity = silent
 
 # .NET Code Style Settings
 # https://docs.microsoft.com/visualstudio/ide/editorconfig-language-conventions#net-code-style-settings
+
+# CA1725: Parameter names should match base declaration
+dotnet_diagnostic.CA1725.severity = suggestion
+
+# CA1027: Mark enums with FlagsAttribute
+dotnet_diagnostic.CA1027.severity = suggestion
+
+# CA1813: Avoid unsealed attributes
+dotnet_diagnostic.CA1813.severity = suggestion
+
+# CA1019: Define accessors for attribute arguments
+dotnet_diagnostic.CA1019.severity = suggestion
+
 [*.{cs,csx,cake,vb,vbx}]
 # "this." and "Me." qualifiers
 # https://docs.microsoft.com/visualstudio/ide/editorconfig-language-conventions#this-and-me
@@ -164,7 +177,7 @@ dotnet_style_coalesce_expression = true:warning
 dotnet_style_null_propagation = true:warning
 # Parameter preferences
 # https://docs.microsoft.com/visualstudio/ide/editorconfig-language-conventions#parameter-preferences
-dotnet_code_quality_unused_parameters = all:warning
+dotnet_code_quality_unused_parameters = all:suggestion
 # More style options (Undocumented)
 # https://github.com/MicrosoftDocs/visualstudio-docs/issues/3641
 dotnet_style_operator_placement_when_wrapping = end_of_line

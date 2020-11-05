@@ -1,5 +1,6 @@
 using Delobytes.AspNetCore;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
@@ -11,6 +12,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using YA.Common.Constants;
+using YA.TenantWorker.Application.Middlewares;
 using YA.TenantWorker.Infrastructure.Logging.Requests;
 using YA.TenantWorker.Options;
 
@@ -18,11 +20,14 @@ namespace YA.TenantWorker.Extensions
 {
     internal static class ApplicationBuilderExtensions
     {
-        public static IApplicationBuilder UseDeveloperErrorPages(this IApplicationBuilder application)
+        public static IApplicationBuilder UseDeveloperErrorPages(this IApplicationBuilder application, IWebHostEnvironment webHostEnvironment)
         {
             return application
-                .UseDatabaseErrorPage()
-                .UseDeveloperExceptionPage();
+                .UseIf(
+                    webHostEnvironment.EnvironmentName == "Development",
+                    x => x
+                        .UseDatabaseErrorPage()
+                        .UseDeveloperExceptionPage());
         }
 
         /// <summary>
@@ -51,6 +56,9 @@ namespace YA.TenantWorker.Extensions
             return application;
         }
 
+        /// <summary>
+        /// Добавляет прослойку для логирования HTTP-запросов встроенными средствами Серилог
+        /// </summary>
         public static IApplicationBuilder UseRouteParamsLogging(this IApplicationBuilder application)
         {
             return application.UseSerilogRequestLogging(
@@ -62,6 +70,9 @@ namespace YA.TenantWorker.Extensions
                 });
         }
 
+        /// <summary>
+        /// Добавляет прослойку кастомизированного пользовательского интерфейса Свагер
+        /// </summary>
         public static IApplicationBuilder UseCustomSwaggerUI(this IApplicationBuilder application, OauthOptions oauthOptions)
         {
             return application.UseSwaggerUI(options =>
@@ -93,18 +104,38 @@ namespace YA.TenantWorker.Extensions
             });
         }
 
+        /// <summary>
+        /// Добавляет прослойку логирования сетевого контекста
+        /// </summary>
         public static IApplicationBuilder UseNetworkContextLogging(this IApplicationBuilder application)
         {
             return application
                 .UseMiddleware<NetworkContextLogger>();
         }
 
+        /// <summary>
+        /// Добавляет прослойку логирования контекста HTTP
+        /// </summary>
         public static IApplicationBuilder UseHttpContextLogging(this IApplicationBuilder application)
         {
             return application
                 .UseMiddleware<HttpContextLogger>();
         }
 
+        /// <summary>
+        /// Добавляет прослойку перехвата исключения в HTTP-контексте. Выводит детали проблемы с дополнительным контекстом.
+        /// Внимание! При отключении этой прослойки все необработанные исключения станут уходить в контекст MVC,
+        /// перестанут выдавать <see cref="ProblemDetails"/> и логироваться в событии завершения запроса.
+        /// </summary>
+        public static IApplicationBuilder UseCustomExceptionHandler(this IApplicationBuilder application)
+        {
+            return application
+                .UseMiddleware<HttpExceptionHandler>();
+        }
+
+        /// <summary>
+        /// Добавляет прослойку логирования аутентификационного контекста
+        /// </summary>
         public static IApplicationBuilder UseAuthenticationContextLogging(this IApplicationBuilder application)
         {
             return application

@@ -1,4 +1,4 @@
-﻿using GreenPipes;
+using GreenPipes;
 using System;
 using YA.TenantWorker.Infrastructure.Messaging.Filters;
 
@@ -14,7 +14,9 @@ namespace YA.TenantWorker.Extensions
         public static void UseMbContextFilter<T>(this IPipeConfigurator<T> configurator) where T : class, PipeContext
         {
             if (configurator == null)
+            {
                 throw new ArgumentNullException(nameof(configurator));
+            }
 
             configurator.AddPipeSpecification(new MbMessageContextFilterPipeSpecification<T>());
         }

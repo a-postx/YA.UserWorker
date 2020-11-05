@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Net.Http.Headers;
@@ -6,7 +6,7 @@ using Swashbuckle.AspNetCore.Annotations;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using YA.TenantWorker.Application.ActionFilters;
+using YA.TenantWorker.Application.Middlewares.ActionFilters;
 using YA.TenantWorker.Application.Models.SaveModels;
 using YA.TenantWorker.Application.Models.ViewModels;
 using YA.TenantWorker.Constants;

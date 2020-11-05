@@ -7,15 +7,12 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
-using Newtonsoft.Json;
 using Serilog;
 using Serilog.Context;
 using YA.Common.Constants;
 using YA.TenantWorker.Application.Enums;
-using YA.TenantWorker.Application.Interfaces;
 using YA.TenantWorker.Options;
 
 namespace YA.TenantWorker.Infrastructure.Logging.Requests
@@ -33,9 +30,7 @@ namespace YA.TenantWorker.Infrastructure.Logging.Requests
         private readonly RequestDelegate _next;
 
         public async Task InvokeAsync(HttpContext httpContext,
-            IHostEnvironment env,
             IHostApplicationLifetime lifetime,
-            IRuntimeContextAccessor runtimeCtx,
             IOptions<GeneralOptions> options)
         {
             HttpContext context = httpContext ?? throw new ArgumentNullException(nameof(httpContext));
@@ -76,32 +71,7 @@ namespace YA.TenantWorker.Infrastructure.Logging.Requests
 
                     long start = Stopwatch.GetTimestamp();
 
-                    try
-                    {
-                        await _next(context);
-                    }
-                    catch (Exception ex)
-                    {
-                        string errorMessage = ex.Message;
-                        Log.Error(ex.Demystify(), "{ErrorMessage}", errorMessage);
-
-                        ProblemDetails unknownError = new ProblemDetails
-                        {
-                            Type = "https://tools.ietf.org/html/rfc7231#section-6.6.1",
-                            Status = StatusCodes.Status500InternalServerError,
-                            Instance = context.Request.HttpContext.Request.Path,
-                            Title = errorMessage,
-                            Detail = env.IsDevelopment() ? ex.Demystify().StackTrace : null
-                        };
-                        unknownError.Extensions.Add("correlationId", runtimeCtx.GetCorrelationId().ToString());
-                        unknownError.Extensions.Add("traceId", runtimeCtx.GetTraceId().ToString());
-
-                        string errorResponseBody = JsonConvert.SerializeObject(unknownError);
-                        context.Response.ContentType = "application/problem+json";
-                        context.Response.StatusCode = StatusCodes.Status500InternalServerError;
-
-                        await context.Response.WriteAsync(errorResponseBody, lifetime.ApplicationStopping);
-                    }
+                    await _next(context);
 
                     double elapsedMs = GetElapsedMilliseconds(start, Stopwatch.GetTimestamp());
 
@@ -128,6 +98,7 @@ namespace YA.TenantWorker.Infrastructure.Logging.Requests
                             .ForContext(YaLogKeys.RequestPath, context.Request.Path)
                             .ForContext(YaLogKeys.RequestQuery, context.Request.QueryString)
                             .ForContext(YaLogKeys.RequestPathAndQuery, GetFullPath(context))
+                            .ForContext(YaLogKeys.RequestAborted, context.RequestAborted.IsCancellationRequested)
                             .Information("{RequestMethod} {RequestPath} - {StatusCode} in {ElapsedMilliseconds} ms", context.Request.Method, context.Request.Path, context.Response.StatusCode, elapsedMs);
 
                         await responseBodyMemoryStream.CopyToAsync(originalResponseBodyReference, lifetime.ApplicationStopping);

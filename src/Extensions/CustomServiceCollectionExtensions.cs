@@ -8,10 +8,17 @@ using Delobytes.AspNetCore;
 using Delobytes.AspNetCore.Swagger;
 using Delobytes.AspNetCore.Swagger.OperationFilters;
 using Delobytes.AspNetCore.Swagger.SchemaFilters;
+using GreenPipes;
+using MassTransit;
+using MassTransit.Audit;
+using MassTransit.PrometheusIntegration;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
@@ -22,9 +29,14 @@ using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.Swagger;
 using YA.Common.Constants;
+using YA.TenantWorker.Constants;
 using YA.TenantWorker.Health;
 using YA.TenantWorker.Health.Services;
 using YA.TenantWorker.Health.System;
+using YA.TenantWorker.Infrastructure.Data;
+using YA.TenantWorker.Infrastructure.Messaging;
+using YA.TenantWorker.Infrastructure.Messaging.Consumers;
+using YA.TenantWorker.Infrastructure.Messaging.Test;
 using YA.TenantWorker.OperationFilters;
 using YA.TenantWorker.Options;
 using YA.TenantWorker.Options.Validators;
@@ -318,6 +330,93 @@ namespace YA.TenantWorker.Extensions
                     options.SwaggerDoc(apiVersionDescription.GroupName, info);
                 }
             });
+        }
+
+        /// <summary>
+        /// Добавляет кастомизированную базу данных.
+        /// </summary>
+        public static IServiceCollection AddCustomDatabase(this IServiceCollection services, AppSecrets secrets, IWebHostEnvironment webHostEnvironment)
+        {
+            services
+                .AddEntityFrameworkSqlServer()
+                .AddDbContext<TenantWorkerDbContext>(options =>
+                    options.UseSqlServer(secrets.TenantWorker.ConnectionString, sqlOptions =>
+                        sqlOptions.EnableRetryOnFailure().CommandTimeout(Timeouts.SqlCommandTimeoutSec))
+                    .ConfigureWarnings(x => x.Throw(RelationalEventId.QueryPossibleExceptionWithAggregateOperatorWarning))
+                    .EnableSensitiveDataLogging(webHostEnvironment.IsDevelopment()));
+
+            return services;
+        }
+
+        /// <summary>
+        /// Добавляет кастомизированную шину сообщений.
+        /// </summary>
+        public static IServiceCollection AddCustomMessageBus(this IServiceCollection services, AppSecrets secrets)
+        {
+            services.AddSingleton<IMessageAuditStore, MessageAuditStore>();
+
+            services.AddMassTransit(options =>
+            {
+                options.UsingRabbitMq((context, cfg) =>
+                {
+                    cfg.Host(secrets.MessageBusHost, secrets.MessageBusVHost, h =>
+                    {
+                        h.Username(secrets.MessageBusLogin);
+                        h.Password(secrets.MessageBusPassword);
+                    });
+
+                    IMessageAuditStore auditStore = context.GetRequiredService<IMessageAuditStore>();
+                    cfg.ConnectSendAuditObservers(auditStore, c => c.Exclude(typeof(ITenantWorkerTestRequestV1), typeof(ITenantWorkerTestResponseV1)));
+                    cfg.ConnectConsumeAuditObserver(auditStore, c => c.Exclude(typeof(ITenantWorkerTestRequestV1), typeof(ITenantWorkerTestResponseV1)));
+
+                    cfg.UseHealthCheck(context);
+
+                    cfg.UseSerilogMessagePropertiesEnricher();
+                    cfg.UsePrometheusMetrics();
+
+                    cfg.ReceiveEndpoint(MbQueueNames.PrivateServiceQueueName, e =>
+                    {
+                        e.PrefetchCount = 16;
+                        e.UseMessageRetry(x =>
+                        {
+                            x.Handle<OperationCanceledException>();
+                            x.Interval(2, 500);
+                        });
+                        e.AutoDelete = true;
+                        e.Durable = false;
+                        e.ExchangeType = "fanout";
+                        e.Exclusive = true;
+                        e.ExclusiveConsumer = true;
+                        ////e.SetExchangeArgument("x-delayed-type", "direct");
+
+                        e.ConfigureConsumer<TestRequestConsumer>(context);
+                    });
+
+                    cfg.ReceiveEndpoint(MbQueueNames.PricingTierQueueName, e =>
+                    {
+                        e.UseConcurrencyLimit(1);
+                        e.UseMessageRetry(x =>
+                        {
+                            x.Handle<OperationCanceledException>();
+                            x.Interval(2, 500);
+                        });
+                        e.UseMbContextFilter();
+                        e.UseInMemoryOutbox();
+
+                        e.ConfigureConsumer<GetPricingTierConsumer>(context);
+                    });
+                });
+
+                options.AddConsumers(Assembly.GetExecutingAssembly());
+            });
+
+            services.AddMassTransitHostedService();
+
+            services.AddSingleton<IPublishEndpoint>(provider => provider.GetRequiredService<IBusControl>());
+            services.AddSingleton<ISendEndpointProvider>(provider => provider.GetRequiredService<IBusControl>());
+            services.AddSingleton<IBus>(provider => provider.GetRequiredService<IBusControl>());
+
+            return services;
         }
     }
 }

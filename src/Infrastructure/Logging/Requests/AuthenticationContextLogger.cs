@@ -1,4 +1,4 @@
-﻿using Delobytes.AspNetCore;
+using Delobytes.AspNetCore;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using System;
@@ -19,7 +19,7 @@ namespace YA.TenantWorker.Infrastructure.Logging.Requests
             _next = next ?? throw new ArgumentNullException(nameof(next));
         }
 
-        readonly RequestDelegate _next;
+        private readonly RequestDelegate _next;
 
         public async Task InvokeAsync(HttpContext httpContext, ILogger<AuthenticationContextLogger> logger)
         {

@@ -1,43 +1,32 @@
 using System;
+using System.Reflection;
+using System.Text;
+using Amazon.Extensions.NETCore.Setup;
+using AutoMapper;
 using CorrelationId;
-using GreenPipes;
 using MassTransit;
-using MassTransit.Audit;
+using MediatR;
+using Microsoft.ApplicationInsights.AspNetCore.Extensions;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Delobytes.AspNetCore;
-using YA.TenantWorker.Constants;
-using YA.TenantWorker.Health;
+using Microsoft.IdentityModel.Protocols;
+using Microsoft.IdentityModel.Protocols.OpenIdConnect;
+using Prometheus;
+using YA.Common.Constants;
+using YA.TenantWorker.Application;
 using YA.TenantWorker.Application.Interfaces;
-using YA.TenantWorker.Application.ActionFilters;
-using YA.TenantWorker.Infrastructure.Messaging;
-using YA.TenantWorker.Infrastructure.Data;
-using YA.TenantWorker.Infrastructure.Messaging.Test;
+using YA.TenantWorker.Application.Middlewares.ActionFilters;
+using YA.TenantWorker.Extensions;
+using YA.TenantWorker.Health;
 using YA.TenantWorker.Infrastructure.Authentication;
 using YA.TenantWorker.Infrastructure.Caching;
-using Microsoft.EntityFrameworkCore.Diagnostics;
-using Microsoft.AspNetCore.HttpOverrides;
-using Amazon.Extensions.NETCore.Setup;
-using Microsoft.ApplicationInsights.AspNetCore.Extensions;
-using YA.TenantWorker.Application;
-using System.Text;
-using YA.TenantWorker.Infrastructure.Messaging.Consumers;
-using AutoMapper;
-using Microsoft.AspNetCore.Http;
-using Prometheus;
-using MassTransit.PrometheusIntegration;
-using Microsoft.IdentityModel.Protocols.OpenIdConnect;
-using Microsoft.IdentityModel.Protocols;
-using YA.Common.Constants;
-using System.Reflection;
-using MediatR;
-using YA.TenantWorker.Extensions;
 using YA.TenantWorker.Options;
 //using Elastic.Apm.NetCoreAll;
 
@@ -139,6 +128,8 @@ namespace YA.TenantWorker
                     .AddCustomMvcOptions(_config)
                     .AddCustomModelValidation();
 
+            services.AddCustomProblemDetails();
+
             services
                 .AddAuthorizationCore(options =>
                 {
@@ -158,71 +149,10 @@ namespace YA.TenantWorker
                 .AddProjectRepositories()
                 .AddProjectServices();
 
-            services
-                .AddEntityFrameworkSqlServer()
-                .AddDbContext<TenantWorkerDbContext>(options =>
-                    options.UseSqlServer(secrets.TenantWorker.ConnectionString, sqlOptions => 
-                        sqlOptions.EnableRetryOnFailure().CommandTimeout(Timeouts.SqlCommandTimeoutSec))
-                    .ConfigureWarnings(x => x.Throw(RelationalEventId.QueryPossibleExceptionWithAggregateOperatorWarning))
-                    .EnableSensitiveDataLogging(_webHostEnvironment.IsDevelopment()));
+            services.AddCustomDatabase(secrets, _webHostEnvironment);
 
-            services.AddMassTransit(options =>
-            {
-                options.UsingRabbitMq((context, cfg) =>
-                {
-                    cfg.Host(secrets.MessageBusHost, secrets.MessageBusVHost, h =>
-                    {
-                        h.Username(secrets.MessageBusLogin);
-                        h.Password(secrets.MessageBusPassword);
-                    });
+            services.AddCustomMessageBus(secrets);
 
-                    cfg.UseSerilogMessagePropertiesEnricher();
-                    cfg.UsePrometheusMetrics();
-
-                    cfg.ReceiveEndpoint(MbQueueNames.PrivateServiceQueueName, e =>
-                    {
-                        e.PrefetchCount = 16;
-                        e.UseMessageRetry(x =>
-                        {
-                            x.Handle<OperationCanceledException>();
-                            x.Interval(2, 500);
-                        });
-                        e.AutoDelete = true;
-                        e.Durable = false;
-                        e.ExchangeType = "fanout";
-                        e.Exclusive = true;
-                        e.ExclusiveConsumer = true;
-                        ////e.SetExchangeArgument("x-delayed-type", "direct");
-
-                        e.ConfigureConsumer<TestRequestConsumer>(context);
-                    });
-
-                    cfg.ReceiveEndpoint(MbQueueNames.PricingTierQueueName, e =>
-                    {
-                        e.UseConcurrencyLimit(1);
-                        e.UseMessageRetry(x =>
-                        {
-                            x.Handle<OperationCanceledException>();
-                            x.Interval(2, 500);
-                        });
-                        e.UseMbContextFilter();
-                        e.UseInMemoryOutbox();
-
-                        e.ConfigureConsumer<GetPricingTierConsumer>(context);
-                    });
-                });
-
-                options.AddConsumers(GetType().Assembly);
-            });
-
-            services.AddSingleton<IPublishEndpoint>(provider => provider.GetRequiredService<IBusControl>());
-            services.AddSingleton<ISendEndpointProvider>(provider => provider.GetRequiredService<IBusControl>());
-            services.AddSingleton<IBus>(provider => provider.GetRequiredService<IBusControl>());
-
-            //services.AddScoped(provider => provider.GetRequiredService<IBus>().CreatePublishRequestClient<ICreateTenantV1, ITenantCreatedV1>(TimeSpan.FromSeconds(5)));
-            
-            services.AddSingleton<IMessageAuditStore, MessageAuditStore>();
-            
             services.AddScoped<ApiRequestFilter>();
 
             services.AddScoped<IApiRequestTracker, ApiRequestTracker>();
@@ -238,35 +168,25 @@ namespace YA.TenantWorker
 
             application
                 .UseCorrelationId()
-                ////.UseHttpsRedirection()
                 
                 //.UseAllElasticApm(Configuration)
 
-                //!experimental!
-                ////.UseHttpException()
-
                 .UseForwardedHeaders(new ForwardedHeadersOptions
                 {
-                    ForwardedHeaders = ForwardedHeaders.XForwardedFor
+                    ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedHost | ForwardedHeaders.XForwardedProto
                 })
                 .UseNetworkContextLogging()
 
                 .UseResponseCaching()
                 .UseResponseCompression()
-                
+
                 .UseHttpContextLogging()
+                .UseCustomExceptionHandler()
 
                 .UseRouting()
                 .UseCors(CorsPolicyNames.AllowAny)
                 .UseStaticFilesWithCacheControl()
                 .UseRouteParamsLogging()
-
-                ////.UseIf(
-                ////    !_webHostEnvironment.IsDevelopment(),
-                ////    x => x.UseHsts())
-
-                ////.UseIf(_webHostEnvironment.IsDevelopment(),
-                ////    x => x.UseDeveloperErrorPages())
 
                 .UseHealthChecksPrometheusExporter("/metrics")
                 .UseMetricServer()

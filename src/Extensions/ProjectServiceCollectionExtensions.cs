@@ -1,4 +1,5 @@
 using Delobytes.Mapper;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 using YA.TenantWorker.Application.ActionHandlers.ClientInfos;
 using YA.TenantWorker.Application.ActionHandlers.Tenants;
@@ -66,10 +67,20 @@ namespace YA.TenantWorker.Extensions
             return services
                 .AddSingleton<IClockService, Clock>()
                 .AddScoped<IMessageBus, MessageBus>()
-                .AddScoped<IValidationProblemDetailsGenerator, ValidationProblemDetailsGenerator>()
                 .AddScoped<IRuntimeContextAccessor, RuntimeContextAccessor>()
-                .AddSingleton<IRuntimeGeoDataService, IpWhoisRuntimeGeoData>()
-                .AddHostedService<MessageBusService>();
+                .AddSingleton<IRuntimeGeoDataService, IpWhoisRuntimeGeoData>();
+        }
+
+        /// <summary>
+        /// Добавляет кастомизированную фабрику Деталей Проблемы.
+        /// </summary>
+        public static IServiceCollection AddCustomProblemDetails(this IServiceCollection services)
+        {
+            services
+                .AddTransient<IProblemDetailsFactory, YaProblemDetailsFactory>()
+                .AddTransient<ProblemDetailsFactory, YaProblemDetailsFactory>();
+
+            return services;
         }
     }
 }

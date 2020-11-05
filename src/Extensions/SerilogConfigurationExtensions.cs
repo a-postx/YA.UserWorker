@@ -1,4 +1,4 @@
-﻿using Serilog;
+using Serilog;
 using Serilog.Configuration;
 using Serilog.Core;
 using System;
@@ -19,7 +19,9 @@ namespace YA.TenantWorker.Extensions
         public static LoggerConfiguration FromCustomMbMessageContext(this LoggerEnrichmentConfiguration configuration)
         {
             if (configuration == null)
+            {
                 throw new ArgumentNullException(nameof(configuration));
+            }
 
             return configuration.With((ILogEventEnricher)new YaMbEventEnricher());
         }

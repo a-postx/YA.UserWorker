@@ -1,4 +1,4 @@
-﻿using MediatR;
+using MediatR;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
@@ -21,20 +21,20 @@ namespace YA.TenantWorker.Application.ActionHandlers.Tenants
         public PatchTenantByIdAh(ILogger<PatchTenantAh> logger,
             IActionContextAccessor actionCtx,
             IMediator mediator,
-            IValidationProblemDetailsGenerator generator,
+            IProblemDetailsFactory problemDetailsFactory,
             IMapper<Tenant, TenantVm> tenantVmMapper)
         {
             _log = logger ?? throw new ArgumentNullException(nameof(logger));
             _actionCtx = actionCtx ?? throw new ArgumentNullException(nameof(actionCtx));
             _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
-            _problemDetailsGenerator = generator ?? throw new ArgumentNullException(nameof(generator));
+            _pdFactory = problemDetailsFactory ?? throw new ArgumentNullException(nameof(problemDetailsFactory));
             _tenantVmMapper = tenantVmMapper ?? throw new ArgumentNullException(nameof(tenantVmMapper));
         }
 
         private readonly ILogger<PatchTenantAh> _log;
         private readonly IActionContextAccessor _actionCtx;
         private readonly IMediator _mediator;
-        private readonly IValidationProblemDetailsGenerator _problemDetailsGenerator;
+        private readonly IProblemDetailsFactory _pdFactory;
         private readonly IMapper<Tenant, TenantVm> _tenantVmMapper;
 
         public async Task<IActionResult> ExecuteAsync(Guid yaTenantId, JsonPatchDocument<TenantSm> patch, CancellationToken cancellationToken)
@@ -48,7 +48,8 @@ namespace YA.TenantWorker.Application.ActionHandlers.Tenants
                 default:
                     throw new ArgumentOutOfRangeException(nameof(result.Status), result.Status, null);
                 case CommandStatuses.ModelInvalid:
-                    ValidationProblemDetails problemDetails = _problemDetailsGenerator.Generate(result.ValidationResult);
+                    ValidationProblemDetails problemDetails = _pdFactory
+                        .CreateValidationProblemDetails(_actionCtx.ActionContext.HttpContext, result.ValidationResult);
                     return new BadRequestObjectResult(problemDetails);
                 case CommandStatuses.BadRequest:
                     return new BadRequestResult();

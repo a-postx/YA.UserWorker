@@ -119,17 +119,17 @@ namespace YA.TenantWorker.Infrastructure.Data
                 .Any());
         }
 
-        public Task<bool> GetEntitiesPagedHasPreviousPageAsync<T>(int? last, DateTimeOffset? borderDate,
+        public Task<bool> GetEntitiesPagedHasPreviousPageAsync<T>(int? last, DateTimeOffset? createdBefore,
             bool orderDesc, CancellationToken cancellationToken) where T : class, IAuditedEntityBase, IRowVersionedEntity
         {
             return Task.FromResult(Set<T>()
                 .IfElse(orderDesc,
                     x => x.OrderByDescending(t => t.CreatedDateTime),
                     x => x.OrderBy(t => t.CreatedDateTime))
-                .If(borderDate.HasValue, x =>
+                .If(createdBefore.HasValue, x =>
                     x.IfElse(orderDesc,
-                        y => y.Where(y => y.CreatedDateTime > borderDate.Value),
-                        y => y.Where(y => y.CreatedDateTime < borderDate.Value)))
+                        y => y.Where(y => y.CreatedDateTime > createdBefore.Value),
+                        y => y.Where(y => y.CreatedDateTime < createdBefore.Value)))
                 //применяем хак, TakeLast не работает в EF - "This overload of the method 'System.Linq.Queryable.TakeLast' is currently not supported." in v.4.2.2.0
                 .IfElse(orderDesc,
                     x => x.OrderBy(y => y.CreatedDateTime).Skip(last.Value).OrderByDescending(t => t.CreatedDateTime),
@@ -411,6 +411,7 @@ namespace YA.TenantWorker.Infrastructure.Data
         {
             ApplySavingConcepts();
             MakeSureSaveWithSingleTenantId();
+
             return base.SaveChanges();
         }
 
@@ -418,6 +419,7 @@ namespace YA.TenantWorker.Infrastructure.Data
         {
             ApplySavingConcepts();
             MakeSureSaveWithSingleTenantId();
+
             return await base.SaveChangesAsync(cancellationToken);
         }
         #endregion

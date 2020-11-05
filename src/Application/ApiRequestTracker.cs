@@ -1,9 +1,7 @@
-﻿using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using YA.TenantWorker.Application.Interfaces;
 using YA.TenantWorker.Application.Models.Dto;
 using YA.TenantWorker.Core.Entities;
@@ -26,10 +24,10 @@ namespace YA.TenantWorker.Application
         private readonly ILogger<ApiRequestTracker> _log;
         private readonly IApiRequestMemoryCache _apiRequestCache;
         private readonly ITenantWorkerDbContext _dbContext;
-        
+
         public async Task<(bool created, ApiRequest request)> GetOrCreateRequestAsync(Guid correlationId, string method, CancellationToken cancellationToken)
         {
-            (bool requestFoundInCache, ApiRequest request) = await GetFromCacheOrDbAsync(correlationId, cancellationToken);
+            (bool requestFoundInCache, ApiRequest request) = await GetFromCacheOrDbAsync(correlationId, method, cancellationToken);
 
             if (requestFoundInCache)
             {
@@ -56,10 +54,10 @@ namespace YA.TenantWorker.Application
             }
         }
 
-        private async Task<(bool requestFoundInCache, ApiRequest request)> GetFromCacheOrDbAsync(Guid correlationId, CancellationToken cancellationToken)
+        private async Task<(bool requestFoundInCache, ApiRequest request)> GetFromCacheOrDbAsync(Guid correlationId, string method, CancellationToken cancellationToken)
         {
             ApiRequest requestFromCache = _apiRequestCache.GetApiRequestFromCache<ApiRequest>(correlationId);
-                
+
             if (requestFromCache == null)
             {
                 ApiRequest request = await _dbContext.GetApiRequestAsync(e => e.ApiRequestID == correlationId, cancellationToken);
@@ -72,20 +70,21 @@ namespace YA.TenantWorker.Application
             }
         }
 
-        public async Task SetResultAsync(ApiRequest request, ApiRequestResult result, CancellationToken cancellationToken)
+        public async Task SetResultAsync(ApiRequest request, ApiRequestResult requestResult, CancellationToken cancellationToken)
         {
             if (request == null)
             {
-                throw new Exception("Api request cannot be empty.");
+                throw new ArgumentNullException(nameof(request));
             }
 
-            if (result == null)
+            if (requestResult == null)
             {
-                throw new Exception("Api request result cannot be empty.");
+                throw new ArgumentNullException(nameof(requestResult));
             }
 
-            request.SetResponseStatusCode(result.StatusCode);
-            request.SetResponseBody((result.Body != null) ? JToken.Parse(JsonConvert.SerializeObject(result.Body)).ToString(Formatting.Indented) : null);
+            request.SetResponseStatusCode(requestResult.StatusCode);
+            request.SetResponseBody(string.IsNullOrEmpty(requestResult.Body) ? null : requestResult.Body);
+
             await _dbContext.ApplyChangesAsync(cancellationToken);
 
             _apiRequestCache.Update(request, request.ApiRequestID);
