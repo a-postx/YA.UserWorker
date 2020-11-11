@@ -7,7 +7,7 @@ namespace YA.TenantWorker.Application.Validators
     {
         public TenantSmValidator()
         {
-            RuleFor(e => e.TenantName).NotEmpty();
+            RuleFor(e => e.Name).NotEmpty();
         }
     }
 }

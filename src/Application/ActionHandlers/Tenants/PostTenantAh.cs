@@ -1,4 +1,4 @@
-﻿using MediatR;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.Logging;
@@ -42,20 +42,25 @@ namespace YA.TenantWorker.Application.ActionHandlers.Tenants
         {
             ClaimsPrincipal user = _actionCtx.ActionContext.HttpContext.User;
 
+            string tenantId = user.Claims.FirstOrDefault(claim => claim.Type == YaClaimNames.tid)?.Value;
             string userId = user.Claims.FirstOrDefault(claim => claim.Type == YaClaimNames.uid)?.Value;
+            string userName = user.Claims.FirstOrDefault(claim => claim.Type == YaClaimNames.name)?.Value;
             string userEmail = user.Claims.FirstOrDefault(claim => claim.Type == YaClaimNames.email)?.Value;
+            
             ////string emailVerified = user.Claims.FirstOrDefault(claim => claim.Type == YaClaimNames.email_verified)?.Value;
-            //необходимо создать процесс верификации почты 
-            ////bool gotEmailVerification = bool.TryParse(emailVerified, out bool verificationResult);
-            ////bool isActive = gotEmailVerification ? verificationResult : false;
+            //bool isActive;
+            //if (bool.TryParse(emailVerified, out bool verificationResult))
+            //{
+            //    isActive = verificationResult;
+            //}
 
-            if (string.IsNullOrEmpty(userId) || string.IsNullOrEmpty(userEmail))
+            if (string.IsNullOrEmpty(tenantId))
             {
                 return new BadRequestResult();
             }
 
             ICommandResult<Tenant> result = await _mediator
-                .Send(new CreateTenantCommand(userId, userEmail), cancellationToken);
+                .Send(new CreateTenantCommand(tenantId, userId, userName, userEmail), cancellationToken);
 
             switch (result.Status)
             {
@@ -70,7 +75,7 @@ namespace YA.TenantWorker.Application.ActionHandlers.Tenants
 
                     TenantVm tenantVm = _tenantVmMapper.Map(result.Data);
 
-                    return new CreatedAtRouteResult(RouteNames.GetTenant, new { TenantId = tenantVm.TenantId, TenantName = tenantVm.TenantName }, tenantVm);
+                    return new CreatedAtRouteResult(RouteNames.GetTenant, null, tenantVm);
             }
         }
     }

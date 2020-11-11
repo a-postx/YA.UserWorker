@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 namespace YA.TenantWorker.Core.Entities
@@ -9,16 +9,25 @@ namespace YA.TenantWorker.Core.Entities
         Custom = 1
     }
 
+    public enum TenantStatuses
+    {
+        New = 0,
+        Activated = 1
+    }
+
     public class Tenant : IRowVersionedEntity, IAuditedEntityBase
     {
         public Guid TenantID { get; set; }
-        public string TenantName { get; set; }
-        public TenantTypes TenantType { get; set; }
+        public string Name { get; set; }
+        public TenantTypes Type { get; set; }
+        public string Email { get; set; }
+        public string AuthProvider { get; set; }
+        public string ExternalId { get; set; }
         public Guid PricingTierId { get; set; }
         public virtual PricingTier PricingTier { get; set; }
         public DateTime PricingTierActivatedDateTime { get; set; }
         public DateTime PricingTierActivatedUntilDateTime { get; set; }
-        public bool IsActive { get; set; }
+        public TenantStatuses Status { get; set; }
         public bool IsReadOnly { get; set; }
         public virtual ICollection<User> Users { get; set; }
         public DateTime CreatedDateTime { get; set; }

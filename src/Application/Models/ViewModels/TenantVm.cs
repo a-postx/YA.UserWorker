@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 
 namespace YA.TenantWorker.Application.Models.ViewModels
 {
@@ -15,7 +15,7 @@ namespace YA.TenantWorker.Application.Models.ViewModels
         /// <summary>
         /// Tenant name.
         /// </summary>
-        public string TenantName { get; set; }
+        public string Name { get; set; }
 
         /// <summary>
         /// URL used to retrieve the resource conforming to REST'ful JSON http://restfuljson.org/.

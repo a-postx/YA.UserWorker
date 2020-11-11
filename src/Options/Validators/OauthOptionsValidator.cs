@@ -9,10 +9,19 @@ namespace YA.TenantWorker.Options.Validators
         {
             List<string> failures = new List<string>();
 
-            // время ожидания, пока все фоновые сервисы остановятся
+            if (string.IsNullOrWhiteSpace(options.Authority))
+            {
+                failures.Add($"{nameof(options.Authority)} option is not found.");
+            }
+
             if (string.IsNullOrWhiteSpace(options.ClientId))
             {
                 failures.Add($"{nameof(options.ClientId)} option is not found.");
+            }
+
+            if (string.IsNullOrWhiteSpace(options.Audience))
+            {
+                failures.Add($"{nameof(options.Audience)} option is not found.");
             }
 
             if (failures.Count > 0)

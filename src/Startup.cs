@@ -107,10 +107,10 @@ namespace YA.TenantWorker
 
                 .AddCustomApiVersioning();
 
-            //забираем регулярно ротируемые ключи шифрования токенов с сервера провайдера
+            //забираем регулярно обновляемые ключи шифрования токенов с сервера провайдера
             services.AddSingleton<IConfigurationManager<OpenIdConnectConfiguration>>(provider =>
                 new ConfigurationManager<OpenIdConnectConfiguration>(
-                    secrets.OidcProviderIssuer + "/.well-known/oauth-authorization-server",
+                    secrets.OidcProviderIssuer + ".well-known/openid-configuration",
                     new OpenIdConnectConfigurationRetriever(),
                     new HttpDocumentRetriever { RequireHttps = true })
             );
@@ -154,7 +154,6 @@ namespace YA.TenantWorker
             services.AddCustomMessageBus(secrets);
 
             services.AddScoped<ApiRequestFilter>();
-
             services.AddScoped<IApiRequestTracker, ApiRequestTracker>();
             services.AddSingleton<IApiRequestMemoryCache, ApiRequestMemoryCache>();
         }

@@ -1,4 +1,4 @@
-﻿namespace YA.TenantWorker.Constants
+namespace YA.TenantWorker.Constants
 {
     public static class RouteNames
     {

@@ -1,4 +1,4 @@
-﻿namespace YA.TenantWorker.Application.Models.SaveModels
+namespace YA.TenantWorker.Application.Models.SaveModels
 {
     /// <summary>
     /// Арендатор, модель сохранения.
@@ -8,11 +8,6 @@
         /// <summary>
         /// Имя арендатора.
         /// </summary>
-        public string TenantName { get; set; }
-
-        /// <summary>
-        /// Сигнал к активации арендатора.
-        /// </summary>
-        public bool IsActive { get; set; }
+        public string Name { get; set; }
     }
 }

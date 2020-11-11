@@ -97,7 +97,6 @@ namespace YA.TenantWorker.Extensions
                 options.OAuthClientId(oauthOptions.ClientId);
                 options.OAuthScopeSeparator(" ");
                 options.OAuthAdditionalQueryStringParams(new Dictionary<string, string> {
-                        { "response_type", "token id_token" },
                         { "scope", "openid profile email" },
                         { "nonce","nonce" }
                     });

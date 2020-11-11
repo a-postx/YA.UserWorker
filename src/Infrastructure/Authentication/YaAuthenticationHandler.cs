@@ -31,21 +31,30 @@ namespace YA.TenantWorker.Infrastructure.Authentication
         public YaAuthenticationHandler(ILogger<YaAuthenticationHandler> logger,
             IHttpContextAccessor httpContextAccessor,
             IOptions<AppSecrets> secrets,
-            IConfigurationManager<OpenIdConnectConfiguration> configManager)
+            IConfigurationManager<OpenIdConnectConfiguration> configManager,
+            OauthOptions oauthOptions)
         {
             _log = logger ?? throw new ArgumentNullException(nameof(logger));
-            _httpContextAccessor = httpContextAccessor ?? throw new ArgumentNullException(nameof(httpContextAccessor));
-            _appSecrets = secrets.Value;
+            _httpCtx = httpContextAccessor ?? throw new ArgumentNullException(nameof(httpContextAccessor));
+
+            AppSecrets appSecrets = secrets.Value;
+            _apiGwHost = appSecrets.ApiGatewayHost ?? throw new ArgumentNullException(nameof(appSecrets.ApiGatewayHost));
+            _apiGwPort = appSecrets.ApiGatewayPort == 0 ? throw new ArgumentNullException(nameof(appSecrets.ApiGatewayPort)) : appSecrets.ApiGatewayPort;
+            
             _configManager = configManager ?? throw new ArgumentNullException(nameof(configManager));
+            _oauthOptions = oauthOptions ?? throw new ArgumentNullException(nameof(oauthOptions));
         }
 
         private readonly ILogger<YaAuthenticationHandler> _log;
-        private readonly IHttpContextAccessor _httpContextAccessor;
-        private readonly AppSecrets _appSecrets;
+        private readonly IHttpContextAccessor _httpCtx;
+        private readonly string _apiGwHost;
+        private readonly int _apiGwPort;
         private readonly IConfigurationManager<OpenIdConnectConfiguration> _configManager;
+        private readonly OauthOptions _oauthOptions;
         private AuthenticationScheme _scheme;
         private RequestHeaders _headers;
 
+        private const string _authType = "Bearer";
         private const string _loginRedirectPath = "/authentication/login";
 
         public Task InitializeAsync(AuthenticationScheme scheme, HttpContext context)
@@ -78,35 +87,26 @@ namespace YA.TenantWorker.Infrastructure.Authentication
 
                 if (validatedToken != null)
                 {
-                    string clientId = validatedToken.Claims.FirstOrDefault(claim => claim.Type == YaClaimNames.cid)?.Value;
-                    string userId = validatedToken.Claims.FirstOrDefault(claim => claim.Type == YaClaimNames.uid)?.Value;
-                    string username = validatedToken.Claims.FirstOrDefault(claim => claim.Type == YaClaimNames.sub)?.Value;
-                    string externalId = validatedToken.Claims.FirstOrDefault(claim => claim.Type == YaClaimNames.externalId)?.Value;
-                    string email = validatedToken.Claims.FirstOrDefault(claim => claim.Type == YaClaimNames.email)?.Value;
-                    string name = validatedToken.Claims.FirstOrDefault(claim => claim.Type == YaClaimNames.name)?.Value;
+                    string clientId = validatedToken.Claims.FirstOrDefault(claim => claim.Type == YaClaimNames.azp)?.Value;
+                    string userId = validatedToken.Claims.FirstOrDefault(claim => claim.Type == YaClaimNames.sub)?.Value;
+                    string userName = validatedToken.Claims.FirstOrDefault(claim => claim.Type == "http://yaapp.name")?.Value;
+                    string email = validatedToken.Claims.FirstOrDefault(claim => claim.Type == "http://yaapp.email")?.Value;
+                    string emailVerified = validatedToken.Claims.FirstOrDefault(claim => claim.Type == "http://yaapp.email_verified")?.Value;
 
                     if (string.IsNullOrEmpty(clientId))
                     {
-                        throw new Exception($"Authentication failed: {YaClaimNames.cid} claim cannot be found.");
+                        return AuthenticateResult.Fail($"{YaClaimNames.azp} claim cannot be found.");
                     }
                     if (string.IsNullOrEmpty(userId))
                     {
-                        throw new Exception($"Authentication failed: {YaClaimNames.uid} claim cannot be found.");
+                        return AuthenticateResult.Fail($"{YaClaimNames.uid} claim cannot be found.");
                     }
-                    if (string.IsNullOrEmpty(username))
+                    if (string.IsNullOrEmpty(userName))
                     {
-                        throw new Exception($"Authentication failed: {YaClaimNames.username} claim cannot be found.");
-                    }
-                    if (string.IsNullOrEmpty(email))
-                    {
-                        throw new Exception($"Authentication failed: {YaClaimNames.email} claim cannot be found.");
-                    }
-                    if (string.IsNullOrEmpty(name))
-                    {
-                        throw new Exception($"Authentication failed: {YaClaimNames.name} claim cannot be found.");
+                        return AuthenticateResult.Fail($"{YaClaimNames.name} claim cannot be found.");
                     }
 
-                    ClaimsIdentity userIdentity = new ClaimsIdentity("Bearer", YaClaimNames.name, YaClaimNames.role);
+                    ClaimsIdentity userIdentity = new ClaimsIdentity(_authType, YaClaimNames.name, YaClaimNames.role);
 
                     Guid tenantId = TenantIdGenerator.Create(userId);
                     ////Guid tenantId = Guid.Parse("00000000-0000-0000-0000-000000000001");
@@ -114,13 +114,18 @@ namespace YA.TenantWorker.Infrastructure.Authentication
                     userIdentity.AddClaim(new Claim(YaClaimNames.cid, clientId));
                     userIdentity.AddClaim(new Claim(YaClaimNames.uid, userId));
                     userIdentity.AddClaim(new Claim(YaClaimNames.tid, tenantId.ToString()));
-                    userIdentity.AddClaim(new Claim(YaClaimNames.username, username));
-                    if (externalId != null)
+                    userIdentity.AddClaim(new Claim(YaClaimNames.name, userName));
+
+                    if (email != null)
                     {
-                        userIdentity.AddClaim(new Claim(YaClaimNames.externalId, externalId));
+                        userIdentity.AddClaim(new Claim(YaClaimNames.email, email));
                     }
-                    userIdentity.AddClaim(new Claim(YaClaimNames.email, email));
-                    userIdentity.AddClaim(new Claim(YaClaimNames.name, name));
+
+                    if (emailVerified != null)
+                    {
+                        userIdentity.AddClaim(new Claim(YaClaimNames.emailVerified, emailVerified));
+                    }
+
                     GenericPrincipal userPricipal = new GenericPrincipal(userIdentity, new string[] { "user" });
                     ClaimsPrincipal principal = new ClaimsPrincipal(userPricipal);
 
@@ -129,13 +134,13 @@ namespace YA.TenantWorker.Infrastructure.Authentication
                     props.ExpiresUtc = validatedToken.ValidTo;
                     props.RedirectUri = _loginRedirectPath;
 
-                    _log.LogInformation("User {Username} is authenticated.", username);
+                    _log.LogInformation("User {UserId} is authenticated.", userId);
 
                     return AuthenticateResult.Success(new AuthenticationTicket(principal, props, _scheme.Name));
                 }
                 else
                 {
-                    return AuthenticateResult.Fail(new Exception("Cannot validate security token."));
+                    return AuthenticateResult.Fail("Cannot validate security token.");
                 }
             }
             else
@@ -146,9 +151,9 @@ namespace YA.TenantWorker.Infrastructure.Authentication
 
         public Task ChallengeAsync(AuthenticationProperties properties)
         {
-            HttpContext context = _httpContextAccessor.HttpContext;
+            HttpContext context = _httpCtx.HttpContext;
 
-            if (context.Request.Host.Host == _appSecrets.ApiGatewayHost && context.Request.Host.Port == _appSecrets.ApiGatewayPort)
+            if (context.Request.Host.Host == _apiGwHost && context.Request.Host.Port == _apiGwPort)
             {
                 _log.LogInformation("Challenge: redirected.");
                 context.Response.Redirect(_loginRedirectPath);
@@ -164,7 +169,7 @@ namespace YA.TenantWorker.Infrastructure.Authentication
 
         public Task ForbidAsync(AuthenticationProperties properties)
         {
-            HttpContext context = _httpContextAccessor.HttpContext;
+            HttpContext context = _httpCtx.HttpContext;
             _log.LogInformation("Forbid: forbidden.");
             context.Response.StatusCode = StatusCodes.Status403Forbidden;
             return Task.CompletedTask;
@@ -178,7 +183,8 @@ namespace YA.TenantWorker.Infrastructure.Authentication
             if (_headers.Headers.TryGetValue(HeaderNames.Authorization, out StringValues authHeaders) && authHeaders.Any())
             {
                 string tokenHeaderValue = authHeaders.ElementAt(0);
-                token = tokenHeaderValue.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase) ? tokenHeaderValue.Substring(7) : tokenHeaderValue;
+                token = tokenHeaderValue.StartsWith(_authType + " ", StringComparison.OrdinalIgnoreCase)
+                    ? tokenHeaderValue.Substring(7) : tokenHeaderValue;
                 tokenFound = true;
             }
 
@@ -189,7 +195,6 @@ namespace YA.TenantWorker.Infrastructure.Authentication
         {
             JwtSecurityTokenHandler jwtHandler = new JwtSecurityTokenHandler();
 
-            //защищаем Окту от левых запросов
             try
             {
                 jwtHandler.ReadToken(token);
@@ -212,7 +217,7 @@ namespace YA.TenantWorker.Infrastructure.Authentication
                 ClaimsPrincipal principal = jwtHandler.ValidateToken(token, validationParameters, out SecurityToken rawValidatedToken);
 
                 JwtSecurityToken validatedToken = (JwtSecurityToken)rawValidatedToken;
-                string expectedAlg = SecurityAlgorithms.RsaSha256; //Okta uses RS256
+                string expectedAlg = SecurityAlgorithms.RsaSha256;
 
                 if (validatedToken.Header?.Alg == null || validatedToken.Header?.Alg != expectedAlg)
                 {
@@ -226,9 +231,9 @@ namespace YA.TenantWorker.Infrastructure.Authentication
                 _log.LogInformation("Security token expired.");
                 return null;
             }
-            catch (SecurityTokenValidationException)
+            catch (SecurityTokenValidationException ex)
             {
-                _log.LogWarning("Security token validation failed.");
+                _log.LogInformation($"Security token validation failed: {ex.Message}");
                 return null;
             }
             catch (SecurityTokenException)
@@ -245,13 +250,6 @@ namespace YA.TenantWorker.Infrastructure.Authentication
 
         private async Task<TokenValidationParameters> GetValidationParametersAsync(CancellationToken cancellationToken)
         {
-            //требуется оценка надёжности: процесс аутентификации завязан на поставщика секретов
-            string issuer = _appSecrets.OidcProviderIssuer;
-            if (string.IsNullOrEmpty(issuer))
-            {
-                throw new ApplicationException("Issuer is empty.");
-            }
-
             //значение кешировано большую часть времени (3мс), поэтому проблемы производительности быть не должно
             OpenIdConnectConfiguration discoveryDocument = await _configManager.GetConfigurationAsync(cancellationToken);
             ICollection<SecurityKey> signingKeys = discoveryDocument.SigningKeys;
@@ -261,9 +259,9 @@ namespace YA.TenantWorker.Infrastructure.Authentication
                 RequireExpirationTime = true,
                 RequireSignedTokens = true,
                 ValidateIssuer = true,
-                ValidIssuer = issuer,
-                ValidateAudience = false,
-                ////ValidAudience = "",
+                ValidIssuer = _oauthOptions.Authority + "/",
+                ValidateAudience = true,
+                ValidAudience = _oauthOptions.Audience,
                 ValidateIssuerSigningKey = true,
                 IssuerSigningKeys = signingKeys,
                 ValidateLifetime = true,

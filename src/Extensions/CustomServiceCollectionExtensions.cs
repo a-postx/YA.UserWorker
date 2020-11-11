@@ -385,7 +385,7 @@ namespace YA.TenantWorker.Extensions
                         e.AutoDelete = true;
                         e.Durable = false;
                         e.ExchangeType = "fanout";
-                        e.Exclusive = true;
+                        e.Exclusive = false;
                         e.ExclusiveConsumer = true;
                         ////e.SetExchangeArgument("x-delayed-type", "direct");
 

@@ -1,10 +1,9 @@
-using AutoMapper;
-using MediatR;
-using Microsoft.Extensions.Logging;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using YA.Common;
+using AutoMapper;
+using MediatR;
+using Microsoft.Extensions.Logging;
 using YA.TenantWorker.Application.Enums;
 using YA.TenantWorker.Application.Interfaces;
 using YA.TenantWorker.Application.Models.Dto;
@@ -15,13 +14,17 @@ namespace YA.TenantWorker.Application.Features.Tenants.Commands
 {
     public class CreateTenantCommand : IRequest<ICommandResult<Tenant>>
     {
-        public CreateTenantCommand(string userId, string userEmail)
+        public CreateTenantCommand(string tenantId, string userId, string userName, string userEmail)
         {
+            TenantId = tenantId;
             UserId = userId;
+            UserName = userName;
             UserEmail = userEmail;
         }
 
+        public string TenantId { get; protected set; }
         public string UserId { get; protected set; }
+        public string UserName { get; protected set; }
         public string UserEmail { get; protected set; }
 
         public class CreateTenantHandler : IRequestHandler<CreateTenantCommand, ICommandResult<Tenant>>
@@ -45,7 +48,9 @@ namespace YA.TenantWorker.Application.Features.Tenants.Commands
 
             public async Task<ICommandResult<Tenant>> Handle(CreateTenantCommand command, CancellationToken cancellationToken)
             {
+                string tenantId = command.TenantId;
                 string userId = command.UserId;
+                string userName = command.UserName;
                 string userEmail = command.UserEmail;
 
                 Tenant existingTenant = await _dbContext.GetTenantWithPricingTierAsync(cancellationToken);
@@ -55,16 +60,27 @@ namespace YA.TenantWorker.Application.Features.Tenants.Commands
                     return new CommandResult<Tenant>(CommandStatuses.UnprocessableEntity, null);
                 }
 
+                bool tenantParsed = Guid.TryParse(tenantId, out Guid tenantIdGuid);
 
-                Guid tenantId = TenantIdGenerator.Create(userId);
+                if (!tenantParsed)
+                {
+                    return new CommandResult<Tenant>(CommandStatuses.UnprocessableEntity, null);
+                }
+
+                string[] tenantProps = userId.Split('|');
+                string provider = tenantProps[0];
+                string externalId = tenantProps[1];
 
                 Tenant tenant = new Tenant
                 {
-                    TenantID = tenantId,
-                    TenantName = userEmail,
+                    TenantID = tenantIdGuid,
+                    Name = userName,
+                    Email = userEmail,
+                    AuthProvider = provider,
+                    ExternalId = externalId,
                     //IsActive = isActive,
-                    IsActive = true,
-                    TenantType = Core.Entities.TenantTypes.Custom
+                    Status = Core.Entities.TenantStatuses.New,
+                    Type = Core.Entities.TenantTypes.Custom
                 };
 
                 Guid defaultPricingTierId = Guid.Parse(SeedData.SeedPricingTierId);

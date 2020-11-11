@@ -41,41 +41,27 @@ namespace YA.TenantWorker.Infrastructure.Data
             Guid defaultTenantId = Guid.Parse(SeedData.SystemTenantId);
             Guid seedPaidTenantId = Guid.Parse("00000000-0000-0000-0000-000000000002");
 
-            ////modelBuilder.Entity<Tenant>().HasData(
-            ////    Tenant.GetSystem(),
-            ////    new
-            ////    {
-            ////        TenantID = seedPaidTenantId,
-            ////        TenantName = "Уважаемый",
-            ////        PricingTierID = paidPricingTierId,
-            ////        PricingTierActivatedDateTime = DateTime.UtcNow,
-            ////        TenantType = TenantTypes.Custom,
-            ////        IsActive = true,
-            ////        IsReadOnly = false
-            ////    }
-            ////);
-
             modelBuilder.Entity<Tenant>().HasData(
                 new
                 {
                     TenantID = defaultTenantId,
-                    TenantName = "Системный",
+                    Name = "Системный",
+                    Type = TenantTypes.System,
+                    Status = TenantStatuses.Activated,
                     PricingTierId = defaultPricingTierId,
                     PricingTierActivatedDateTime = DateTime.UtcNow,
                     PricingTierActivatedUntilDateTime = DateTime.MinValue,
-                    TenantType = TenantTypes.System,
-                    IsActive = true,
                     IsReadOnly = false
                 },
                 new
                 {
                     TenantID = seedPaidTenantId,
-                    TenantName = "Уважаемый",
+                    Name = "Уважаемый",
+                    Type = TenantTypes.Custom,
+                    Status = TenantStatuses.Activated,
                     PricingTierId = paidPricingTierId,
                     PricingTierActivatedDateTime = DateTime.UtcNow,
                     PricingTierActivatedUntilDateTime = DateTime.UtcNow.AddDays(30),
-                    TenantType = TenantTypes.Custom,
-                    IsActive = true,
                     IsReadOnly = false
                 }
             );

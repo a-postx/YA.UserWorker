@@ -44,7 +44,7 @@ namespace YA.TenantWorker.Application.Mappers
             Guid tenantId = source.TenantID;
 
             destination.TenantId = source.TenantID;
-            destination.TenantName = source.TenantName;
+            destination.Name = source.Name;
             destination.PricingTierActivatedUntil = source.PricingTierActivatedUntilDateTime;
             destination.CreatedDateTime = source.CreatedDateTime;
             destination.LastModifiedDateTime = source.LastModifiedDateTime;
