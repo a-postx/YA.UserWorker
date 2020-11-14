@@ -1,16 +1,14 @@
-﻿using AutoMapper;
+using System;
+using System.Threading.Tasks;
+using AutoMapper;
 using MassTransit;
 using MbCommands;
 using MediatR;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Threading.Tasks;
-using YA.Common.Constants;
 using YA.TenantWorker.Application.Features.PricingTiers.Queries;
 using YA.TenantWorker.Application.Interfaces;
 using YA.TenantWorker.Application.Models.Dto;
 using YA.TenantWorker.Core.Entities;
-using YA.TenantWorker.Extensions;
 using YA.TenantWorker.Infrastructure.Messaging.Messages;
 
 namespace YA.TenantWorker.Infrastructure.Messaging.Consumers
@@ -38,24 +36,17 @@ namespace YA.TenantWorker.Infrastructure.Messaging.Consumers
 
         public async Task Consume(ConsumeContext<IGetPricingTierV1> context)
         {
-            try
-            {
-                ICommandResult<PricingTier> result = await _mediator
-                    .Send(new GetPricingTierCommand(), context.CancellationToken);
+            ICommandResult<PricingTier> result = await _mediator
+                .Send(new GetPricingTierCommand(), context.CancellationToken);
 
-                PricingTier pricingTier = result.Data;
+            PricingTier pricingTier = result.Data;
 
-                PricingTierTm pricingTierTm = _mapper.Map<PricingTierTm>(pricingTier);
+            PricingTierTm pricingTierTm = _mapper.Map<PricingTierTm>(pricingTier);
 
-                await context.RespondAsync<ISendPricingTierV1>(new SendPricingTierV1(_runtimeCtx.GetCorrelationId(), _runtimeCtx.GetTenantId(), pricingTierTm));
+            await context.RespondAsync<ISendPricingTierV1>(new SendPricingTierV1(_runtimeCtx.GetCorrelationId(), _runtimeCtx.GetTenantId(), pricingTierTm));
 
-                //await _messageBus.PricingTierSentV1Async(_runtimeContext.GetCorrelationId(),
-                //    _runtimeCtx.GetTenantId(), pricingTierTm, context.CancellationToken);
-            }
-            catch (Exception e) when (_log.LogException(e, (YaLogKeys.MbMessage, context.Message.ToJson())))
-            {
-                throw;
-            }
+            //await _messageBus.PricingTierSentV1Async(_runtimeContext.GetCorrelationId(),
+            //    _runtimeCtx.GetTenantId(), pricingTierTm, context.CancellationToken);
         }
     }
 }

@@ -1,5 +1,3 @@
-﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using System;
 using System.ComponentModel;
 using System.Globalization;
@@ -12,14 +10,6 @@ namespace YA.TenantWorker.Extensions
     /// </summary>
     public static class ObjectExtensions
     {
-        /// <summary>
-        /// Converts given object to json representation using <see cref="JsonConvert.SerializeObject(object)"/> and <see cref="JToken.Parse(string)"/> method.
-        /// </summary>
-        public static string ToJson(this object obj)
-        {
-            return JToken.Parse(JsonConvert.SerializeObject(obj)).ToString(Formatting.Indented);
-        }
-
         /// <summary>
         /// Used to simplify and beautify casting an object to a type. 
         /// </summary>

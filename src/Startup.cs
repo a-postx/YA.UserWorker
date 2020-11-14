@@ -89,11 +89,6 @@ namespace YA.TenantWorker
             services
                 .AddCorrelationIdFluent(generalOptions)
 
-                ////.AddHttpsRedirection(options =>
-                ////{
-                ////    options.RedirectStatusCode = StatusCodes.Status307TemporaryRedirect;
-                ////})
-
                 .AddCustomCaching()
                 .AddCustomCors()
                 .AddCustomRouting()

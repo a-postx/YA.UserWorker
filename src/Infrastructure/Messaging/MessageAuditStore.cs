@@ -1,5 +1,7 @@
 using System;
+using System.Text.Encodings.Web;
 using System.Text.Json;
+using System.Text.Unicode;
 using System.Threading.Tasks;
 using MassTransit.Audit;
 using Microsoft.Extensions.Logging;
@@ -20,14 +22,20 @@ namespace YA.TenantWorker.Infrastructure.Messaging
         {
             _log = logger ?? throw new ArgumentNullException(nameof(logger));
             _maxLogFieldLength = optionsMonitor.CurrentValue.MaxLogFieldLength;
+            _serializingOptions = new JsonSerializerOptions
+            {
+                Encoder = JavaScriptEncoder.Create(UnicodeRanges.All),
+                WriteIndented = true
+            };
         }
 
         private readonly ILogger<MessageAuditStore> _log;
         private readonly int _maxLogFieldLength;
+        private readonly JsonSerializerOptions _serializingOptions;
 
         public Task StoreMessage<T>(T message, MessageAuditMetadata metadata) where T : class
         {
-            string savedMessage = JsonSerializer.Serialize(message, new JsonSerializerOptions { WriteIndented = true });
+            string savedMessage = JsonSerializer.Serialize(message, _serializingOptions);
 
             // поля logz.io/logstash поддерживают только строки длиной до 32тыс, поэтому обрезаем тела запросов/ответов
             if (savedMessage.Length > _maxLogFieldLength)
