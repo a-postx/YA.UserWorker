@@ -18,8 +18,9 @@ namespace YA.TenantWorker
 
             if (!File.Exists(filePath))
             {
-                File.WriteAllText(filePath, Id);
-                return Guid.NewGuid().ToString("N");
+                string id = Guid.NewGuid().ToString("N");
+                File.WriteAllText(filePath, id);
+                return id;
             }
             else
             {

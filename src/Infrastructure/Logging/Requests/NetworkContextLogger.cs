@@ -20,38 +20,44 @@ namespace YA.TenantWorker.Infrastructure.Logging.Requests
         }
 
         private readonly RequestDelegate _next;
-        private readonly string _unknownIp = "unknown";
 
         public async Task InvokeAsync(HttpContext httpContext, ILogger<NetworkContextLogger> logger)
         {
             HttpContext context = httpContext ?? throw new ArgumentNullException(nameof(httpContext));
 
-            if (context.Request.Headers.TryGetValue("X-Original-For", out StringValues forwardedValue))
+            string clientIp;
+
+            if (context.Request.Headers.TryGetValue("X-Original-For", out StringValues proxyForwardedValue))
             {
-                string clientIp = null;
-
-                string clientIpsList = forwardedValue.ToString();
-                string clientIpElement = clientIpsList.Split(',').Select(s => s.Trim()).FirstOrDefault();
-
-                if (!string.IsNullOrEmpty(clientIpElement))
-                {
-                    clientIp = clientIpElement.Split(':').Select(s => s.Trim()).FirstOrDefault();
-                }
-
-                using (logger.BeginScopeWith((YaLogKeys.ClientIP, !string.IsNullOrEmpty(clientIp) ? clientIp : _unknownIp)))
-                {
-                    await _next(context);
-                }
+                clientIp = GetIpFromHeaderString(proxyForwardedValue);
+            }
+            else if (context.Request.Headers.TryGetValue("X-Client-IP", out StringValues azureValue))
+            {
+                clientIp = GetIpFromHeaderString(azureValue);
             }
             else
             {
-                string clientIp = httpContext.Connection.RemoteIpAddress?.ToString();
-
-                using (logger.BeginScopeWith((YaLogKeys.ClientIP, !string.IsNullOrEmpty(clientIp) ? clientIp : _unknownIp)))
-                {
-                    await _next(context);
-                }
+                string remoteAddress = httpContext.Connection.RemoteIpAddress?.ToString();
+                clientIp = !string.IsNullOrEmpty(remoteAddress) ? remoteAddress : "unknown";
             }
+
+            using (logger.BeginScopeWith((YaLogKeys.ClientIP, clientIp)))
+            {
+                await _next(context);
+            }
+        }
+
+        private static string GetIpFromHeaderString(StringValues ipAddresses)
+        {
+            string ipAddress = ipAddresses.Last().Split(',').First().Trim();
+            var portDelimiterPos = ipAddress.LastIndexOf(":", StringComparison.CurrentCultureIgnoreCase);
+
+            if (portDelimiterPos != -1)
+            {
+                ipAddress = ipAddress.Substring(0, portDelimiterPos);
+            }
+
+            return ipAddress;
         }
     }
 }
