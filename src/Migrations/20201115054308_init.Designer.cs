@@ -10,7 +10,7 @@ using YA.TenantWorker.Infrastructure.Data;
 namespace YA.TenantWorker.Migrations
 {
     [DbContext(typeof(TenantWorkerDbContext))]
-    [Migration("20201111133449_init")]
+    [Migration("20201115054308_init")]
     partial class init
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -203,7 +203,7 @@ namespace YA.TenantWorker.Migrations
                             TenantID = new Guid("00000000-0000-0000-0000-000000000001"),
                             IsReadOnly = false,
                             Name = "Системный",
-                            PricingTierActivatedDateTime = new DateTime(2020, 11, 11, 13, 34, 48, 440, DateTimeKind.Utc).AddTicks(3717),
+                            PricingTierActivatedDateTime = new DateTime(2020, 11, 15, 5, 43, 7, 429, DateTimeKind.Utc).AddTicks(1239),
                             PricingTierActivatedUntilDateTime = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             PricingTierId = new Guid("00000000-0000-0000-0000-000000000001"),
                             Status = 1,
@@ -214,8 +214,8 @@ namespace YA.TenantWorker.Migrations
                             TenantID = new Guid("00000000-0000-0000-0000-000000000002"),
                             IsReadOnly = false,
                             Name = "Уважаемый",
-                            PricingTierActivatedDateTime = new DateTime(2020, 11, 11, 13, 34, 48, 440, DateTimeKind.Utc).AddTicks(5427),
-                            PricingTierActivatedUntilDateTime = new DateTime(2020, 12, 11, 13, 34, 48, 440, DateTimeKind.Utc).AddTicks(5436),
+                            PricingTierActivatedDateTime = new DateTime(2020, 11, 15, 5, 43, 7, 429, DateTimeKind.Utc).AddTicks(3025),
+                            PricingTierActivatedUntilDateTime = new DateTime(2020, 12, 15, 5, 43, 7, 429, DateTimeKind.Utc).AddTicks(3033),
                             PricingTierId = new Guid("00000000-0000-0000-0000-000000000013"),
                             Status = 1,
                             Type = 1
@@ -294,13 +294,13 @@ namespace YA.TenantWorker.Migrations
                         new
                         {
                             UserID = new Guid("00000000-0000-0000-0000-000000000011"),
-                            CreatedDateTime = new DateTime(2020, 11, 11, 13, 34, 48, 440, DateTimeKind.Utc).AddTicks(6671),
+                            CreatedDateTime = new DateTime(2020, 11, 15, 5, 43, 7, 429, DateTimeKind.Utc).AddTicks(4353),
                             Email = "admin@email.com",
                             FirstName = "My",
                             IsActive = true,
                             IsDeleted = false,
                             IsPendingActivation = false,
-                            LastModifiedDateTime = new DateTime(2020, 11, 11, 13, 34, 48, 440, DateTimeKind.Utc).AddTicks(6678),
+                            LastModifiedDateTime = new DateTime(2020, 11, 15, 5, 43, 7, 429, DateTimeKind.Utc).AddTicks(4361),
                             LastName = "Admin",
                             Password = "123",
                             Role = "Administrator",
@@ -310,13 +310,13 @@ namespace YA.TenantWorker.Migrations
                         new
                         {
                             UserID = new Guid("00000000-0000-0000-0000-000000000012"),
-                            CreatedDateTime = new DateTime(2020, 11, 11, 13, 34, 48, 440, DateTimeKind.Utc).AddTicks(8626),
+                            CreatedDateTime = new DateTime(2020, 11, 15, 5, 43, 7, 429, DateTimeKind.Utc).AddTicks(6575),
                             Email = "user@email.com",
                             FirstName = "My",
                             IsActive = true,
                             IsDeleted = false,
                             IsPendingActivation = false,
-                            LastModifiedDateTime = new DateTime(2020, 11, 11, 13, 34, 48, 440, DateTimeKind.Utc).AddTicks(8635),
+                            LastModifiedDateTime = new DateTime(2020, 11, 15, 5, 43, 7, 429, DateTimeKind.Utc).AddTicks(6583),
                             LastName = "User",
                             Password = "123",
                             Role = "User",
@@ -337,6 +337,11 @@ namespace YA.TenantWorker.Migrations
                         .IsUnicode(true);
 
                     b.Property<string>("BrowserVersion")
+                        .HasColumnType("nvarchar(50)")
+                        .HasMaxLength(50)
+                        .IsUnicode(true);
+
+                    b.Property<string>("ClientVersion")
                         .HasColumnType("nvarchar(50)")
                         .HasMaxLength(50)
                         .IsUnicode(true);

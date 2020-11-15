@@ -78,7 +78,7 @@ namespace YA.TenantWorker.Infrastructure.Logging.Requests
                     context.Response.Body.Seek(0, SeekOrigin.Begin);
 
                     string responseBody;
-
+                    
                     using (StreamReader sr = new StreamReader(context.Response.Body))
                     {
                         responseBody = await sr.ReadToEndAsync();

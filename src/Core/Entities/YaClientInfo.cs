@@ -8,6 +8,7 @@ namespace YA.TenantWorker.Core.Entities
         public virtual Tenant Tenant { get; set; }
         public Guid YaClientInfoID { get; set; }
         public string Username { get; set; }
+        public string ClientVersion { get; set; }
         public string IpAddress { get; set; }
         public string CountryName { get; set; }
         public string RegionName { get; set; }

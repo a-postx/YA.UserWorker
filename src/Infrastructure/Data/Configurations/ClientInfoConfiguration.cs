@@ -56,6 +56,9 @@ namespace YA.TenantWorker.Infrastructure.Data.Configurations
             modelBuilder.Property(p => p.ViewportSize)
                 .IsUnicode()
                 .HasMaxLength(50);
+            modelBuilder.Property(p => p.ClientVersion)
+                .IsUnicode()
+                .HasMaxLength(50);
         }
     }
 }

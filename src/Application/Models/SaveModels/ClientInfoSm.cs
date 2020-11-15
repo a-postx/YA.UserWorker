@@ -1,10 +1,14 @@
-﻿namespace YA.TenantWorker.Application.Models.SaveModels
+namespace YA.TenantWorker.Application.Models.SaveModels
 {
     /// <summary>
     /// Информация о клиенте, модель сохранения
     /// </summary>
     public class ClientInfoSm
     {
+        /// <summary>
+        /// Версия клиента.
+        /// </summary>
+        public string ClientVersion { get; set; }
         /// <summary>
         /// Производитель браузера.
         /// </summary>

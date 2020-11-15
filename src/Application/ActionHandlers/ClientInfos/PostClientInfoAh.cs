@@ -8,6 +8,7 @@ using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using YA.Common.Constants;
 using YA.TenantWorker.Application.Features;
 using YA.TenantWorker.Application.Features.ClientInfos.Commands;
 using YA.TenantWorker.Application.Interfaces;
@@ -74,16 +75,16 @@ namespace YA.TenantWorker.Application.ActionHandlers.ClientInfos
 
             string username = "unknown";
 
-            string usernameClaim = _actionCtx.ActionContext.HttpContext.User.Claims.Where(c => c.Type == "username").FirstOrDefault()?.Value;
+            string usernameClaim = _actionCtx.ActionContext.HttpContext.User.Claims.Where(c => c.Type == YaClaimNames.name).FirstOrDefault()?.Value;
 
             if (!string.IsNullOrEmpty(usernameClaim))
             {
                 username = usernameClaim;
             }
 
-            using (_log.BeginScopeWith(("Browser", clientInfoSm.Browser), ("BrowserVersion", clientInfoSm.BrowserVersion),
-                    ("Os", clientInfoSm.Os), ("OsVersion", clientInfoSm.OsVersion),
-                    ("DeviceModel", clientInfoSm.DeviceModel),
+            using (_log.BeginScopeWith(("ClientVersion", clientInfoSm.ClientVersion), ("Browser", clientInfoSm.Browser),
+                    ("BrowserVersion", clientInfoSm.BrowserVersion), ("Os", clientInfoSm.Os),
+                    ("OsVersion", clientInfoSm.OsVersion), ("DeviceModel", clientInfoSm.DeviceModel),
                     ("CountryName", clientInfoSm.CountryName), ("RegionName", clientInfoSm.RegionName),
                     ("ScreenResolution", clientInfoSm.ScreenResolution), ("ViewportSize", clientInfoSm.ViewportSize),
                     ("Timestamp", clientInfoSm.Timestamp)))

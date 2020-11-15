@@ -2,6 +2,7 @@ namespace YA.TenantWorker.Application.Models.Dto
 {
     public class ClientInfoTm
     {
+        public string ClientVersion { get; set; }
         public string Username { get; set; }
         public string IpAddress { get; set; }
         public string CountryName { get; set; }
