@@ -15,7 +15,7 @@ using YA.TenantWorker.Options;
 namespace YA.TenantWorker.Application.Middlewares.ActionFilters
 {
     /// <summary>
-    /// Фильтр идемпотентности: не допускает запросов без корелляционного идентификатора
+    /// Фильтр идемпотентности: не допускает запросов без идентификатора
     /// и сохраняет запрос и результат чтобы вернуть тот же ответ в случае запроса-дубликата.
     /// </summary>
     public class ApiRequestFilter : ActionFilterAttribute
@@ -40,13 +40,13 @@ namespace YA.TenantWorker.Application.Middlewares.ActionFilters
         {
             string method = context.HttpContext.Request.Method;
 
-            Guid correlationId = _runtimeCtx.GetCorrelationId();
+            Guid requestId = _runtimeCtx.GetClientRequestId();
 
-            if (correlationId != Guid.Empty)
+            if (requestId != Guid.Empty)
             {
                 using (CancellationTokenSource cts = new CancellationTokenSource(Timeouts.ApiRequestFilterMs))
                 {
-                    (bool requestCreated, ApiRequest request) = await _apiRequestTracker.GetOrCreateRequestAsync(correlationId, method, cts.Token);
+                    (bool requestCreated, ApiRequest request) = await _apiRequestTracker.GetOrCreateRequestAsync(requestId, method, cts.Token);
 
                     if (!requestCreated)
                     {
@@ -61,7 +61,7 @@ namespace YA.TenantWorker.Application.Middlewares.ActionFilters
             else
             {
                 ProblemDetails problemDetails = _pdFactory.CreateProblemDetails(context.HttpContext, StatusCodes.Status400BadRequest,
-                            $"Запрос не содержит заголовка {_generalOptions.CorrelationIdHeader} или значение в нём неверно.",
+                            $"Запрос не содержит заголовка {_generalOptions.ClientRequestIdHeader} или значение в нём неверно.",
                             null, null, context.HttpContext.Request.Path);
 
                 context.Result = new BadRequestObjectResult(problemDetails);
@@ -80,13 +80,13 @@ namespace YA.TenantWorker.Application.Middlewares.ActionFilters
         public override async Task OnResultExecutionAsync(ResultExecutingContext context, ResultExecutionDelegate next)
         {
             string method = context.HttpContext.Request.Method;
-            Guid correlationId = _runtimeCtx.GetCorrelationId();
+            Guid requestId = _runtimeCtx.GetClientRequestId();
 
-            if (correlationId != Guid.Empty)
+            if (requestId != Guid.Empty)
             {
                 using (CancellationTokenSource cts = new CancellationTokenSource(Timeouts.ApiRequestFilterMs))
                 {
-                    (bool requestCreated, ApiRequest request) = await _apiRequestTracker.GetOrCreateRequestAsync(correlationId, method, cts.Token);
+                    (bool requestCreated, ApiRequest request) = await _apiRequestTracker.GetOrCreateRequestAsync(requestId, method, cts.Token);
 
                     if (request != null)
                     {

@@ -140,5 +140,14 @@ namespace YA.TenantWorker.Extensions
             return application
                 .UseMiddleware<AuthenticationContextLogger>();
         }
+
+        /// <summary>
+        /// Добавляет прослойку логирования идентификатора клиентского запроса
+        /// </summary>
+        public static IApplicationBuilder UseClientRequestContextLogging(this IApplicationBuilder application)
+        {
+            return application
+                .UseMiddleware<RequestContextLogger>();
+        }
     }
 }

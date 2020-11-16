@@ -9,6 +9,11 @@ namespace YA.TenantWorker.Options.Validators
         {
             List<string> failures = new List<string>();
 
+            if (string.IsNullOrWhiteSpace(options.ClientRequestIdHeader))
+            {
+                failures.Add($"{nameof(options.ClientRequestIdHeader)} option is not found.");
+            }
+
             if (string.IsNullOrWhiteSpace(options.CorrelationIdHeader))
             {
                 failures.Add($"{nameof(options.CorrelationIdHeader)} option is not found.");

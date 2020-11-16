@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 
 namespace YA.TenantWorker.Core.Entities
 {
@@ -9,9 +9,9 @@ namespace YA.TenantWorker.Core.Entities
             
         }
 
-        public ApiRequest(Guid correlationId, DateTime dateTime, string method)
+        public ApiRequest(Guid clientRequestId, DateTime dateTime, string method)
         {
-            ApiRequestID = correlationId;
+            ApiRequestID = clientRequestId;
             ApiRequestDateTime = dateTime;
             Method = method;
         }

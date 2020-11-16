@@ -62,7 +62,7 @@ namespace YA.TenantWorker.Infrastructure.Logging.Requests
                     .ForContext(YaLogKeys.RequestPath, context.Request.Path)
                     .ForContext(YaLogKeys.RequestQuery, context.Request.QueryString)
                     .ForContext(YaLogKeys.RequestPathAndQuery, GetFullPath(context))
-                    .Information("{RequestMethod} {RequestPath}", context.Request.Method, context.Request.Path);
+                    .Information("HTTP request received.");
 
                 using (MemoryStream responseBodyMemoryStream = new MemoryStream())
                 {
@@ -99,7 +99,7 @@ namespace YA.TenantWorker.Infrastructure.Logging.Requests
                             .ForContext(YaLogKeys.RequestQuery, context.Request.QueryString)
                             .ForContext(YaLogKeys.RequestPathAndQuery, GetFullPath(context))
                             .ForContext(YaLogKeys.RequestAborted, context.RequestAborted.IsCancellationRequested)
-                            .Information("{RequestMethod} {RequestPath} - {StatusCode} in {ElapsedMilliseconds} ms", context.Request.Method, context.Request.Path, context.Response.StatusCode, elapsedMs);
+                            .Information("HTTP request handled in {ElapsedMilliseconds} ms", elapsedMs);
 
                         await responseBodyMemoryStream.CopyToAsync(originalResponseBodyReference, lifetime.ApplicationStopping);
                     }

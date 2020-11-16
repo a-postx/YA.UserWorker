@@ -161,8 +161,9 @@ namespace YA.TenantWorker
             OauthOptions oauthOptions = _config.GetSection(nameof(ApplicationOptions.OAuth)).Get<OauthOptions>();
 
             application
+                .UseClientRequestContextLogging()
                 .UseCorrelationId()
-                
+
                 //.UseAllElasticApm(Configuration)
 
                 .UseForwardedHeaders(new ForwardedHeadersOptions

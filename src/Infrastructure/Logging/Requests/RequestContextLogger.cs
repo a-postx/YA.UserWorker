@@ -1,34 +1,38 @@
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Delobytes.AspNetCore;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Primitives;
 using YA.Common.Constants;
 using YA.TenantWorker.Extensions;
+using YA.TenantWorker.Options;
 
 namespace YA.TenantWorker.Infrastructure.Logging.Requests
 {
     /// <summary>
-    /// Прослойка логирования контекста аутентификации. 
+    /// Прослойка логирования контекста запроса. 
     /// </summary>
-    public class AuthenticationContextLogger
+    public class RequestContextLogger
     {
-        public AuthenticationContextLogger(RequestDelegate next)
+        public RequestContextLogger(RequestDelegate next)
         {
             _next = next ?? throw new ArgumentNullException(nameof(next));
         }
 
         private readonly RequestDelegate _next;
 
-        public async Task InvokeAsync(HttpContext httpContext, ILogger<AuthenticationContextLogger> logger)
+        public async Task InvokeAsync(HttpContext httpContext,
+            ILogger<AuthenticationContextLogger> logger,
+            GeneralOptions generalOptions)
         {
             HttpContext context = httpContext ?? throw new ArgumentNullException(nameof(httpContext));
             
-            if (context.User.Identity.IsAuthenticated)
+            if (context.Request.Headers
+                    .TryGetValue(generalOptions.ClientRequestIdHeader, out StringValues clientRequestIdValue))
             {
-                using (logger.BeginScopeWith((YaLogKeys.TenantId, context.User.GetClaimValue<Guid>(YaClaimNames.tid)),
-                    (YaLogKeys.Username, context.User.GetClaimValue<string>(YaClaimNames.username)),
-                    (YaLogKeys.UserId, context.User.GetClaimValue<string>(YaClaimNames.uid))))
+                using (logger.BeginScopeWith(("ClientRequestId", clientRequestIdValue.First())))
                 {
                     await _next(context);
                 }

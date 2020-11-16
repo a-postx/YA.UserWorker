@@ -25,9 +25,9 @@ namespace YA.TenantWorker.Application
         private readonly IApiRequestMemoryCache _apiRequestCache;
         private readonly ITenantWorkerDbContext _dbContext;
 
-        public async Task<(bool created, ApiRequest request)> GetOrCreateRequestAsync(Guid correlationId, string method, CancellationToken cancellationToken)
+        public async Task<(bool created, ApiRequest request)> GetOrCreateRequestAsync(Guid clientRequestId, string method, CancellationToken cancellationToken)
         {
-            (bool requestFoundInCache, ApiRequest request) = await GetFromCacheOrDbAsync(correlationId, method, cancellationToken);
+            (bool requestFoundInCache, ApiRequest request) = await GetFromCacheOrDbAsync(clientRequestId, method, cancellationToken);
 
             if (requestFoundInCache)
             {
@@ -42,7 +42,7 @@ namespace YA.TenantWorker.Application
                 }
                 else
                 {
-                    ApiRequest newApiRequest = new ApiRequest(correlationId, DateTime.UtcNow, method);
+                    ApiRequest newApiRequest = new ApiRequest(clientRequestId, DateTime.UtcNow, method);
 
                     ApiRequest createdRequest = await _dbContext.CreateApiRequestAsync(newApiRequest, cancellationToken);
                     await _dbContext.ApplyChangesAsync(cancellationToken);
@@ -54,13 +54,13 @@ namespace YA.TenantWorker.Application
             }
         }
 
-        private async Task<(bool requestFoundInCache, ApiRequest request)> GetFromCacheOrDbAsync(Guid correlationId, string method, CancellationToken cancellationToken)
+        private async Task<(bool requestFoundInCache, ApiRequest request)> GetFromCacheOrDbAsync(Guid clientRequestId, string method, CancellationToken cancellationToken)
         {
-            ApiRequest requestFromCache = _apiRequestCache.GetApiRequestFromCache<ApiRequest>(correlationId);
+            ApiRequest requestFromCache = _apiRequestCache.GetApiRequestFromCache<ApiRequest>(clientRequestId);
 
             if (requestFromCache == null)
             {
-                ApiRequest request = await _dbContext.GetApiRequestAsync(e => e.ApiRequestID == correlationId, cancellationToken);
+                ApiRequest request = await _dbContext.GetApiRequestAsync(e => e.ApiRequestID == clientRequestId, cancellationToken);
 
                 return (request != null) ? (false, request) : (false, null);
             }

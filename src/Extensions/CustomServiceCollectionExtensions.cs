@@ -52,12 +52,12 @@ namespace YA.TenantWorker.Extensions
         {
             services.AddDefaultCorrelationId(options =>
             {
-                options.CorrelationIdGenerator = () => "";
+                options.CorrelationIdGenerator = () => Guid.NewGuid().ToString();
                 options.AddToLoggingScope = true;
                 options.LoggingScopeKey = YaLogKeys.CorrelationId;
                 options.EnforceHeader = false;
-                options.IgnoreRequestHeader = false;
-                options.IncludeInResponse = false;
+                options.IgnoreRequestHeader = true;
+                options.IncludeInResponse = true;
                 options.RequestHeader = generalOptions.CorrelationIdHeader;
                 options.ResponseHeader = generalOptions.CorrelationIdHeader;
                 options.UpdateTraceIdentifier = false;
@@ -245,7 +245,7 @@ namespace YA.TenantWorker.Extensions
         /// <summary>
         /// Add and configure Swagger services.
         /// </summary>
-        public static IServiceCollection AddCustomSwagger(this IServiceCollection services, AppSecrets secrets, GeneralOptions appOptions)
+        public static IServiceCollection AddCustomSwagger(this IServiceCollection services, AppSecrets secrets, GeneralOptions generalOptions)
         {
             string swaggerAuthenticationSchemeName = "oauth2";
 
@@ -263,7 +263,7 @@ namespace YA.TenantWorker.Extensions
                 options.IncludeXmlCommentsIfExists(assembly);
 
                 options.OperationFilter<ApiVersionOperationFilter>();
-                options.OperationFilter<CorrelationIdOperationFilter>(appOptions.CorrelationIdHeader);
+                options.OperationFilter<ClientRequestIdOperationFilter>(generalOptions.ClientRequestIdHeader);
                 options.OperationFilter<ContentTypeOperationFilter>(true);
                 options.OperationFilter<ClaimsOperationFilter>(swaggerAuthenticationSchemeName);
                 options.OperationFilter<SecurityRequirementsOperationFilter>(true, swaggerAuthenticationSchemeName);
