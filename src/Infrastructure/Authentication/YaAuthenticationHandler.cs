@@ -32,7 +32,7 @@ namespace YA.TenantWorker.Infrastructure.Authentication
             IHttpContextAccessor httpContextAccessor,
             IOptions<AppSecrets> secrets,
             IConfigurationManager<OpenIdConnectConfiguration> configManager,
-            OauthOptions oauthOptions)
+            IOptions<OauthOptions> oauthOptions)
         {
             _log = logger ?? throw new ArgumentNullException(nameof(logger));
             _httpCtx = httpContextAccessor ?? throw new ArgumentNullException(nameof(httpContextAccessor));
@@ -42,7 +42,7 @@ namespace YA.TenantWorker.Infrastructure.Authentication
             _apiGwPort = appSecrets.ApiGatewayPort == 0 ? throw new ArgumentNullException(nameof(appSecrets.ApiGatewayPort)) : appSecrets.ApiGatewayPort;
             
             _configManager = configManager ?? throw new ArgumentNullException(nameof(configManager));
-            _oauthOptions = oauthOptions ?? throw new ArgumentNullException(nameof(oauthOptions));
+            _oauthOptions = oauthOptions.Value;
         }
 
         private readonly ILogger<YaAuthenticationHandler> _log;

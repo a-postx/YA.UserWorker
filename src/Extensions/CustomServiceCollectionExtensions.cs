@@ -4,7 +4,6 @@ using System.IO.Compression;
 using System.Linq;
 using System.Reflection;
 using CorrelationId.DependencyInjection;
-using Delobytes.AspNetCore;
 using Delobytes.AspNetCore.Swagger;
 using Delobytes.AspNetCore.Swagger.OperationFilters;
 using Delobytes.AspNetCore.Swagger.SchemaFilters;
@@ -56,7 +55,7 @@ namespace YA.TenantWorker.Extensions
                 options.AddToLoggingScope = true;
                 options.LoggingScopeKey = YaLogKeys.CorrelationId;
                 options.EnforceHeader = false;
-                options.IgnoreRequestHeader = true;
+                options.IgnoreRequestHeader = false;
                 options.IncludeInResponse = true;
                 options.RequestHeader = generalOptions.CorrelationIdHeader;
                 options.ResponseHeader = generalOptions.CorrelationIdHeader;
@@ -129,18 +128,19 @@ namespace YA.TenantWorker.Extensions
             services.AddSingleton<IValidateOptions<AppSecrets>, AppSecretsValidator>();
 
             services
-                .ConfigureAndValidateSingleton<ApplicationOptions>(configuration, o => o.BindNonPublicProperties = false)
-                .ConfigureAndValidateSingleton<HostOptions>(configuration.GetSection(nameof(ApplicationOptions.HostOptions)), o => o.BindNonPublicProperties = false)
-                .ConfigureAndValidateSingleton<AwsOptions>(configuration.GetSection(nameof(ApplicationOptions.Aws)), o => o.BindNonPublicProperties = false)
-                .ConfigureAndValidateSingleton<CompressionOptions>(configuration.GetSection(nameof(ApplicationOptions.Compression)), o => o.BindNonPublicProperties = false)
-                .ConfigureAndValidateSingleton<ForwardedHeadersOptions>(configuration.GetSection(nameof(ApplicationOptions.ForwardedHeaders)), o => o.BindNonPublicProperties = false)
-                .ConfigureAndValidateSingleton<CacheProfileOptions>(configuration.GetSection(nameof(ApplicationOptions.CacheProfiles)), o => o.BindNonPublicProperties = false)
-                .ConfigureAndValidateSingleton<KestrelServerOptions>(configuration.GetSection(nameof(ApplicationOptions.Kestrel)), o => o.BindNonPublicProperties = false)
-                .ConfigureAndValidateSingleton<OauthOptions>(configuration.GetSection(nameof(ApplicationOptions.OAuth)), o => o.BindNonPublicProperties = false)
-                .ConfigureAndValidateSingleton<GeneralOptions>(configuration.GetSection(nameof(ApplicationOptions.General)), o => o.BindNonPublicProperties = false)
+                .Configure<ApplicationOptions>(configuration, o => o.BindNonPublicProperties = false)
+                .Configure<HostOptions>(configuration.GetSection(nameof(ApplicationOptions.HostOptions)), o => o.BindNonPublicProperties = false)
+                .Configure<AwsOptions>(configuration.GetSection(nameof(ApplicationOptions.Aws)), o => o.BindNonPublicProperties = false)
+                .Configure<CompressionOptions>(configuration.GetSection(nameof(ApplicationOptions.Compression)), o => o.BindNonPublicProperties = false)
+                .Configure<ForwardedHeadersOptions>(configuration.GetSection(nameof(ApplicationOptions.ForwardedHeaders)), o => o.BindNonPublicProperties = false)
+                .Configure<CacheProfileOptions>(configuration.GetSection(nameof(ApplicationOptions.CacheProfiles)), o => o.BindNonPublicProperties = false)
+                .Configure<KestrelServerOptions>(configuration.GetSection(nameof(ApplicationOptions.Kestrel)), o => o.BindNonPublicProperties = false)
+                .Configure<OauthOptions>(configuration.GetSection(nameof(ApplicationOptions.OAuth)), o => o.BindNonPublicProperties = false)
+                .Configure<GeneralOptions>(configuration.GetSection(nameof(ApplicationOptions.General)), o => o.BindNonPublicProperties = false);
 
-                .ConfigureAndValidateSingleton<TenantWorkerSecrets>(configuration.GetSection($"{nameof(AppSecrets)}:{nameof(AppSecrets.TenantWorker)}"), o => o.BindNonPublicProperties = false)
-                .ConfigureAndValidateSingleton<AppSecrets>(configuration.GetSection(nameof(AppSecrets)), o => o.BindNonPublicProperties = false);
+            services
+                .Configure<TenantWorkerSecrets>(configuration.GetSection($"{nameof(AppSecrets)}:{nameof(AppSecrets.TenantWorker)}"), o => o.BindNonPublicProperties = false)
+                .Configure<AppSecrets>(configuration.GetSection(nameof(AppSecrets)), o => o.BindNonPublicProperties = false);
 
             return services;
         }

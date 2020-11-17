@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Serilog;
 using System;
 using System.Collections.Generic;
@@ -39,7 +40,7 @@ namespace YA.TenantWorker.Extensions
         {
             CacheProfile cacheProfile = application
                 .ApplicationServices
-                .GetRequiredService<CacheProfileOptions>()
+                .GetRequiredService<IOptions<CacheProfileOptions>>().Value
                 .Where(x => string.Equals(x.Key, CacheProfileNames.StaticFiles, StringComparison.Ordinal))
                 .Select(x => x.Value)
                 .SingleOrDefault();
