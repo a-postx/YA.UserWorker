@@ -148,7 +148,7 @@ namespace YA.TenantWorker.Extensions
         public static IApplicationBuilder UseClientRequestContextLogging(this IApplicationBuilder application)
         {
             return application
-                .UseMiddleware<RequestContextLogger>();
+                .UseMiddleware<ClientRequestContextLogger>();
         }
     }
 }

@@ -11,11 +11,11 @@ using YA.TenantWorker.Options;
 namespace YA.TenantWorker.Infrastructure.Logging.Requests
 {
     /// <summary>
-    /// Прослойка логирования контекста запроса. 
+    /// Прослойка логирования контекста запроса с клиента. 
     /// </summary>
-    public class RequestContextLogger
+    public class ClientRequestContextLogger
     {
-        public RequestContextLogger(RequestDelegate next)
+        public ClientRequestContextLogger(RequestDelegate next)
         {
             _next = next ?? throw new ArgumentNullException(nameof(next));
         }

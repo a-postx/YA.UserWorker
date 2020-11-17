@@ -99,7 +99,7 @@ namespace YA.TenantWorker.Infrastructure.Logging.Requests
                             .ForContext(YaLogKeys.RequestQuery, context.Request.QueryString)
                             .ForContext(YaLogKeys.RequestPathAndQuery, GetFullPath(context))
                             .ForContext(YaLogKeys.RequestAborted, context.RequestAborted.IsCancellationRequested)
-                            .Information("HTTP request handled in {ElapsedMilliseconds} ms", elapsedMs);
+                            .Information("HTTP request handled.");
 
                         await responseBodyMemoryStream.CopyToAsync(originalResponseBodyReference, lifetime.ApplicationStopping);
                     }
