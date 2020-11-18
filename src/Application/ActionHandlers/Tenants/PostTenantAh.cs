@@ -42,6 +42,7 @@ namespace YA.TenantWorker.Application.ActionHandlers.Tenants
         {
             ClaimsPrincipal user = _actionCtx.ActionContext.HttpContext.User;
 
+            //делать запрос на /userinfo, чтобы убрать лишние удостоверения из токена доступа 
             string tenantId = user.Claims.FirstOrDefault(claim => claim.Type == YaClaimNames.tid)?.Value;
             string userId = user.Claims.FirstOrDefault(claim => claim.Type == YaClaimNames.uid)?.Value;
             string userName = user.Claims.FirstOrDefault(claim => claim.Type == YaClaimNames.name)?.Value;
