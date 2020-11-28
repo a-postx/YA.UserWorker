@@ -342,7 +342,15 @@ namespace YA.TenantWorker.Extensions
                 .AddDbContext<TenantWorkerDbContext>(options =>
                     options.UseSqlServer(secrets.TenantWorker.ConnectionString, sqlOptions =>
                         sqlOptions.EnableRetryOnFailure().CommandTimeout(Timeouts.SqlCommandTimeoutSec))
-                    .ConfigureWarnings(x => x.Throw(RelationalEventId.QueryPossibleExceptionWithAggregateOperatorWarning))
+                    .ConfigureWarnings(x =>
+                    {
+                        x.Ignore(CoreEventId.ContextInitialized);
+                        if (webHostEnvironment.IsProduction())
+                        {
+                            x.Ignore(RelationalEventId.CommandExecuted);
+                        }
+                        x.Throw(RelationalEventId.QueryPossibleExceptionWithAggregateOperatorWarning);
+                    })
                     .EnableSensitiveDataLogging(webHostEnvironment.IsDevelopment()));
 
             return services;

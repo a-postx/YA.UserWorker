@@ -18,7 +18,7 @@ using YA.TenantWorker.Options;
 namespace YA.TenantWorker.Infrastructure.Logging.Requests
 {
     /// <summary>
-    /// Прослойка логирования HTTP-контекста - запросов, ответов и исключений. 
+    /// Прослойка логирования HTTP-контекста - запросов и ответов. 
     /// </summary>
     public class HttpContextLogger
     {
@@ -36,72 +36,82 @@ namespace YA.TenantWorker.Infrastructure.Logging.Requests
             HttpContext context = httpContext ?? throw new ArgumentNullException(nameof(httpContext));
             int maxLogFieldLength = options.Value.MaxLogFieldLength;
 
-            using (LogContext.PushProperty(YaLogKeys.LogType, LogTypes.ApiRequest.ToString()))
+            if (context.Request.Path == "/metrics")
             {
-                httpContext.Request.EnableBuffering();
-                Stream body = httpContext.Request.Body;
-                byte[] buffer = new byte[Convert.ToInt32(httpContext.Request.ContentLength, CultureInfo.InvariantCulture)];
-                await httpContext.Request.Body.ReadAsync(buffer.AsMemory(0, buffer.Length), lifetime.ApplicationStopping);
-                string initialRequestBody = Encoding.UTF8.GetString(buffer);
-                body.Seek(0, SeekOrigin.Begin);
-                httpContext.Request.Body = body;
-
-                //logz.io/logstash fields can accept only 32k strings so request/response bodies are cut
-                if (initialRequestBody.Length > maxLogFieldLength)
+                using (LogContext.PushProperty(YaLogKeys.LogType, LogTypes.MetricRequest.ToString()))
                 {
-                    initialRequestBody = initialRequestBody.Substring(0, maxLogFieldLength);
-                }
-
-                //у МС нет автоматического деструктурирования, поэтому используем Серилог ценой дырки в абстрации
-                Log.ForContext(YaLogKeys.RequestHeaders, context.Request.Headers.ToDictionary(h => h.Key, h => h.Value.ToString()), true)
-                    .ForContext(YaLogKeys.RequestBody, initialRequestBody)
-                    .ForContext(YaLogKeys.RequestProtocol, context.Request.Protocol)
-                    .ForContext(YaLogKeys.RequestScheme, context.Request.Scheme)
-                    .ForContext(YaLogKeys.RequestHost, context.Request.Host.Value)
-                    .ForContext(YaLogKeys.RequestMethod, context.Request.Method)
-                    .ForContext(YaLogKeys.RequestPath, context.Request.Path)
-                    .ForContext(YaLogKeys.RequestQuery, context.Request.QueryString)
-                    .ForContext(YaLogKeys.RequestPathAndQuery, GetFullPath(context))
-                    .Information("HTTP request received.");
-
-                using (MemoryStream responseBodyMemoryStream = new MemoryStream())
-                {
-                    Stream originalResponseBodyReference = context.Response.Body;
-                    context.Response.Body = responseBodyMemoryStream;
-
-                    long start = Stopwatch.GetTimestamp();
-
                     await _next(context);
+                }
+            }
+            else
+            {
+                using (LogContext.PushProperty(YaLogKeys.LogType, LogTypes.ApiRequest.ToString()))
+                {
+                    httpContext.Request.EnableBuffering();
+                    Stream body = httpContext.Request.Body;
+                    byte[] buffer = new byte[Convert.ToInt32(httpContext.Request.ContentLength, CultureInfo.InvariantCulture)];
+                    await httpContext.Request.Body.ReadAsync(buffer.AsMemory(0, buffer.Length), lifetime.ApplicationStopping);
+                    string initialRequestBody = Encoding.UTF8.GetString(buffer);
+                    body.Seek(0, SeekOrigin.Begin);
+                    httpContext.Request.Body = body;
 
-                    double elapsedMs = GetElapsedMilliseconds(start, Stopwatch.GetTimestamp());
-
-                    context.Response.Body.Seek(0, SeekOrigin.Begin);
-
-                    string responseBody;
-                    
-                    using (StreamReader sr = new StreamReader(context.Response.Body))
+                    //logz.io/logstash fields can accept only 32k strings so request/response bodies are cut
+                    if (initialRequestBody.Length > maxLogFieldLength)
                     {
-                        responseBody = await sr.ReadToEndAsync();
+                        initialRequestBody = initialRequestBody.Substring(0, maxLogFieldLength);
+                    }
+
+                    //у МС нет автоматического деструктурирования, поэтому используем Серилог ценой дырки в абстрации
+                    Log.ForContext(YaLogKeys.RequestHeaders, context.Request.Headers.ToDictionary(h => h.Key, h => h.Value.ToString()), true)
+                        .ForContext(YaLogKeys.RequestBody, initialRequestBody)
+                        .ForContext(YaLogKeys.RequestProtocol, context.Request.Protocol)
+                        .ForContext(YaLogKeys.RequestScheme, context.Request.Scheme)
+                        .ForContext(YaLogKeys.RequestHost, context.Request.Host.Value)
+                        .ForContext(YaLogKeys.RequestMethod, context.Request.Method)
+                        .ForContext(YaLogKeys.RequestPath, context.Request.Path)
+                        .ForContext(YaLogKeys.RequestQuery, context.Request.QueryString)
+                        .ForContext(YaLogKeys.RequestPathAndQuery, GetFullPath(context))
+                        .Information("HTTP request received.");
+
+                    using (MemoryStream responseBodyMemoryStream = new MemoryStream())
+                    {
+                        Stream originalResponseBodyReference = context.Response.Body;
+                        context.Response.Body = responseBodyMemoryStream;
+
+                        long start = Stopwatch.GetTimestamp();
+
+                        await _next(context);
+
+                        double elapsedMs = GetElapsedMilliseconds(start, Stopwatch.GetTimestamp());
+
                         context.Response.Body.Seek(0, SeekOrigin.Begin);
 
-                        string endResponseBody = (responseBody.Length > maxLogFieldLength) ?
-                            responseBody.Substring(0, maxLogFieldLength) : responseBody;
+                        string responseBody;
 
-                        Log.ForContext(YaLogKeys.ResponseHeaders, context.Response.Headers.ToDictionary(h => h.Key, h => h.Value.ToString()), true)
-                            .ForContext(YaLogKeys.StatusCode, context.Response.StatusCode)
-                            .ForContext(YaLogKeys.ResponseBody, endResponseBody)
-                            .ForContext(YaLogKeys.ElapsedMilliseconds, elapsedMs)
-                            .ForContext(YaLogKeys.RequestProtocol, context.Request.Protocol)
-                            .ForContext(YaLogKeys.RequestScheme, context.Request.Scheme)
-                            .ForContext(YaLogKeys.RequestHost, context.Request.Host.Value)
-                            .ForContext(YaLogKeys.RequestMethod, context.Request.Method)
-                            .ForContext(YaLogKeys.RequestPath, context.Request.Path)
-                            .ForContext(YaLogKeys.RequestQuery, context.Request.QueryString)
-                            .ForContext(YaLogKeys.RequestPathAndQuery, GetFullPath(context))
-                            .ForContext(YaLogKeys.RequestAborted, context.RequestAborted.IsCancellationRequested)
-                            .Information("HTTP request handled.");
+                        using (StreamReader sr = new StreamReader(context.Response.Body))
+                        {
+                            responseBody = await sr.ReadToEndAsync();
+                            context.Response.Body.Seek(0, SeekOrigin.Begin);
 
-                        await responseBodyMemoryStream.CopyToAsync(originalResponseBodyReference, lifetime.ApplicationStopping);
+                            string endResponseBody = (responseBody.Length > maxLogFieldLength) ?
+                                responseBody.Substring(0, maxLogFieldLength) : responseBody;
+
+                            Log.ForContext(YaLogKeys.ResponseHeaders, context.Response.Headers.ToDictionary(h => h.Key, h => h.Value.ToString()), true)
+                                .ForContext(YaLogKeys.StatusCode, context.Response.StatusCode)
+                                .ForContext(YaLogKeys.ResponseBody, endResponseBody)
+                                .ForContext(YaLogKeys.ElapsedMilliseconds, elapsedMs)
+                                .ForContext(YaLogKeys.RequestProtocol, context.Request.Protocol)
+                                .ForContext(YaLogKeys.RequestScheme, context.Request.Scheme)
+                                .ForContext(YaLogKeys.RequestHost, context.Request.Host.Value)
+                                .ForContext(YaLogKeys.RequestMethod, context.Request.Method)
+                                .ForContext(YaLogKeys.RequestPath, context.Request.Path)
+                                .ForContext(YaLogKeys.RequestQuery, context.Request.QueryString)
+                                .ForContext(YaLogKeys.RequestPathAndQuery, GetFullPath(context))
+                                .ForContext(YaLogKeys.RequestAborted, context.RequestAborted.IsCancellationRequested)
+                                .Information("HTTP request handled.");
+
+                            await responseBodyMemoryStream.CopyToAsync(originalResponseBodyReference, lifetime.ApplicationStopping);
+                        }
                     }
                 }
             }

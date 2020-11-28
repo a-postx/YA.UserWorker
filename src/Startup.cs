@@ -181,7 +181,8 @@ namespace YA.TenantWorker
                 .UseRouting()
                 .UseCors(CorsPolicyNames.AllowAny)
                 .UseStaticFilesWithCacheControl()
-                .UseRouteParamsLogging()
+                //временно убираем для сокращения объёма журналов
+                ////.UseRouteParamsLogging()
 
                 .UseHealthChecksPrometheusExporter("/metrics")
                 .UseMetricServer()

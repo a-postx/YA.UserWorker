@@ -1,9 +1,10 @@
-﻿namespace YA.TenantWorker.Application.Enums
+namespace YA.TenantWorker.Application.Enums
 {
     public enum LogTypes
     {
         Unknown = 0,
         ApiRequest = 1,
-        MessageBusMessage = 2
+        MessageBusMessage = 2,
+        MetricRequest = 4
     }
 }
