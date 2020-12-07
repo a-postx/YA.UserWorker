@@ -29,10 +29,10 @@ namespace YA.TenantWorker.Application.Features.Tenants.Queries
 
                 if (tenant == null)
                 {
-                    return new CommandResult<Tenant>(CommandStatuses.NotFound, null);
+                    return new CommandResult<Tenant>(CommandStatus.NotFound, null);
                 }
 
-                return new CommandResult<Tenant>(CommandStatuses.Ok, tenant);
+                return new CommandResult<Tenant>(CommandStatus.Ok, tenant);
             }
         }
     }

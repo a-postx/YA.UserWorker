@@ -38,14 +38,14 @@ namespace YA.TenantWorker.Infrastructure.Logging.Requests
 
             if (context.Request.Path == "/metrics")
             {
-                using (LogContext.PushProperty(YaLogKeys.LogType, LogTypes.MetricRequest.ToString()))
+                using (LogContext.PushProperty(YaLogKeys.LogType, LogType.MetricRequest.ToString()))
                 {
                     await _next(context);
                 }
             }
             else
             {
-                using (LogContext.PushProperty(YaLogKeys.LogType, LogTypes.ApiRequest.ToString()))
+                using (LogContext.PushProperty(YaLogKeys.LogType, LogType.ApiRequest.ToString()))
                 {
                     httpContext.Request.EnableBuffering();
                     Stream body = httpContext.Request.Body;

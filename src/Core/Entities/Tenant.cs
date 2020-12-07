@@ -3,13 +3,13 @@ using System.Collections.Generic;
 
 namespace YA.TenantWorker.Core.Entities
 {
-    public enum TenantTypes
+    public enum TenantType
     {
         System = 0,
         Custom = 1
     }
 
-    public enum TenantStatuses
+    public enum TenantStatus
     {
         New = 0,
         Activated = 1
@@ -19,7 +19,7 @@ namespace YA.TenantWorker.Core.Entities
     {
         public Guid TenantID { get; set; }
         public string Name { get; set; }
-        public TenantTypes Type { get; set; }
+        public TenantType Type { get; set; }
         public string Email { get; set; }
         public string AuthProvider { get; set; }
         public string ExternalId { get; set; }
@@ -27,7 +27,7 @@ namespace YA.TenantWorker.Core.Entities
         public virtual PricingTier PricingTier { get; set; }
         public DateTime PricingTierActivatedDateTime { get; set; }
         public DateTime PricingTierActivatedUntilDateTime { get; set; }
-        public TenantStatuses Status { get; set; }
+        public TenantStatus Status { get; set; }
         public bool IsReadOnly { get; set; }
         public virtual ICollection<User> Users { get; set; }
         public DateTime CreatedDateTime { get; set; }

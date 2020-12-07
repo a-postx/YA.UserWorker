@@ -48,14 +48,14 @@ namespace YA.TenantWorker.Application.Features.Tenants.Commands
 
                 if (patch == null)
                 {
-                    return new CommandResult<Tenant>(CommandStatuses.BadRequest, null);
+                    return new CommandResult<Tenant>(CommandStatus.BadRequest, null);
                 }
 
                 Tenant tenant = await _dbContext.GetTenantAsync(cancellationToken);
 
                 if (tenant == null)
                 {
-                    return new CommandResult<Tenant>(CommandStatuses.NotFound, null);
+                    return new CommandResult<Tenant>(CommandStatus.NotFound, null);
                 }
 
                 TenantSm tenantSm = _mapper.Map<TenantSm>(tenant);
@@ -67,7 +67,7 @@ namespace YA.TenantWorker.Application.Features.Tenants.Commands
 
                 if (!validationResult.IsValid)
                 {
-                    return new CommandResult<Tenant>(CommandStatuses.ModelInvalid, null, validationResult);
+                    return new CommandResult<Tenant>(CommandStatus.ModelInvalid, null, validationResult);
                 }
 
                 tenant = (Tenant)_mapper.Map(tenantSm, tenant, typeof(TenantSm), typeof(Tenant));
@@ -78,7 +78,7 @@ namespace YA.TenantWorker.Application.Features.Tenants.Commands
                 TenantTm tenantTm = _mapper.Map<TenantTm>(tenant);
                 await _messageBus.TenantUpdatedV1Async(tenant.TenantID, tenantTm, cancellationToken);
 
-                return new CommandResult<Tenant>(CommandStatuses.Ok, tenant);
+                return new CommandResult<Tenant>(CommandStatus.Ok, tenant);
             }
         }
     }

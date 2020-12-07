@@ -44,14 +44,14 @@ namespace YA.TenantWorker.Application.Features.Tenants.Commands
 
                 if (tenantId == Guid.Empty)
                 {
-                    return new CommandResult<EmptyCommandResult>(CommandStatuses.BadRequest, null);
+                    return new CommandResult<EmptyCommandResult>(CommandStatus.BadRequest, null);
                 }
 
                 Tenant tenant = await _dbContext.GetTenantAsync(e => e.TenantID == tenantId, cancellationToken);
 
                 if (tenant == null)
                 {
-                    return new CommandResult<EmptyCommandResult>(CommandStatuses.NotFound, null);
+                    return new CommandResult<EmptyCommandResult>(CommandStatus.NotFound, null);
                 }
 
                 _dbContext.DeleteTenant(tenant);
@@ -59,7 +59,7 @@ namespace YA.TenantWorker.Application.Features.Tenants.Commands
 
                 await _messageBus.TenantDeletedV1Async(tenant.TenantID, _mapper.Map<TenantTm>(tenant), cancellationToken);
 
-                return new CommandResult<EmptyCommandResult>(CommandStatuses.Ok, null);
+                return new CommandResult<EmptyCommandResult>(CommandStatus.Ok, null);
             }
         }
     }

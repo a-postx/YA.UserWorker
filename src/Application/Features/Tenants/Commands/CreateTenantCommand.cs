@@ -57,14 +57,14 @@ namespace YA.TenantWorker.Application.Features.Tenants.Commands
 
                 if (existingTenant != null)
                 {
-                    return new CommandResult<Tenant>(CommandStatuses.UnprocessableEntity, null);
+                    return new CommandResult<Tenant>(CommandStatus.UnprocessableEntity, null);
                 }
 
                 bool tenantParsed = Guid.TryParse(tenantId, out Guid tenantIdGuid);
 
                 if (!tenantParsed)
                 {
-                    return new CommandResult<Tenant>(CommandStatuses.UnprocessableEntity, null);
+                    return new CommandResult<Tenant>(CommandStatus.UnprocessableEntity, null);
                 }
 
                 string[] tenantProps = userId.Split('|');
@@ -79,8 +79,8 @@ namespace YA.TenantWorker.Application.Features.Tenants.Commands
                     AuthProvider = provider,
                     ExternalId = externalId,
                     //IsActive = isActive,
-                    Status = Core.Entities.TenantStatuses.New,
-                    Type = Core.Entities.TenantTypes.Custom
+                    Status = Core.Entities.TenantStatus.New,
+                    Type = Core.Entities.TenantType.Custom
                 };
 
                 Guid defaultPricingTierId = Guid.Parse(SeedData.SeedPricingTierId);
@@ -91,7 +91,7 @@ namespace YA.TenantWorker.Application.Features.Tenants.Commands
 
                 await _messageBus.TenantCreatedV1Async(tenant.TenantID, _mapper.Map<TenantTm>(tenant), cancellationToken);
 
-                return new CommandResult<Tenant>(CommandStatuses.Ok, tenant);
+                return new CommandResult<Tenant>(CommandStatus.Ok, tenant);
             }
         }
     }

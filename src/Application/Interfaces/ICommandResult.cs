@@ -5,7 +5,7 @@ namespace YA.TenantWorker.Application.Interfaces
 {
     public interface ICommandResult<TResult>
     {
-        public CommandStatuses Status { get; }
+        public CommandStatus Status { get; }
         public TResult Data { get; }
         public ValidationResult ValidationResult { get; }
     }

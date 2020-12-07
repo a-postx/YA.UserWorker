@@ -23,15 +23,15 @@ namespace YA.TenantWorker.Infrastructure.Services
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly string _providerUrl = "https://ipwhois.app/";
 
-        public async Task<Countries> GetCountryCodeAsync(CancellationToken cancellationToken)
+        public async Task<RuntimeCountry> GetCountryCodeAsync(CancellationToken cancellationToken)
         {
-            Countries result = Countries.UN;
+            RuntimeCountry result = RuntimeCountry.UN;
 
             IpWhoisGeoData geoData = await GetDataAsync(cancellationToken);
 
             if (geoData != null)
             {
-                if (Enum.TryParse(geoData.country_code, out Countries parseResult))
+                if (Enum.TryParse(geoData.country_code, out RuntimeCountry parseResult))
                 {
                     result = parseResult;
                     _log.LogInformation("Geodata received successfully, runtime country is {Country}", result.ToString());

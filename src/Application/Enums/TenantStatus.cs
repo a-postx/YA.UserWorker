@@ -1,6 +1,6 @@
 namespace YA.TenantWorker.Application.Enums
 {
-    public enum TenantStatuses
+    public enum TenantStatus
     {
         New = 0,
         Activated = 1

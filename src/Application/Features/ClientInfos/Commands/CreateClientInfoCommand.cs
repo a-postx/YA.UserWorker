@@ -44,7 +44,7 @@ namespace YA.TenantWorker.Application.Features.ClientInfos.Commands
                 await _dbContext.CreateEntityAsync(yaClientInfo, cancellationToken);
                 await _dbContext.ApplyChangesAsync(cancellationToken);
 
-                return new CommandResult<EmptyCommandResult>(CommandStatuses.Ok, null);
+                return new CommandResult<EmptyCommandResult>(CommandStatus.Ok, null);
             }
         }
     }

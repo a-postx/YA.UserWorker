@@ -52,14 +52,14 @@ namespace YA.TenantWorker.Application.ActionHandlers.Tenants
 
             switch (result.Status)
             {
-                case CommandStatuses.Unknown:
+                case CommandStatus.Unknown:
                 default:
                     throw new ArgumentOutOfRangeException(nameof(result.Status), result.Status, null);
-                case CommandStatuses.BadRequest:
+                case CommandStatus.BadRequest:
                     return new BadRequestResult();
-                case CommandStatuses.NotFound:
+                case CommandStatus.NotFound:
                     return new NotFoundResult();
-                case CommandStatuses.Ok:
+                case CommandStatus.Ok:
                     PaginatedResult<Tenant> resultBm = result.Data;
 
                     (string startCursor, string endCursor) = Cursor.GetFirstAndLastCursor(resultBm.Items, x => x.CreatedDateTime);

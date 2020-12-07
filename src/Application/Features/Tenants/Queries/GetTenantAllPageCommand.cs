@@ -48,7 +48,7 @@ namespace YA.TenantWorker.Application.Features.Tenants.Queries
 
                 if (pageOptions == null)
                 {
-                    return new CommandResult<PaginatedResult<Tenant>>(CommandStatuses.BadRequest, null);
+                    return new CommandResult<PaginatedResult<Tenant>>(CommandStatus.BadRequest, null);
                 }
 
                 pageOptions.First = !pageOptions.First.HasValue && !pageOptions.Last.HasValue ? _generalOptions.DefaultPaginationPageSize : pageOptions.First;
@@ -70,7 +70,7 @@ namespace YA.TenantWorker.Application.Features.Tenants.Queries
 
                 if (items == null)
                 {
-                    return new CommandResult<PaginatedResult<Tenant>>(CommandStatuses.NotFound, null);
+                    return new CommandResult<PaginatedResult<Tenant>>(CommandStatus.NotFound, null);
                 }
 
 
@@ -81,7 +81,7 @@ namespace YA.TenantWorker.Application.Features.Tenants.Queries
                     items
                 );
 
-                return new CommandResult<PaginatedResult<Tenant>>(CommandStatuses.Ok, result);
+                return new CommandResult<PaginatedResult<Tenant>>(CommandStatus.Ok, result);
             }
         }
     }

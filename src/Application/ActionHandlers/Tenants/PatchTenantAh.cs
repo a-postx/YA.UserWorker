@@ -44,18 +44,18 @@ namespace YA.TenantWorker.Application.ActionHandlers.Tenants
 
             switch (result.Status)
             {
-                case CommandStatuses.Unknown:
+                case CommandStatus.Unknown:
                 default:
                     throw new ArgumentOutOfRangeException(nameof(result.Status), result.Status, null);
-                case CommandStatuses.ModelInvalid:
+                case CommandStatus.ModelInvalid:
                     ValidationProblemDetails problemDetails = _pdFactory
                         .CreateValidationProblemDetails(_actionCtx.ActionContext.HttpContext, result.ValidationResult);
                     return new BadRequestObjectResult(problemDetails);
-                case CommandStatuses.BadRequest:
+                case CommandStatus.BadRequest:
                     return new BadRequestResult();
-                case CommandStatuses.NotFound:
+                case CommandStatus.NotFound:
                     return new NotFoundResult();
-                case CommandStatuses.Ok:
+                case CommandStatus.Ok:
                     TenantVm tenantVm = _tenantVmMapper.Map(result.Data);
                     return new OkObjectResult(tenantVm);
             }

@@ -65,12 +65,12 @@ namespace YA.TenantWorker.Application.ActionHandlers.Tenants
 
             switch (result.Status)
             {
-                case CommandStatuses.Unknown:
+                case CommandStatus.Unknown:
                 default:
                     throw new ArgumentOutOfRangeException(nameof(result.Status), result.Status, null);
-                case CommandStatuses.UnprocessableEntity:
+                case CommandStatus.UnprocessableEntity:
                     return new UnprocessableEntityResult();
-                case CommandStatuses.Ok:
+                case CommandStatus.Ok:
                     _actionCtx.ActionContext.HttpContext
                         .Response.Headers.Add(HeaderNames.LastModified, result.Data.LastModifiedDateTime.ToString("R", CultureInfo.InvariantCulture));
 

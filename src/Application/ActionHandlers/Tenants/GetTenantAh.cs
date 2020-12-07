@@ -43,12 +43,12 @@ namespace YA.TenantWorker.Application.ActionHandlers.Tenants
 
             switch (result.Status)
             {
-                case CommandStatuses.Unknown:
+                case CommandStatus.Unknown:
                 default:
                     throw new ArgumentOutOfRangeException(nameof(result.Status), result.Status, null);
-                case CommandStatuses.NotFound:
+                case CommandStatus.NotFound:
                     return new NotFoundResult();
-                case CommandStatuses.Ok:
+                case CommandStatus.Ok:
                     if (_actionCtx.ActionContext.HttpContext
                         .Request.Headers.TryGetValue(HeaderNames.IfModifiedSince, out StringValues stringValues))
                     {

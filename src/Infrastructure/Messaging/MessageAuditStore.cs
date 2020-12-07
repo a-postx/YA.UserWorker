@@ -44,7 +44,7 @@ namespace YA.TenantWorker.Infrastructure.Messaging
             }
 
             //оценка целесообразности: корреляционный идентификатор переписывается, если уже существует
-            using (_log.BeginScopeWith((YaLogKeys.LogType, LogTypes.MessageBusMessage.ToString()),
+            using (_log.BeginScopeWith((YaLogKeys.LogType, LogType.MessageBusMessage.ToString()),
                 (YaLogKeys.MessageBusContextType, metadata.ContextType),
                 (YaLogKeys.MessageBusSourceAddress, metadata.SourceAddress),
                 (YaLogKeys.MessageBusDestinationAddress, metadata.DestinationAddress),

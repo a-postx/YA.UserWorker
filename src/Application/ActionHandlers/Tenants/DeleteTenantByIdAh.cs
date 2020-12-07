@@ -34,14 +34,14 @@ namespace YA.TenantWorker.Application.ActionHandlers.Tenants
 
             switch (result.Status)
             {
-                case CommandStatuses.Unknown:
+                case CommandStatus.Unknown:
                 default:
                     throw new ArgumentOutOfRangeException(nameof(result.Status), result.Status, null);
-                case CommandStatuses.NotFound:
+                case CommandStatus.NotFound:
                     return new NotFoundResult();
-                case CommandStatuses.BadRequest:
+                case CommandStatus.BadRequest:
                     return new BadRequestResult();
-                case CommandStatuses.Ok:
+                case CommandStatus.Ok:
                     return new NoContentResult();
             }
         }

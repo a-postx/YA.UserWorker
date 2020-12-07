@@ -3,18 +3,18 @@ using System.Threading.Tasks;
 
 namespace YA.TenantWorker.Application.Interfaces
 {
-    public enum Countries
+    public enum RuntimeCountry
     {
         UN = 0,
         RU = 1,
         CN = 2,
-        US = 4,
-        DE = 8,
-        FR = 16,
-        IE = 32,
-        GB = 64,
-        SG = 128,
-        NL = 256
+        US = 3,
+        DE = 4,
+        FR = 5,
+        IE = 6,
+        GB = 7,
+        SG = 8,
+        NL = 9
     }
     /// <summary>
     /// Retrieves geodata for the current application.
@@ -24,6 +24,6 @@ namespace YA.TenantWorker.Application.Interfaces
         /// <summary>
         /// Get country code of the application location (ISO 3166).
         /// </summary>
-        Task<Countries> GetCountryCodeAsync(CancellationToken cancellationToken);
+        Task<RuntimeCountry> GetCountryCodeAsync(CancellationToken cancellationToken);
     }
 }

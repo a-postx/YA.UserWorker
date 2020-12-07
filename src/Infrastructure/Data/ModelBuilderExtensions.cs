@@ -46,8 +46,8 @@ namespace YA.TenantWorker.Infrastructure.Data
                 {
                     TenantID = defaultTenantId,
                     Name = "Системный",
-                    Type = TenantTypes.System,
-                    Status = TenantStatuses.Activated,
+                    Type = TenantType.System,
+                    Status = TenantStatus.Activated,
                     PricingTierId = defaultPricingTierId,
                     PricingTierActivatedDateTime = DateTime.UtcNow,
                     PricingTierActivatedUntilDateTime = DateTime.MinValue,
@@ -57,8 +57,8 @@ namespace YA.TenantWorker.Infrastructure.Data
                 {
                     TenantID = seedPaidTenantId,
                     Name = "Уважаемый",
-                    Type = TenantTypes.Custom,
-                    Status = TenantStatuses.Activated,
+                    Type = TenantType.Custom,
+                    Status = TenantStatus.Activated,
                     PricingTierId = paidPricingTierId,
                     PricingTierActivatedDateTime = DateTime.UtcNow,
                     PricingTierActivatedUntilDateTime = DateTime.UtcNow.AddDays(30),

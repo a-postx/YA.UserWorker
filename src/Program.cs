@@ -46,7 +46,7 @@ namespace YA.TenantWorker
         internal static readonly Version AppVersion = Assembly.GetEntryAssembly()?.GetName().Version;
         internal static readonly string RootPath = Path.GetDirectoryName(typeof(Program).Assembly.Location);
 
-        internal static Countries Country { get; private set; }        
+        internal static RuntimeCountry Country { get; private set; }        
         internal static OsPlatforms OsPlatform { get; private set; }
 
         public static async Task<int> Main(string[] args)

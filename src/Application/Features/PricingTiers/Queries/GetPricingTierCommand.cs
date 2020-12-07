@@ -28,7 +28,7 @@ namespace YA.TenantWorker.Application.Features.PricingTiers.Queries
             {
                 Tenant tenant = await _dbContext.GetTenantWithPricingTierAsync(cancellationToken);
 
-                return new CommandResult<PricingTier>(CommandStatuses.Ok, tenant.PricingTier);
+                return new CommandResult<PricingTier>(CommandStatus.Ok, tenant.PricingTier);
             }
         }
     }
