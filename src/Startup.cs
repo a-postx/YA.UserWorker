@@ -140,6 +140,7 @@ namespace YA.TenantWorker
 
             services
                 .AddProjectActionHandlers()
+                .AddProjectComponents()
                 .AddProjectMappers()
                 .AddProjectRepositories()
                 .AddProjectServices();

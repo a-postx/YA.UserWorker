@@ -1,4 +1,4 @@
-﻿using Delobytes.AspNetCore;
+using Delobytes.AspNetCore;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
@@ -26,20 +26,20 @@ namespace YA.TenantWorker.Application.ActionHandlers.Tenants
         public GetTenantAllPageAh(ILogger<GetTenantAllPageAh> logger,
             IActionContextAccessor actionCtx,
             IMediator mediator,
-            LinkGenerator linkGenerator,
+            IPaginatedResultFactory paginationResultFactory,
             IMapper<Tenant, TenantVm> tenantVmMapper)
         {
             _log = logger ?? throw new ArgumentNullException(nameof(logger));
             _actionCtx = actionCtx ?? throw new ArgumentNullException(nameof(actionCtx));
             _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
-            _linkGenerator = linkGenerator ?? throw new ArgumentNullException(nameof(linkGenerator));
+            _paginatedResultFactory = paginationResultFactory ?? throw new ArgumentNullException(nameof(paginationResultFactory));
             _tenantVmMapper = tenantVmMapper ?? throw new ArgumentNullException(nameof(tenantVmMapper));
         }
 
         private readonly ILogger<GetTenantAllPageAh> _log;
         private readonly IActionContextAccessor _actionCtx;
         private readonly IMediator _mediator;
-        private readonly LinkGenerator _linkGenerator;
+        private readonly IPaginatedResultFactory _paginatedResultFactory;
         private readonly IMapper<Tenant, TenantVm> _tenantVmMapper;
 
         public async Task<IActionResult> ExecuteAsync(PageOptions pageOptions, CancellationToken cancellationToken)
@@ -66,17 +66,9 @@ namespace YA.TenantWorker.Application.ActionHandlers.Tenants
 
                     List<TenantVm> itemVms = _tenantVmMapper.MapList(resultBm.Items);
 
-                    PaginatedResultVm<TenantVm> paginatedResultVm = new PaginatedResultVm<TenantVm>(
-                        _linkGenerator,
-                        pageOptions,
-                        resultBm.HasNextPage,
-                        resultBm.HasPreviousPage,
-                        resultBm.TotalCount,
-                        startCursor,
-                        endCursor,
-                        _actionCtx.ActionContext.HttpContext,
-                        RouteNames.GetTenantPage,
-                        itemVms);
+                    PaginatedResultVm<TenantVm> paginatedResultVm = _paginatedResultFactory
+                        .GetPaginatedResult(pageOptions, resultBm.HasNextPage, resultBm.HasPreviousPage,
+                        resultBm.TotalCount, startCursor, endCursor, RouteNames.GetTenantPage, itemVms);
 
                     _actionCtx.ActionContext.HttpContext
                         .Response.Headers.Add(YaHeaderKeys.Link, paginatedResultVm.PageInfo.ToLinkHttpHeaderValue());

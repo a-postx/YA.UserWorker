@@ -9,7 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using YA.TenantWorker.Application.Interfaces;
 
-namespace YA.TenantWorker.Infrastructure.Services
+namespace YA.TenantWorker.Application.Services
 {
     /// <summary>
 	/// Обработчик стандартного вывода деталей проблемы HTTP-запроса

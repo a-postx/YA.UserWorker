@@ -1,9 +1,9 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 namespace YA.TenantWorker.Application.Models.ViewModels
 {
-    public class PageInfo
+    public class PageInfoVm
     {
         private const string NextLinkItem = "next";
         private const string PreviousLinkItem = "previous";

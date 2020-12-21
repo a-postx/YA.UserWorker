@@ -14,6 +14,7 @@ using MassTransit.PrometheusIntegration;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
+using Microsoft.AspNetCore.Mvc.Versioning;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.EntityFrameworkCore;
@@ -238,6 +239,7 @@ namespace YA.TenantWorker.Extensions
                 {
                     options.AssumeDefaultVersionWhenUnspecified = true;
                     options.ReportApiVersions = true;
+                    options.ApiVersionReader = new QueryStringApiVersionReader("api-version");
                 })
                 .AddVersionedApiExplorer(x => x.GroupNameFormat = "'v'VVV"); // Version format: 'v'major[.minor][-status]
         }
@@ -394,7 +396,7 @@ namespace YA.TenantWorker.Extensions
                         e.Durable = false;
                         e.ExchangeType = "fanout";
                         e.Exclusive = false;
-                        e.ExclusiveConsumer = true;
+                        e.ExclusiveConsumer = false;
                         ////e.SetExchangeArgument("x-delayed-type", "direct");
 
                         e.ConfigureConsumer<TestRequestConsumer>(context);

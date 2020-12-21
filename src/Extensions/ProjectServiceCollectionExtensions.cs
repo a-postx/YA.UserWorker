@@ -6,6 +6,7 @@ using YA.TenantWorker.Application.ActionHandlers.Tenants;
 using YA.TenantWorker.Application.Interfaces;
 using YA.TenantWorker.Application.Mappers;
 using YA.TenantWorker.Application.Models.ViewModels;
+using YA.TenantWorker.Application.Services;
 using YA.TenantWorker.Core.Entities;
 using YA.TenantWorker.Infrastructure.Data;
 using YA.TenantWorker.Infrastructure.Messaging;
@@ -39,6 +40,15 @@ namespace YA.TenantWorker.Extensions
                 .AddScoped<IDeleteTenantByIdAh, DeleteTenantByIdAh>()
                 
                 .AddScoped<IPostClientInfoAh, PostClientInfoAh>();
+        }
+
+        /// <summary>
+        /// Add project app components to the service collection.
+        /// </summary>
+        public static IServiceCollection AddProjectComponents(this IServiceCollection services)
+        {
+            return services
+                .AddScoped<IPaginatedResultFactory, PaginatedResultFactory>();
         }
 
         /// <summary>
