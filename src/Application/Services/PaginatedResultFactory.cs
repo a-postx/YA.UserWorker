@@ -27,7 +27,7 @@ namespace YA.TenantWorker.Application.Services
         private const string ApiVersionQueryKey = "api-version";
 
         public PaginatedResultVm<T> GetPaginatedResult<T>(PageOptions pageOptions, bool hasNextPage, bool hasPreviousPage,
-            int totalCount, string startCursor, string endCursor, string routeName, List<T> items) where T : class
+            int totalCount, string startCursor, string endCursor, string routeName, ICollection<T> items) where T : class
         {
             if (pageOptions == null)
             {
@@ -39,7 +39,7 @@ namespace YA.TenantWorker.Application.Services
                 throw new ArgumentNullException(nameof(routeName));
             }
 
-            List<T> listItems = items ?? new List<T>();
+            ICollection<T> listItems = items ?? new List<T>();
 
             Tuple<ExpandoObject, ExpandoObject> baseQueryParams = GetUniqueQueryParams(pageOptions);
 

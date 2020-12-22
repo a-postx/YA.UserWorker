@@ -27,7 +27,8 @@ namespace YA.TenantWorker.Extensions
                 .UseIf(
                     webHostEnvironment.EnvironmentName == "Development",
                     x => x
-                        .UseDatabaseErrorPage()
+                        .UseDeveloperExceptionPage()
+                        .UseMigrationsEndPoint()
                         .UseDeveloperExceptionPage());
         }
 

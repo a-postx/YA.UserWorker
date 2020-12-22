@@ -30,6 +30,7 @@ using YA.TenantWorker.Extensions;
 using YA.TenantWorker.Infrastructure.Data;
 using YA.TenantWorker.Options;
 
+[assembly: CLSCompliant(false)]
 namespace YA.TenantWorker
 {
     internal enum OsPlatforms
@@ -267,7 +268,7 @@ namespace YA.TenantWorker
                 .Enrich.WithProperty("AppName", AppName)
                 .Enrich.WithProperty("Version", AppVersion.ToString())
                 .Enrich.WithProperty("NodeId", Node.Id)
-                .Enrich.WithProperty("ProcessId", Process.GetCurrentProcess().Id)
+                .Enrich.WithProperty("ProcessId", Environment.ProcessId)
                 .Enrich.WithProperty("ProcessName", Process.GetCurrentProcess().ProcessName)
                 .Enrich.WithProperty("MachineName", Environment.MachineName)
                 .Enrich.WithProperty("EnvironmentName", hostEnv.EnvironmentName)

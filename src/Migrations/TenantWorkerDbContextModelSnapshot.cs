@@ -15,9 +15,9 @@ namespace YA.TenantWorker.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "3.1.9")
+                .UseIdentityColumns()
                 .HasAnnotation("Relational:MaxIdentifierLength", 128)
-                .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                .HasAnnotation("ProductVersion", "5.0.1");
 
             modelBuilder.Entity("YA.TenantWorker.Core.Entities.ApiRequest", b =>
                 {
@@ -59,9 +59,9 @@ namespace YA.TenantWorker.Migrations
                         .HasDefaultValueSql("GETUTCDATE()");
 
                     b.Property<string>("Description")
-                        .HasColumnType("nvarchar(128)")
                         .HasMaxLength(128)
-                        .IsUnicode(true);
+                        .IsUnicode(true)
+                        .HasColumnType("nvarchar(128)");
 
                     b.Property<bool>("HasTrial")
                         .HasColumnType("bit");
@@ -84,9 +84,9 @@ namespace YA.TenantWorker.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("Title")
-                        .HasColumnType("nvarchar(128)")
                         .HasMaxLength(128)
-                        .IsUnicode(true);
+                        .IsUnicode(true)
+                        .HasColumnType("nvarchar(128)");
 
                     b.Property<long?>("TrialPeriod")
                         .HasColumnType("bigint");
@@ -137,9 +137,9 @@ namespace YA.TenantWorker.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("AuthProvider")
-                        .HasColumnType("nvarchar(128)")
                         .HasMaxLength(128)
-                        .IsUnicode(true);
+                        .IsUnicode(true)
+                        .HasColumnType("nvarchar(128)");
 
                     b.Property<DateTime>("CreatedDateTime")
                         .ValueGeneratedOnAdd()
@@ -147,14 +147,14 @@ namespace YA.TenantWorker.Migrations
                         .HasDefaultValueSql("GETUTCDATE()");
 
                     b.Property<string>("Email")
-                        .HasColumnType("nvarchar(128)")
                         .HasMaxLength(128)
-                        .IsUnicode(true);
+                        .IsUnicode(true)
+                        .HasColumnType("nvarchar(128)");
 
                     b.Property<string>("ExternalId")
-                        .HasColumnType("nvarchar(256)")
                         .HasMaxLength(256)
-                        .IsUnicode(true);
+                        .IsUnicode(true)
+                        .HasColumnType("nvarchar(256)");
 
                     b.Property<bool>("IsReadOnly")
                         .HasColumnType("bit");
@@ -165,9 +165,9 @@ namespace YA.TenantWorker.Migrations
                         .HasDefaultValueSql("GETUTCDATE()");
 
                     b.Property<string>("Name")
-                        .HasColumnType("nvarchar(512)")
                         .HasMaxLength(512)
-                        .IsUnicode(true);
+                        .IsUnicode(true)
+                        .HasColumnType("nvarchar(512)");
 
                     b.Property<DateTime>("PricingTierActivatedDateTime")
                         .HasColumnType("datetime2");
@@ -201,7 +201,7 @@ namespace YA.TenantWorker.Migrations
                             TenantID = new Guid("00000000-0000-0000-0000-000000000001"),
                             IsReadOnly = false,
                             Name = "Системный",
-                            PricingTierActivatedDateTime = new DateTime(2020, 12, 7, 8, 33, 22, 407, DateTimeKind.Utc).AddTicks(6470),
+                            PricingTierActivatedDateTime = new DateTime(2020, 12, 22, 11, 51, 42, 713, DateTimeKind.Utc).AddTicks(737),
                             PricingTierActivatedUntilDateTime = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             PricingTierId = new Guid("00000000-0000-0000-0000-000000000001"),
                             Status = 1,
@@ -212,8 +212,8 @@ namespace YA.TenantWorker.Migrations
                             TenantID = new Guid("00000000-0000-0000-0000-000000000002"),
                             IsReadOnly = false,
                             Name = "Уважаемый",
-                            PricingTierActivatedDateTime = new DateTime(2020, 12, 7, 8, 33, 22, 407, DateTimeKind.Utc).AddTicks(8816),
-                            PricingTierActivatedUntilDateTime = new DateTime(2021, 1, 6, 8, 33, 22, 407, DateTimeKind.Utc).AddTicks(8824),
+                            PricingTierActivatedDateTime = new DateTime(2020, 12, 22, 11, 51, 42, 713, DateTimeKind.Utc).AddTicks(2504),
+                            PricingTierActivatedUntilDateTime = new DateTime(2021, 1, 21, 11, 51, 42, 713, DateTimeKind.Utc).AddTicks(2511),
                             PricingTierId = new Guid("00000000-0000-0000-0000-000000000013"),
                             Status = 1,
                             Type = 1
@@ -232,13 +232,13 @@ namespace YA.TenantWorker.Migrations
                         .HasDefaultValueSql("GETUTCDATE()");
 
                     b.Property<string>("Email")
-                        .HasColumnType("nvarchar(128)")
-                        .HasMaxLength(128);
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
 
                     b.Property<string>("FirstName")
-                        .HasColumnType("nvarchar(255)")
                         .HasMaxLength(255)
-                        .IsUnicode(true);
+                        .IsUnicode(true)
+                        .HasColumnType("nvarchar(255)");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
@@ -258,13 +258,13 @@ namespace YA.TenantWorker.Migrations
                         .HasDefaultValueSql("GETUTCDATE()");
 
                     b.Property<string>("LastName")
-                        .HasColumnType("nvarchar(255)")
                         .HasMaxLength(255)
-                        .IsUnicode(true);
+                        .IsUnicode(true)
+                        .HasColumnType("nvarchar(255)");
 
                     b.Property<string>("Password")
-                        .HasColumnType("nvarchar(50)")
-                        .HasMaxLength(50);
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<string>("Role")
                         .HasColumnType("nvarchar(max)");
@@ -274,8 +274,8 @@ namespace YA.TenantWorker.Migrations
 
                     b.Property<string>("Username")
                         .IsRequired()
-                        .HasColumnType("nvarchar(64)")
-                        .HasMaxLength(64);
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
 
                     b.Property<byte[]>("tstamp")
                         .IsConcurrencyToken()
@@ -292,13 +292,13 @@ namespace YA.TenantWorker.Migrations
                         new
                         {
                             UserID = new Guid("00000000-0000-0000-0000-000000000011"),
-                            CreatedDateTime = new DateTime(2020, 12, 7, 8, 33, 22, 408, DateTimeKind.Utc).AddTicks(252),
+                            CreatedDateTime = new DateTime(2020, 12, 22, 11, 51, 42, 713, DateTimeKind.Utc).AddTicks(3711),
                             Email = "admin@email.com",
                             FirstName = "My",
                             IsActive = true,
                             IsDeleted = false,
                             IsPendingActivation = false,
-                            LastModifiedDateTime = new DateTime(2020, 12, 7, 8, 33, 22, 408, DateTimeKind.Utc).AddTicks(261),
+                            LastModifiedDateTime = new DateTime(2020, 12, 22, 11, 51, 42, 713, DateTimeKind.Utc).AddTicks(3716),
                             LastName = "Admin",
                             Password = "123",
                             Role = "Administrator",
@@ -308,13 +308,13 @@ namespace YA.TenantWorker.Migrations
                         new
                         {
                             UserID = new Guid("00000000-0000-0000-0000-000000000012"),
-                            CreatedDateTime = new DateTime(2020, 12, 7, 8, 33, 22, 408, DateTimeKind.Utc).AddTicks(2486),
+                            CreatedDateTime = new DateTime(2020, 12, 22, 11, 51, 42, 713, DateTimeKind.Utc).AddTicks(5640),
                             Email = "user@email.com",
                             FirstName = "My",
                             IsActive = true,
                             IsDeleted = false,
                             IsPendingActivation = false,
-                            LastModifiedDateTime = new DateTime(2020, 12, 7, 8, 33, 22, 408, DateTimeKind.Utc).AddTicks(2495),
+                            LastModifiedDateTime = new DateTime(2020, 12, 22, 11, 51, 42, 713, DateTimeKind.Utc).AddTicks(5646),
                             LastName = "User",
                             Password = "123",
                             Role = "User",
@@ -330,24 +330,24 @@ namespace YA.TenantWorker.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Browser")
-                        .HasColumnType("nvarchar(500)")
                         .HasMaxLength(500)
-                        .IsUnicode(true);
+                        .IsUnicode(true)
+                        .HasColumnType("nvarchar(500)");
 
                     b.Property<string>("BrowserVersion")
-                        .HasColumnType("nvarchar(50)")
                         .HasMaxLength(50)
-                        .IsUnicode(true);
+                        .IsUnicode(true)
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<string>("ClientVersion")
-                        .HasColumnType("nvarchar(50)")
                         .HasMaxLength(50)
-                        .IsUnicode(true);
+                        .IsUnicode(true)
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<string>("CountryName")
-                        .HasColumnType("nvarchar(500)")
                         .HasMaxLength(500)
-                        .IsUnicode(true);
+                        .IsUnicode(true)
+                        .HasColumnType("nvarchar(500)");
 
                     b.Property<DateTime>("CreatedDateTime")
                         .ValueGeneratedOnAdd()
@@ -355,14 +355,14 @@ namespace YA.TenantWorker.Migrations
                         .HasDefaultValueSql("GETUTCDATE()");
 
                     b.Property<string>("DeviceModel")
-                        .HasColumnType("nvarchar(500)")
                         .HasMaxLength(500)
-                        .IsUnicode(true);
+                        .IsUnicode(true)
+                        .HasColumnType("nvarchar(500)");
 
                     b.Property<string>("IpAddress")
-                        .HasColumnType("nvarchar(50)")
                         .HasMaxLength(50)
-                        .IsUnicode(true);
+                        .IsUnicode(true)
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<DateTime>("LastModifiedDateTime")
                         .ValueGeneratedOnAdd()
@@ -370,24 +370,24 @@ namespace YA.TenantWorker.Migrations
                         .HasDefaultValueSql("GETUTCDATE()");
 
                     b.Property<string>("Os")
-                        .HasColumnType("nvarchar(200)")
                         .HasMaxLength(200)
-                        .IsUnicode(true);
+                        .IsUnicode(true)
+                        .HasColumnType("nvarchar(200)");
 
                     b.Property<string>("OsVersion")
-                        .HasColumnType("nvarchar(50)")
                         .HasMaxLength(50)
-                        .IsUnicode(true);
+                        .IsUnicode(true)
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<string>("RegionName")
-                        .HasColumnType("nvarchar(500)")
                         .HasMaxLength(500)
-                        .IsUnicode(true);
+                        .IsUnicode(true)
+                        .HasColumnType("nvarchar(500)");
 
                     b.Property<string>("ScreenResolution")
-                        .HasColumnType("nvarchar(50)")
                         .HasMaxLength(50)
-                        .IsUnicode(true);
+                        .IsUnicode(true)
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<Guid>("TenantId")
                         .HasColumnType("uniqueidentifier");
@@ -396,14 +396,14 @@ namespace YA.TenantWorker.Migrations
                         .HasColumnType("bigint");
 
                     b.Property<string>("Username")
-                        .HasColumnType("nvarchar(320)")
                         .HasMaxLength(320)
-                        .IsUnicode(true);
+                        .IsUnicode(true)
+                        .HasColumnType("nvarchar(320)");
 
                     b.Property<string>("ViewportSize")
-                        .HasColumnType("nvarchar(50)")
                         .HasMaxLength(50)
-                        .IsUnicode(true);
+                        .IsUnicode(true)
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<byte[]>("tstamp")
                         .IsConcurrencyToken()
@@ -424,6 +424,8 @@ namespace YA.TenantWorker.Migrations
                         .HasForeignKey("PricingTierId")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
+
+                    b.Navigation("PricingTier");
                 });
 
             modelBuilder.Entity("YA.TenantWorker.Core.Entities.User", b =>
@@ -433,6 +435,8 @@ namespace YA.TenantWorker.Migrations
                         .HasForeignKey("TenantId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Tenant");
                 });
 
             modelBuilder.Entity("YA.TenantWorker.Core.Entities.YaClientInfo", b =>
@@ -442,6 +446,18 @@ namespace YA.TenantWorker.Migrations
                         .HasForeignKey("TenantId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Tenant");
+                });
+
+            modelBuilder.Entity("YA.TenantWorker.Core.Entities.PricingTier", b =>
+                {
+                    b.Navigation("Tenants");
+                });
+
+            modelBuilder.Entity("YA.TenantWorker.Core.Entities.Tenant", b =>
+                {
+                    b.Navigation("Users");
                 });
 #pragma warning restore 612, 618
         }

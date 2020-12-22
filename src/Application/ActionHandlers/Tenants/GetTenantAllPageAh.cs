@@ -1,23 +1,22 @@
+using System;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 using Delobytes.AspNetCore;
+using Delobytes.Mapper;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
-using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Threading;
-using System.Threading.Tasks;
 using YA.Common.Constants;
-using YA.TenantWorker.Application.Features.Tenants.Queries;
 using YA.TenantWorker.Application.Enums;
+using YA.TenantWorker.Application.Features.Tenants.Queries;
 using YA.TenantWorker.Application.Interfaces;
+using YA.TenantWorker.Application.Models.Dto;
 using YA.TenantWorker.Application.Models.ViewModels;
 using YA.TenantWorker.Constants;
-using YA.TenantWorker.Core.Entities;
-using Delobytes.Mapper;
-using System.Collections.Generic;
-using YA.TenantWorker.Application.Models.Dto;
 using YA.TenantWorker.Core;
+using YA.TenantWorker.Core.Entities;
 
 namespace YA.TenantWorker.Application.ActionHandlers.Tenants
 {
@@ -64,11 +63,11 @@ namespace YA.TenantWorker.Application.ActionHandlers.Tenants
 
                     (string startCursor, string endCursor) = Cursor.GetFirstAndLastCursor(resultBm.Items, x => x.CreatedDateTime);
 
-                    List<TenantVm> itemVms = _tenantVmMapper.MapList(resultBm.Items);
+                    List<TenantVm> items = _tenantVmMapper.MapList(resultBm.Items);
 
                     PaginatedResultVm<TenantVm> paginatedResultVm = _paginatedResultFactory
                         .GetPaginatedResult(pageOptions, resultBm.HasNextPage, resultBm.HasPreviousPage,
-                        resultBm.TotalCount, startCursor, endCursor, RouteNames.GetTenantPage, itemVms);
+                        resultBm.TotalCount, startCursor, endCursor, RouteNames.GetTenantPage, items);
 
                     _actionCtx.ActionContext.HttpContext
                         .Response.Headers.Add(YaHeaderKeys.Link, paginatedResultVm.PageInfo.ToLinkHttpHeaderValue());

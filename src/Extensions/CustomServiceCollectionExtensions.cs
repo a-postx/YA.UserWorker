@@ -344,16 +344,28 @@ namespace YA.TenantWorker.Extensions
                 .AddDbContext<TenantWorkerDbContext>(options =>
                     options.UseSqlServer(secrets.TenantWorker.ConnectionString, sqlOptions =>
                         sqlOptions.EnableRetryOnFailure().CommandTimeout(Timeouts.SqlCommandTimeoutSec))
-                    .ConfigureWarnings(x =>
+                    .ConfigureWarnings(warnings =>
                     {
-                        x.Ignore(CoreEventId.ContextInitialized);
+                        warnings.Log(RelationalEventId.TransactionError);
+
+                        warnings.Ignore(CoreEventId.ContextInitialized);
+
                         if (webHostEnvironment.IsProduction())
                         {
-                            x.Ignore(RelationalEventId.CommandExecuted);
+                            warnings.Ignore(RelationalEventId.CommandExecuted);
+                            warnings.Log(RelationalEventId.QueryPossibleUnintendedUseOfEqualsWarning);
                         }
-                        x.Throw(RelationalEventId.QueryPossibleExceptionWithAggregateOperatorWarning);
+
+                        if (webHostEnvironment.IsDevelopment())
+                        {
+                            warnings.Log(RelationalEventId.CommandExecuted);
+                            warnings.Throw(RelationalEventId.QueryPossibleUnintendedUseOfEqualsWarning);
+                        }
+
+                        warnings.Throw(RelationalEventId.ForeignKeyPropertiesMappedToUnrelatedTables);
                     })
-                    .EnableSensitiveDataLogging(webHostEnvironment.IsDevelopment()));
+                    .EnableSensitiveDataLogging(webHostEnvironment.IsDevelopment()))
+                .AddDatabaseDeveloperPageExceptionFilter();
 
             return services;
         }

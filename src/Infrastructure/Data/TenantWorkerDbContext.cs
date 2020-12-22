@@ -8,6 +8,7 @@ using System.Data;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Security;
 using System.Threading;
 using System.Threading.Tasks;
 using YA.Common;
@@ -39,7 +40,14 @@ namespace YA.TenantWorker.Infrastructure.Data
         private readonly Guid _tenantId;
         private IDbContextTransaction _currentTransaction;
 
-        public IDbContextTransaction GetCurrentTransaction() => _currentTransaction;
+        public IDbContextTransaction CurrentTransaction
+        {
+            get
+            {
+                return _currentTransaction;
+            }
+        }
+
         public bool HasActiveTransaction => _currentTransaction != null;
         private static bool IsMustHaveTenantFilterEnabled => true;
         private static bool IsSoftDeleteFilterEnabled => true;
@@ -278,14 +286,17 @@ namespace YA.TenantWorker.Infrastructure.Data
 
             if (typeof(ITenantEntity).IsAssignableFrom(typeof(TEntity)))
             {
-                Expression<Func<TEntity, bool>> mustHaveTenantFilter = e => !IsMustHaveTenantFilterEnabled || ((ITenantEntity)e).Tenant.TenantID == _tenantId;
-                expression = expression == null ? mustHaveTenantFilter : CombineExpressions(expression, mustHaveTenantFilter);
+                Expression<Func<TEntity, bool>> mustHaveTenantFilter = e
+                    => !IsMustHaveTenantFilterEnabled || ((ITenantEntity)e).Tenant.TenantID == _tenantId;
+                expression = mustHaveTenantFilter;
             }
 
             if (typeof(ISoftDeleteEntity).IsAssignableFrom(typeof(TEntity)))
             {
                 Expression<Func<TEntity, bool>> softDeleteFilter = e => !IsSoftDeleteFilterEnabled || !((ISoftDeleteEntity)e).IsDeleted;
+#pragma warning disable CA1508 // выражение может быть пустым
                 expression = expression == null ? softDeleteFilter : CombineExpressions(expression, softDeleteFilter);
+#pragma warning restore CA1508
             }
 
             return expression;
@@ -402,7 +413,7 @@ namespace YA.TenantWorker.Infrastructure.Data
 
                 if (distinctTenantIdsCount > 1)
                 {
-                    throw new Exception("More than one TenantID detected.");
+                    throw new SecurityException("More than one TenantID detected.");
                 }
             }
         }
