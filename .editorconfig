@@ -1,4 +1,4 @@
-﻿##########################################
+##########################################
 # Common Settings
 ##########################################
 
@@ -105,6 +105,9 @@ dotnet_diagnostic.CA1000.severity = suggestion
 # CA1308: Normalize strings to uppercase
 dotnet_diagnostic.CA1308.severity = suggestion
 
+# CA2201: Exception type System.Exception is not sufficiently specific
+dotnet_diagnostic.CA2201.severity = warning
+
 # CA2208: Instantiate argument exceptions correctly
 dotnet_diagnostic.CA2208.severity = suggestion
 
@@ -113,9 +116,6 @@ dotnet_diagnostic.CA1034.severity = suggestion
 
 # VSTHRD200: Use "Async" suffix for async methods
 dotnet_diagnostic.VSTHRD200.severity = suggestion
-
-# CA1034: Nested types should not be visible
-dotnet_diagnostic.IDE1006.severity = silent
 
 ##########################################
 # .NET Language Conventions
@@ -126,7 +126,7 @@ dotnet_diagnostic.IDE1006.severity = silent
 # https://docs.microsoft.com/visualstudio/ide/editorconfig-language-conventions#net-code-style-settings
 
 # CA1725: Parameter names should match base declaration
-dotnet_diagnostic.CA1725.severity = suggestion
+dotnet_diagnostic.CA1725.severity = suggestion 
 
 # CA1027: Mark enums with FlagsAttribute
 dotnet_diagnostic.CA1027.severity = warning
@@ -138,6 +138,15 @@ dotnet_diagnostic.CA1813.severity = suggestion
 dotnet_diagnostic.CA1019.severity = suggestion
 
 [*.{cs,csx,cake,vb,vbx}]
+# Private field underscore naming by default
+# https://stackoverflow.com/a/49428349/11001148
+dotnet_naming_rule.private_members_with_underscore.symbols  = private_fields
+dotnet_naming_rule.private_members_with_underscore.style    = prefix_underscore
+dotnet_naming_rule.private_members_with_underscore.severity = suggestion
+dotnet_naming_symbols.private_fields.applicable_kinds           = field
+dotnet_naming_symbols.private_fields.applicable_accessibilities = private
+dotnet_naming_style.prefix_underscore.capitalization = camel_case
+dotnet_naming_style.prefix_underscore.required_prefix = _
 # "this." and "Me." qualifiers
 # https://docs.microsoft.com/visualstudio/ide/editorconfig-language-conventions#this-and-me
 dotnet_style_qualification_for_field = false:warning

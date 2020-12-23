@@ -1,7 +1,0 @@
-[
-  {
-    "op": "replace",
-    "path": "/tenantName",
-    "value": "Большая Мартышка"
-  }
-]
