@@ -17,6 +17,7 @@ using Serilog.Events;
 using Serilog.Exceptions;
 using Serilog.Exceptions.Core;
 using Serilog.Exceptions.EntityFrameworkCore.Destructurers;
+using Serilog.Sinks.Logz.Io;
 using System;
 using System.Diagnostics;
 using System.IO;
@@ -288,7 +289,15 @@ namespace YA.TenantWorker
 
             if (!string.IsNullOrEmpty(secrets.LogzioToken))
             {
-                loggerConfig.WriteTo.Logzio(secrets.LogzioToken, 10, TimeSpan.FromSeconds(10), null, LogEventLevel.Debug);
+                loggerConfig.WriteTo.LogzIo(secrets.LogzioToken, null,
+                    new LogzioOptions
+                    {
+                        DataCenterSubDomain = "listener-eu",
+                        UseHttps = false,
+                        RestrictedToMinimumLevel = LogEventLevel.Debug,
+                        Period = TimeSpan.FromSeconds(10),
+                        BatchPostingLimit = 10
+                    });
             }
 
             Logger logger = loggerConfig.CreateLogger();
