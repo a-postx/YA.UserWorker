@@ -54,8 +54,8 @@ namespace YA.TenantWorker.Infrastructure.Authentication
         private AuthenticationScheme _scheme;
         private RequestHeaders _headers;
 
-        private const string _authType = "Bearer";
-        private const string _loginRedirectPath = "/authentication/login";
+        private const string AuthType = "Bearer";
+        private const string LoginRedirectPath = "/authentication/login";
 
         public Task InitializeAsync(AuthenticationScheme scheme, HttpContext context)
         {
@@ -106,7 +106,7 @@ namespace YA.TenantWorker.Infrastructure.Authentication
                         return AuthenticateResult.Fail($"{YaClaimNames.name} claim cannot be found.");
                     }
 
-                    ClaimsIdentity userIdentity = new ClaimsIdentity(_authType, YaClaimNames.name, YaClaimNames.role);
+                    ClaimsIdentity userIdentity = new ClaimsIdentity(AuthType, YaClaimNames.name, YaClaimNames.role);
 
                     Guid tenantId = TenantIdGenerator.Create(userId);
                     ////Guid tenantId = Guid.Parse("00000000-0000-0000-0000-000000000001");
@@ -132,7 +132,7 @@ namespace YA.TenantWorker.Infrastructure.Authentication
                     AuthenticationProperties props = new AuthenticationProperties();
                     props.IssuedUtc = validatedToken.IssuedAt;
                     props.ExpiresUtc = validatedToken.ValidTo;
-                    props.RedirectUri = _loginRedirectPath;
+                    props.RedirectUri = LoginRedirectPath;
 
                     _log.LogInformation("User {UserId} is authenticated.", userId);
 
@@ -156,7 +156,7 @@ namespace YA.TenantWorker.Infrastructure.Authentication
             if (context.Request.Host.Host == _apiGwHost && context.Request.Host.Port == _apiGwPort)
             {
                 _log.LogInformation("Challenge: redirected.");
-                context.Response.Redirect(_loginRedirectPath);
+                context.Response.Redirect(LoginRedirectPath);
                 return Task.CompletedTask;
             }
             else
@@ -183,7 +183,7 @@ namespace YA.TenantWorker.Infrastructure.Authentication
             if (_headers.Headers.TryGetValue(HeaderNames.Authorization, out StringValues authHeaders) && authHeaders.Any())
             {
                 string tokenHeaderValue = authHeaders.ElementAt(0);
-                token = tokenHeaderValue.StartsWith(_authType + " ", StringComparison.OrdinalIgnoreCase)
+                token = tokenHeaderValue.StartsWith(AuthType + " ", StringComparison.OrdinalIgnoreCase)
                     ? tokenHeaderValue.Substring(7) : tokenHeaderValue;
                 tokenFound = true;
             }

@@ -7,7 +7,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using YA.TenantWorker.Application.Enums;
 using YA.TenantWorker.Application.Interfaces;
-using YA.TenantWorker.Application.Models.Dto;
 using YA.TenantWorker.Core;
 using YA.TenantWorker.Core.Entities;
 using YA.TenantWorker.Options;
@@ -16,14 +15,16 @@ namespace YA.TenantWorker.Application.Features.Tenants.Queries
 {
     public class GetTenantAllPageCommand : IRequest<ICommandResult<PaginatedResult<Tenant>>>
     {
-        public GetTenantAllPageCommand(PageOptions pageOptions, DateTimeOffset? createdAfter, DateTimeOffset? createdBefore)
+        public GetTenantAllPageCommand(int? first, int? last, DateTimeOffset? createdAfter, DateTimeOffset? createdBefore)
         {
-            Options = pageOptions;
+            First = first;
+            Last = last;
             CreatedAfter = createdAfter;
             CreatedBefore = createdBefore;
         }
 
-        public PageOptions Options { get; protected set; }
+        public int? First { get; protected set; }
+        public int? Last { get; protected set; }
         public DateTimeOffset? CreatedAfter { get; protected set; }
         public DateTimeOffset? CreatedBefore { get; protected set; }
 
@@ -44,21 +45,17 @@ namespace YA.TenantWorker.Application.Features.Tenants.Queries
 
             public async Task<ICommandResult<PaginatedResult<Tenant>>> Handle(GetTenantAllPageCommand command, CancellationToken cancellationToken)
             {
-                PageOptions pageOptions = command.Options;
+                int? first = command.First;
+                int? last = command.Last;
 
-                if (pageOptions == null)
-                {
-                    return new CommandResult<PaginatedResult<Tenant>>(CommandStatus.BadRequest, null);
-                }
-
-                pageOptions.First = !pageOptions.First.HasValue && !pageOptions.Last.HasValue ? _generalOptions.DefaultPaginationPageSize : pageOptions.First;
+                first = !first.HasValue && !last.HasValue ? _generalOptions.DefaultPaginationPageSize : first;
 
                 Task<List<Tenant>> getItemsTask = _dbContext
-                    .GetEntitiesPagedTaskAsync<Tenant>(pageOptions.First, pageOptions.Last, command.CreatedAfter, command.CreatedBefore, cancellationToken);
+                    .GetEntitiesPagedTaskAsync<Tenant>(first, last, command.CreatedAfter, command.CreatedBefore, cancellationToken);
                 Task<bool> getHasNextPageTask = _dbContext
-                    .GetHasNextPageAsync<Tenant>(pageOptions.First, command.CreatedAfter, command.CreatedBefore, cancellationToken);
+                    .GetHasNextPageAsync<Tenant>(first, command.CreatedAfter, command.CreatedBefore, cancellationToken);
                 Task<bool> getHasPreviousPageTask = _dbContext
-                    .GetHasPreviousPageAsync<Tenant>(pageOptions.Last, command.CreatedAfter, command.CreatedBefore, cancellationToken);
+                    .GetHasPreviousPageAsync<Tenant>(last, command.CreatedAfter, command.CreatedBefore, cancellationToken);
                 Task<int> totalCountTask = _dbContext.GetEntitiesCountAsync<Tenant>(cancellationToken);
 
                 await Task.WhenAll(getItemsTask, getHasNextPageTask, getHasPreviousPageTask, totalCountTask);
@@ -72,7 +69,6 @@ namespace YA.TenantWorker.Application.Features.Tenants.Queries
                 {
                     return new CommandResult<PaginatedResult<Tenant>>(CommandStatus.NotFound, null);
                 }
-
 
                 PaginatedResult<Tenant> result = new PaginatedResult<Tenant>(
                     hasNextPage,

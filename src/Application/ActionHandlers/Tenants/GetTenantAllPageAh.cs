@@ -12,7 +12,7 @@ using YA.Common.Constants;
 using YA.TenantWorker.Application.Enums;
 using YA.TenantWorker.Application.Features.Tenants.Queries;
 using YA.TenantWorker.Application.Interfaces;
-using YA.TenantWorker.Application.Models.Dto;
+using YA.TenantWorker.Application.Models.HttpQueryParams;
 using YA.TenantWorker.Application.Models.ViewModels;
 using YA.TenantWorker.Constants;
 using YA.TenantWorker.Core;
@@ -45,17 +45,17 @@ namespace YA.TenantWorker.Application.ActionHandlers.Tenants
         {
             DateTimeOffset? createdAfter = Cursor.FromCursor<DateTimeOffset?>(pageOptions.Before);
             DateTimeOffset? createdBefore = Cursor.FromCursor<DateTimeOffset?>(pageOptions.After);
+            int? first = pageOptions.First;
+            int? last = pageOptions.Last;
 
             ICommandResult<PaginatedResult<Tenant>> result = await _mediator
-                .Send(new GetTenantAllPageCommand(pageOptions, createdAfter, createdBefore), cancellationToken);
+                .Send(new GetTenantAllPageCommand(first, last, createdAfter, createdBefore), cancellationToken);
 
             switch (result.Status)
             {
                 case CommandStatus.Unknown:
                 default:
                     throw new ArgumentOutOfRangeException(nameof(result.Status), result.Status, null);
-                case CommandStatus.BadRequest:
-                    return new BadRequestResult();
                 case CommandStatus.NotFound:
                     return new NotFoundResult();
                 case CommandStatus.Ok:

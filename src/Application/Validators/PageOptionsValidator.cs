@@ -1,5 +1,5 @@
-﻿using FluentValidation;
-using YA.TenantWorker.Application.Models.Dto;
+using FluentValidation;
+using YA.TenantWorker.Application.Models.HttpQueryParams;
 
 namespace YA.TenantWorker.Application.Validators
 {

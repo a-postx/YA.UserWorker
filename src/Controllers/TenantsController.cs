@@ -13,7 +13,7 @@ using YA.TenantWorker.Constants;
 using Microsoft.AspNetCore.Authorization;
 using Delobytes.AspNetCore.Filters;
 using YA.TenantWorker.Application.ActionHandlers.Tenants;
-using YA.TenantWorker.Application.Models.Dto;
+using YA.TenantWorker.Application.Models.HttpQueryParams;
 
 namespace YA.TenantWorker.Controllers
 {

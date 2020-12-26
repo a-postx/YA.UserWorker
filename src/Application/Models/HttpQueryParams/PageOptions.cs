@@ -1,4 +1,4 @@
-namespace YA.TenantWorker.Application.Models.Dto
+namespace YA.TenantWorker.Application.Models.HttpQueryParams
 {
     /// <summary>
     /// Page options for listing elements

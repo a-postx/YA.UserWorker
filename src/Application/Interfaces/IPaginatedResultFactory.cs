@@ -1,5 +1,5 @@
 using System.Collections.Generic;
-using YA.TenantWorker.Application.Models.Dto;
+using YA.TenantWorker.Application.Models.HttpQueryParams;
 using YA.TenantWorker.Application.Models.ViewModels;
 
 namespace YA.TenantWorker.Application.Interfaces
