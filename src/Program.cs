@@ -11,14 +11,19 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Serilog;
 using Serilog.Core;
 using Serilog.Events;
 using Serilog.Exceptions;
 using Serilog.Exceptions.Core;
 using Serilog.Exceptions.EntityFrameworkCore.Destructurers;
+using Serilog.Formatting.Elasticsearch;
+using Serilog.Sinks.Elasticsearch;
 using Serilog.Sinks.Logz.Io;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
@@ -128,6 +133,10 @@ namespace YA.TenantWorker
                 AppName, AppVersion, Environment.Version, RuntimeInformation.FrameworkDescription, coreCLR.Split('+')[0],
                 coreCLR.Split('+')[1], coreFX.Split('+')[0], coreFX.Split('+')[1], Environment.OSVersion,
                 RuntimeInformation.OSDescription, RuntimeInformation.OSArchitecture, Environment.ProcessorCount);
+
+            ThreadPool.SetMinThreads(100, 100); //согласно лучшим практикам азуровского редиса
+            ThreadPool.GetMinThreads(out int minWorkerThreads, out int minIOThreads);
+            Log.Information("Min worker threads: {WorkerThreads}, min IO threads: {IoThreads}", minWorkerThreads, minIOThreads);
 
             IRuntimeGeoDataService geoService = host.Services.GetService<IRuntimeGeoDataService>();
             using (CancellationTokenSource cts = new CancellationTokenSource(TimeSpan.FromSeconds(Timeouts.RuntimeGeoDetectionTimeoutSec)))
@@ -287,17 +296,60 @@ namespace YA.TenantWorker
                 loggerConfig.WriteTo.ApplicationInsights(secrets.AppInsightsInstrumentationKey, TelemetryConverter.Traces, LogEventLevel.Debug);
             }
 
+            if (!string.IsNullOrEmpty(secrets.ElasticSearchUrl)
+                && !string.IsNullOrEmpty(secrets.ElasticSearchUser)
+                && !string.IsNullOrEmpty(secrets.ElasticSearchPassword))
+            {
+                loggerConfig.WriteTo.Elasticsearch(new ElasticsearchSinkOptions(new Uri(secrets.ElasticSearchUrl))
+                {
+                    ModifyConnectionSettings = x => x.BasicAuthentication(secrets.ElasticSearchUser, secrets.ElasticSearchPassword),
+                    AutoRegisterTemplate = true,
+                    AutoRegisterTemplateVersion = AutoRegisterTemplateVersion.ESv7,
+                    //RegisterTemplateFailure = RegisterTemplateRecovery.IndexAnyway,
+                    //TemplateName = "logs-template-name",
+                    BatchPostingLimit = 1000,
+                    Period = TimeSpan.FromSeconds(10),
+                    MinimumLogEventLevel = LogEventLevel.Information,
+                    FailureCallback = e => Console.WriteLine("Unable to submit log event to ELK: " + e.MessageTemplate),
+                    EmitEventFailure = EmitEventFailureHandling.RaiseCallback,
+                    //IndexFormat = "logs-{0:yyyy.MM}",
+                    //DeadLetterIndexName = "test-deadletter-{0:yyyy.MM.dd}",
+                    CustomFormatter = new ExceptionAsObjectJsonFormatter(renderMessage: true),
+                    BufferCleanPayload = (failingEvent, statuscode, exception) =>
+                    {
+                        dynamic e = JObject.Parse(failingEvent);
+                        return JsonConvert.SerializeObject(new Dictionary<string, object>()
+                        {
+                            { "@timestamp", e["@timestamp"]},
+                            { "level", "Error"},
+                            { "message", "Error: " + e.message},
+                            { "messageTemplate", e.messageTemplate},
+                            { "failingStatusCode", statuscode},
+                            { "failingException", exception}
+                        });
+                    }
+                });
+            }
+
             if (!string.IsNullOrEmpty(secrets.LogzioToken))
             {
-                loggerConfig.WriteTo.LogzIo(secrets.LogzioToken, null,
-                    new LogzioOptions
-                    {
-                        DataCenterSubDomain = "listener-eu",
-                        UseHttps = false,
-                        RestrictedToMinimumLevel = LogEventLevel.Debug,
-                        Period = TimeSpan.FromSeconds(10),
-                        BatchPostingLimit = 10
-                    });
+                // EU logz.io sink
+                //loggerConfig.WriteTo.LogzIo(secrets.LogzioToken, null,
+                //    new LogzioOptions
+                //    {
+                //        DataCenterSubDomain = "listener-eu",
+                //        UseHttps = false,
+                //        RestrictedToMinimumLevel = LogEventLevel.Information,
+                //        Period = TimeSpan.FromSeconds(10),
+                //        BatchPostingLimit = 1000,
+                //        PropertyTransformationMap = null,
+                //        LowercaseLevel = false,
+                //        IncludeMessageTemplate = false,
+                //        BoostProperties = false
+                //    });
+
+                // US logz.io sink
+                //loggerConfig.WriteTo.Logzio(secrets.LogzioToken, 1000, TimeSpan.FromSeconds(10), null, LogEventLevel.Information);
             }
 
             Logger logger = loggerConfig.CreateLogger();

@@ -5,6 +5,9 @@ using YA.TenantWorker.Application.Interfaces;
 
 namespace YA.TenantWorker.Infrastructure.Caching
 {
+    /// <summary>
+    /// Кэш входящих запросов и результатов в памяти
+    /// </summary>
     public class ApiRequestMemoryCache : YaMemoryCache, IApiRequestMemoryCache
     {
         public ApiRequestMemoryCache()
@@ -13,7 +16,7 @@ namespace YA.TenantWorker.Infrastructure.Caching
             SetOptions(cacheOptions);
         }
 
-        private static readonly MemoryCacheEntryOptions _cacheOptions = new MemoryCacheEntryOptions()
+        private static readonly MemoryCacheEntryOptions СacheOptions = new MemoryCacheEntryOptions()
                     .SetSize(1)
                     .SetPriority(CacheItemPriority.High)
                     .SetSlidingExpiration(TimeSpan.FromSeconds(120))
@@ -21,13 +24,13 @@ namespace YA.TenantWorker.Infrastructure.Caching
 
         public async Task<(bool created, T request)> GetOrCreateAsync<T>(Guid key, Func<Task<T>> createFunc) where T : class
         {
-            (bool created, T request) result = await base.GetOrCreateAsync(key, createFunc, _cacheOptions);
+            (bool created, T request) result = await base.GetOrCreateAsync(key, createFunc, СacheOptions);
             return result;
         }
 
         public void Add<T>(T request, Guid key) where T : class
         {
-            base.Set(key, request, _cacheOptions);
+            base.Set(key, request, СacheOptions);
         }
 
         public T GetApiRequestFromCache<T>(Guid key) where T : class
@@ -37,7 +40,7 @@ namespace YA.TenantWorker.Infrastructure.Caching
 
         public void Update<T>(T request, Guid key) where T : class
         {
-            base.Update(key, request, _cacheOptions);
+            base.Update(key, request, СacheOptions);
         }
     }
 }

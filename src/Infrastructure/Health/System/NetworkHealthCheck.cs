@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Net;
@@ -9,7 +9,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using YA.Common;
 
-namespace YA.TenantWorker.Health.System
+namespace YA.TenantWorker.Infrastructure.Health.System
 {
     /// <summary>
     /// Checks Internet connection of the application.

@@ -6,7 +6,7 @@ namespace YA.TenantWorker.Infrastructure.Messaging.Filters
     /// <summary>
     /// Manages a Logical Call Context variable containing a stack of <see cref="PipeContext"/> instances.
     /// </summary>
-    internal static class MbMessageContextStack
+    internal static class MbMessageContextStackWrapper
     {
         /// <summary>
         /// Publishes a <see cref="PipeContext"/> onto the stack.

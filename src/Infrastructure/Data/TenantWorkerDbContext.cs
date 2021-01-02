@@ -31,7 +31,6 @@ namespace YA.TenantWorker.Infrastructure.Data
             _tenantId = runtimeContext.GetTenantId();
         }
 
-        public DbSet<ApiRequest> ApiRequests { get; set; }
         public DbSet<Tenant> Tenants { get; set; }
         public DbSet<PricingTier> PricingTiers { get; set; }
         public DbSet<User> Users { get; set; }
@@ -196,19 +195,6 @@ namespace YA.TenantWorker.Infrastructure.Data
         public async Task<int> GetEntitiesCountAsync<T>(CancellationToken cancellationToken) where T : class
         {
             return await Set<T>().CountAsync(cancellationToken);
-        }
-        #endregion
-
-        #region ApiRequests
-        public async Task<ApiRequest> CreateApiRequestAsync(ApiRequest item, CancellationToken cancellationToken)
-        {
-            EntityEntry<ApiRequest> entityEntry = await Set<ApiRequest>().AddAsync(item, cancellationToken);
-            return entityEntry.Entity;
-        }
-
-        public async Task<ApiRequest> GetApiRequestAsync(Expression<Func<ApiRequest, bool>> predicate, CancellationToken cancellationToken)
-        {
-            return await Set<ApiRequest>().SingleOrDefaultAsync(predicate, cancellationToken);
         }
         #endregion
 

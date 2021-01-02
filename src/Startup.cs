@@ -20,11 +20,10 @@ using Microsoft.IdentityModel.Protocols;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Prometheus;
 using YA.Common.Constants;
-using YA.TenantWorker.Application;
 using YA.TenantWorker.Application.Interfaces;
-using YA.TenantWorker.Application.Middlewares.ActionFilters;
+using YA.TenantWorker.Application.Middlewares.ResourceFilters;
 using YA.TenantWorker.Extensions;
-using YA.TenantWorker.Health;
+using YA.TenantWorker.Infrastructure.Health;
 using YA.TenantWorker.Infrastructure.Authentication;
 using YA.TenantWorker.Infrastructure.Caching;
 using YA.TenantWorker.Options;
@@ -89,7 +88,7 @@ namespace YA.TenantWorker
             services
                 .AddCorrelationIdFluent(generalOptions)
 
-                .AddCustomCaching()
+                .AddCustomCaching(secrets)
                 .AddCustomCors()
                 .AddCustomRouting()
                 .AddResponseCaching()
@@ -149,8 +148,8 @@ namespace YA.TenantWorker
 
             services.AddCustomMessageBus(secrets);
 
-            services.AddScoped<ApiRequestFilter>();
-            services.AddScoped<IApiRequestTracker, ApiRequestTracker>();
+            services.AddScoped<IdempotencyFilterAttribute>();
+            services.AddScoped<IApiRequestDistributedCache, ApiRequestDistributedCache>();
             services.AddSingleton<IApiRequestMemoryCache, ApiRequestMemoryCache>();
         }
 
@@ -198,6 +197,11 @@ namespace YA.TenantWorker
                     endpoints.MapControllers().RequireCors(CorsPolicyNames.AllowAny);
                     endpoints.MapHealthChecks("/status", new HealthCheckOptions()
                     {
+                        ResponseWriter = HealthResponse.WriteResponseAsync
+                    }).RequireCors(CorsPolicyNames.AllowAny);
+                    endpoints.MapHealthChecks("/elkmetrics", new HealthCheckOptions()
+                    {
+                        Predicate = (check) => check.Tags.Contains("metric"),
                         ResponseWriter = HealthResponse.WriteResponseAsync
                     }).RequireCors(CorsPolicyNames.AllowAny);
                     endpoints.MapHealthChecks("/status/ready", new HealthCheckOptions()

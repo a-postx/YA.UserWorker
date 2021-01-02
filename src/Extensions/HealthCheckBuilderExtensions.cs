@@ -1,7 +1,7 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
-using YA.TenantWorker.Health.System;
+using YA.TenantWorker.Infrastructure.Health.System;
 
 namespace YA.TenantWorker.Extensions
 {

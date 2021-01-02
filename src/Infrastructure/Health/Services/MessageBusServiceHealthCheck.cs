@@ -8,7 +8,7 @@ using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 using YA.TenantWorker.Infrastructure.Messaging.Test;
 
-namespace YA.TenantWorker.Health.Services
+namespace YA.TenantWorker.Infrastructure.Health.Services
 {
     /// <summary>
     /// Regular check for availability of the message bus services.
@@ -39,17 +39,17 @@ namespace YA.TenantWorker.Health.Services
             }
             catch (RequestException ex)
             {
-                healthData.Add("Exception", ex.Message);
+                healthData.Add("MessageBusHealthCheckException", ex.Message);
             }
             catch (Exception ex)
             {
                 _log.LogError(ex, "Error checking health for Message Bus");
-                healthData.Add("Exception", ex.Message);
+                healthData.Add("MessageBusHealthCheckException", ex.Message);
             }
             finally
             {
                 mbSw.Stop();
-                healthData.Add("Delay, msec", mbSw.ElapsedMilliseconds);
+                healthData.Add("MessageBusDelayMsec", mbSw.ElapsedMilliseconds);
             }
 
             if (response?.Message?.GotIt == now)

@@ -1,4 +1,4 @@
-﻿namespace YA.TenantWorker.Health.System
+namespace YA.TenantWorker.Infrastructure.Health.System
 {
     /// <summary>
     /// Memory options for health checker.

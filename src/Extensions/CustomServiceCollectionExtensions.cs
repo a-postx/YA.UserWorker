@@ -30,9 +30,9 @@ using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.Swagger;
 using YA.Common.Constants;
 using YA.TenantWorker.Constants;
-using YA.TenantWorker.Health;
-using YA.TenantWorker.Health.Services;
-using YA.TenantWorker.Health.System;
+using YA.TenantWorker.Infrastructure.Health;
+using YA.TenantWorker.Infrastructure.Health.Services;
+using YA.TenantWorker.Infrastructure.Health.System;
 using YA.TenantWorker.Infrastructure.Data;
 using YA.TenantWorker.Infrastructure.Messaging;
 using YA.TenantWorker.Infrastructure.Messaging.Consumers;
@@ -40,6 +40,9 @@ using YA.TenantWorker.Infrastructure.Messaging.Test;
 using YA.TenantWorker.OperationFilters;
 using YA.TenantWorker.Options;
 using YA.TenantWorker.Options.Validators;
+using StackExchange.Redis;
+using YA.TenantWorker.Application.Interfaces;
+using YA.TenantWorker.Infrastructure.Caching;
 
 namespace YA.TenantWorker.Extensions
 {
@@ -73,25 +76,41 @@ namespace YA.TenantWorker.Extensions
         /// cache, which is shared between multiple instances of the application. Use the <see cref="IMemoryCache"/>
         /// otherwise.
         /// </summary>
-        public static IServiceCollection AddCustomCaching(this IServiceCollection services)
+        public static IServiceCollection AddCustomCaching(this IServiceCollection services, AppSecrets secrets)
         {
-            return services
+            services
                 // Adds IMemoryCache which is a simple in-memory cache.
-                .AddMemoryCache()
-                // Adds IDistributedCache which is a distributed cache shared between multiple servers. This adds a
-                // default implementation of IDistributedCache which is not distributed.
-                .AddDistributedMemoryCache();
+                .AddMemoryCache();
 
-            // The last one will override any previously registered IDistributedCache service.
-            // .AddDistributedRedisCache(options => { ... });
-            
-            // .AddSqlServerCache(
-            //     x =>
-            //     {
-            //         x.ConnectionString = "Server=.;Database=ASPNET5SessionState;Trusted_Connection=True;";
-            //         x.SchemaName = "dbo";
-            //         x.TableName = "Sessions";
-            //     });
+            //https://stackexchange.github.io/StackExchange.Redis/Configuration.html
+            //https://gist.github.com/JonCole/925630df72be1351b21440625ff2671f#file-redis-bestpractices-stackexchange-redis-md
+            ConfigurationOptions config = new ConfigurationOptions()
+            {
+                ClientName = $"{Program.AppName}-{Node.Id}",
+                AbortOnConnectFail = false, //false on Azure connection string
+                Password = secrets.DistributedCachePassword,
+                KeepAlive = 60,
+                DefaultDatabase = 0,
+                AsyncTimeout = 3000,
+                SyncTimeout = 15000,
+                ConnectTimeout = 15000,
+                ConnectRetry = 3,
+                Ssl = false
+                //SslProtocols = System.Security.Authentication.SslProtocols.Tls12
+            };
+
+            config.EndPoints.Add(secrets.DistributedCacheHost, secrets.DistributedCachePort);
+
+            services
+                .AddStackExchangeRedisCache(options =>
+                {
+                    options.ConfigurationOptions = config;
+                });
+
+            services.AddSingleton(sp => ConnectionMultiplexer.Connect(config));
+            services.AddScoped<IApiRequestDistributedCache, ApiRequestDistributedCache>();
+
+            return services;
         }
 
         /// <summary>
@@ -213,21 +232,22 @@ namespace YA.TenantWorker.Extensions
                 .AddHealthChecks()
                     //general system status
                     .AddGenericHealthCheck<UptimeHealthCheck>("uptime")
-                    .AddMemoryHealthCheck("memory")
+                    .AddMemoryHealthCheck(HealthCheckNames.Memory)
                     //system components regular checks
-                    .AddSqlServer(secrets.TenantWorker.ConnectionString, "SELECT 1;", "sql_database", HealthStatus.Unhealthy, new string[] { "ready" })
-                    .AddGenericHealthCheck<MessageBusServiceHealthCheck>("message_bus_service", HealthStatus.Degraded, new[] { "ready" });
+                    .AddSqlServer(secrets.TenantWorker.ConnectionString, "SELECT 1;", HealthCheckNames.Database, HealthStatus.Unhealthy, new string[] { "ready", "metric" })
+                    .AddGenericHealthCheck<MessageBusServiceHealthCheck>(HealthCheckNames.MessageBus, HealthStatus.Degraded, new[] { "ready", "metric" });
                     // Ping is not available on Azure Web Apps
                     //.AddNetworkHealthCheck("network");
 
             services.Configure<HealthCheckPublisherOptions>(options =>
             {
                 options.Period = TimeSpan.FromSeconds(60);
-                options.Timeout = TimeSpan.FromSeconds(60);
+                options.Timeout = TimeSpan.FromSeconds(30);
                 options.Delay = TimeSpan.FromSeconds(15);
-                options.Predicate = (check) => check.Tags.Contains("ready");
+                //options.Predicate = (check) => check.Tags.Contains("ready");
             });
 
+            services.AddSingleton<IHealthCheckPublisher, MetricsPublisher>();
             services.AddSingleton<IHealthCheckPublisher, ReadinessPublisher>();
             
             return services;

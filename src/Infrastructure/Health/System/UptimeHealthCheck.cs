@@ -1,11 +1,11 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 
-namespace YA.TenantWorker.Health.System
+namespace YA.TenantWorker.Infrastructure.Health.System
 {
     /// <summary>
     /// Checks uptime value of the application.

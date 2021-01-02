@@ -37,8 +37,8 @@ namespace YA.TenantWorker.Infrastructure.Logging.Requests
             }
             else
             {
-                string remoteAddress = httpContext.Connection.RemoteIpAddress?.ToString();
-                clientIp = !string.IsNullOrEmpty(remoteAddress) ? remoteAddress : "unknown";
+                string directValue = httpContext.Connection.RemoteIpAddress?.ToString();
+                clientIp = !string.IsNullOrEmpty(directValue) ? directValue : "0.0.0.0";
             }
 
             using (logger.BeginScopeWith((YaLogKeys.ClientIP, clientIp)))
@@ -49,15 +49,16 @@ namespace YA.TenantWorker.Infrastructure.Logging.Requests
 
         private static string GetIpFromHeaderString(StringValues ipAddresses)
         {
-            string ipAddress = ipAddresses.Last().Split(',').First().Trim();
-            var portDelimiterPos = ipAddress.LastIndexOf(":", StringComparison.CurrentCultureIgnoreCase);
+            string[] addresses = ipAddresses.LastOrDefault().Split(',');
 
-            if (portDelimiterPos != -1)
+            if (addresses.Length != 0)
             {
-                ipAddress = ipAddress.Substring(0, portDelimiterPos);
+                return addresses[0].Contains(":", StringComparison.Ordinal)
+                    ? addresses[0].Substring(0, addresses[0].LastIndexOf(":", StringComparison.Ordinal))
+                    : addresses[0];
             }
 
-            return ipAddress;
+            return string.Empty;
         }
     }
 }

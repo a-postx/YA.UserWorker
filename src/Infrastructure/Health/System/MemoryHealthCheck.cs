@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Options;
 
-namespace YA.TenantWorker.Health.System
+namespace YA.TenantWorker.Infrastructure.Health.System
 {
     /// <summary>
     /// Checks memory-related values of the application.
@@ -33,12 +33,12 @@ namespace YA.TenantWorker.Health.System
 
             Dictionary<string, object> data = new Dictionary<string, object>
             {
-                { "WorkingSetMBytes", workingSetMb },
-                { "PrivateMemoryMBytes", privateMemoryMb },
-                { "ManagedMemoryMBytes", managedMemoryMb },
-                { "Gen0Collections", GC.CollectionCount(0) },
-                { "Gen1Collections", GC.CollectionCount(1) },
-                { "Gen2Collections", GC.CollectionCount(2) }
+                { "MemoryWorkingSetMBytes", workingSetMb },
+                { "MemoryPrivateMBytes", privateMemoryMb },
+                { "MemoryManagedMBytes", managedMemoryMb },
+                { "MemoryGen0Collections", GC.CollectionCount(0) },
+                { "MemoryGen1Collections", GC.CollectionCount(1) },
+                { "MemoryGen2Collections", GC.CollectionCount(2) }
             };
 
             HealthStatus status = managedMemoryMb < opts.ProcessMaxMemoryThreshold

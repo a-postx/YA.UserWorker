@@ -1,15 +1,14 @@
+using System;
 using Serilog;
 using Serilog.Configuration;
-using Serilog.Core;
-using System;
-using YA.TenantWorker.Infrastructure.Logging.MbMessages;
+using YA.TenantWorker.Infrastructure.Logging.Enrichers;
 
 namespace YA.TenantWorker.Extensions
 {
     /// <summary>
     /// Provides various extension methods for configuring Serilog.
     /// </summary>
-    public static class SerilogConfigurationExtensions
+    public static class LoggerEnrichmentConfigurationExtensions
     {
         /// <summary>
         /// Enriches the Serilog logging data with custom message bus event context information.
@@ -23,7 +22,7 @@ namespace YA.TenantWorker.Extensions
                 throw new ArgumentNullException(nameof(configuration));
             }
 
-            return configuration.With((ILogEventEnricher)new YaMbEventEnricher());
+            return configuration.With<YaCustomMbEventEnricher>();
         }
     }
 }

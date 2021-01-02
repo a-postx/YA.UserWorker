@@ -24,6 +24,21 @@ namespace YA.TenantWorker.Options.Validators
                 failures.Add($"{nameof(options.AppInsightsInstrumentationKey)} secret is not found.");
             }
 
+            if (string.IsNullOrWhiteSpace(options.ElasticSearchUrl))
+            {
+                failures.Add($"{nameof(options.ElasticSearchUrl)} secret is not found.");
+            }
+
+            if (string.IsNullOrWhiteSpace(options.ElasticSearchUser))
+            {
+                failures.Add($"{nameof(options.ElasticSearchUser)} secret is not found.");
+            }
+
+            if (string.IsNullOrWhiteSpace(options.ElasticSearchPassword))
+            {
+                failures.Add($"{nameof(options.ElasticSearchPassword)} secret is not found.");
+            }
+
             if (string.IsNullOrWhiteSpace(options.LogzioToken))
             {
                 failures.Add($"{nameof(options.LogzioToken)} secret is not found.");
@@ -52,6 +67,21 @@ namespace YA.TenantWorker.Options.Validators
             if (string.IsNullOrWhiteSpace(options.MessageBusPassword))
             {
                 failures.Add($"{nameof(options.MessageBusPassword)} secret is not found.");
+            }
+
+            if (string.IsNullOrWhiteSpace(options.DistributedCacheHost))
+            {
+                failures.Add($"{nameof(options.DistributedCacheHost)} secret is not found.");
+            }
+
+            if (options.DistributedCachePort <= 0)
+            {
+                failures.Add($"{nameof(options.DistributedCachePort)} secret is not found.");
+            }
+
+            if (string.IsNullOrWhiteSpace(options.DistributedCachePassword))
+            {
+                failures.Add($"{nameof(options.DistributedCachePassword)} secret is not found.");
             }
 
             if (string.IsNullOrWhiteSpace(options.OauthImplicitAuthorizationUrl))

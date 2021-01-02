@@ -20,9 +20,6 @@ namespace YA.TenantWorker.Core.Entities
         Task<bool> GetHasPreviousPageAsync<T>(int? last, DateTimeOffset? createdAfter, DateTimeOffset? createdBefore, CancellationToken cancellationToken) where T : class, IAuditedEntityBase, IRowVersionedEntity;
         Task<int> GetEntitiesCountAsync<T>(CancellationToken cancellationToken) where T : class;
 
-        Task<ApiRequest> CreateApiRequestAsync(ApiRequest item, CancellationToken cancellationToken);
-        Task<ApiRequest> GetApiRequestAsync(Expression<Func<ApiRequest, bool>> predicate, CancellationToken cancellationToken);
-
         Task CreateTenantAsync(Tenant item, CancellationToken cancellationToken);
         Task<Tenant> GetTenantAsync(CancellationToken cancellationToken);
         Task<Tenant> GetTenantAsync(Expression<Func<Tenant, bool>> predicate, CancellationToken cancellationToken);

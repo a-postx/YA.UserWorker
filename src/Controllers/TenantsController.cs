@@ -6,7 +6,7 @@ using Swashbuckle.AspNetCore.Annotations;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using YA.TenantWorker.Application.Middlewares.ActionFilters;
+using YA.TenantWorker.Application.Middlewares.ResourceFilters;
 using YA.TenantWorker.Application.Models.SaveModels;
 using YA.TenantWorker.Application.Models.ViewModels;
 using YA.TenantWorker.Constants;
@@ -25,7 +25,7 @@ namespace YA.TenantWorker.Controllers
     [ApiVersion(ApiVersionName.V1)]
     [Authorize]
     [NoCache]
-    [ServiceFilter(typeof(ApiRequestFilter))]
+    [ServiceFilter(typeof(IdempotencyFilterAttribute))]
     [SwaggerResponse(StatusCodes.Status500InternalServerError, SwaggerResponseDescriptions.Code500, typeof(ProblemDetails))]
     public class TenantsController : ControllerBase
     {

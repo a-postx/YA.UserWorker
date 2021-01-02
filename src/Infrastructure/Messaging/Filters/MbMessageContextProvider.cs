@@ -16,7 +16,7 @@ namespace YA.TenantWorker.Infrastructure.Messaging.Filters
         {
             MbMessageContext mbMessageContext = new MbMessageContext();
 
-            PipeContext current = MbMessageContextStack.Current;
+            PipeContext current = MbMessageContextStackWrapper.Current;
 
             ConsumeContext<CorrelatedBy<Guid>> correlationIdContext = current?.GetPayload<ConsumeContext<CorrelatedBy<Guid>>>();
 

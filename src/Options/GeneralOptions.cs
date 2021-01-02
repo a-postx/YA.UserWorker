@@ -8,5 +8,6 @@ namespace YA.TenantWorker.Options
         public string CorrelationIdHeader { get; set; }
         public int MaxLogFieldLength { get; set; }
         public int DefaultPaginationPageSize { get; set; }
+        public bool? IdempotencyFilterEnabled { get; set; }
     }
 }

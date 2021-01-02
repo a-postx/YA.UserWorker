@@ -13,7 +13,7 @@ namespace YA.TenantWorker.Infrastructure.Messaging.Filters
         public async Task Send(T context, IPipe<T> next)
         {
             // можно также создать сервисный контекст и уничтожить в конце
-            using (MbMessageContextStack.Push(context))
+            using (MbMessageContextStackWrapper.Push(context))
             {
                 await next.Send(context);
             }
