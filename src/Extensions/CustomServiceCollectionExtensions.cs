@@ -235,6 +235,8 @@ namespace YA.TenantWorker.Extensions
                     .AddMemoryHealthCheck(HealthCheckNames.Memory)
                     //system components regular checks
                     .AddSqlServer(secrets.TenantWorker.ConnectionString, "SELECT 1;", HealthCheckNames.Database, HealthStatus.Unhealthy, new string[] { "ready", "metric" })
+                    .AddRedis($"{secrets.DistributedCacheHost}:{secrets.DistributedCachePort},password={secrets.DistributedCachePassword}",
+                        HealthCheckNames.DistributedCache, HealthStatus.Degraded, new[] { "ready", "metric" }, new TimeSpan(0, 0, 30))
                     .AddGenericHealthCheck<MessageBusServiceHealthCheck>(HealthCheckNames.MessageBus, HealthStatus.Degraded, new[] { "ready", "metric" });
                     // Ping is not available on Azure Web Apps
                     //.AddNetworkHealthCheck("network");
