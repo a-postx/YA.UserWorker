@@ -300,21 +300,29 @@ namespace YA.TenantWorker
                 && !string.IsNullOrEmpty(secrets.ElasticSearchUser)
                 && !string.IsNullOrEmpty(secrets.ElasticSearchPassword))
             {
+                Dictionary<string, string> customIndexTemplateSettings = new Dictionary<string, string>
+                {
+                    { "index.lifecycle.name", hostEnv.IsProduction() ? "ya-logs-prod-policy" : "ya-logs-dev-policy" },
+                };
+
                 loggerConfig.WriteTo.Elasticsearch(new ElasticsearchSinkOptions(new Uri(secrets.ElasticSearchUrl))
                 {
                     ModifyConnectionSettings = x => x.BasicAuthentication(secrets.ElasticSearchUser, secrets.ElasticSearchPassword),
-                    AutoRegisterTemplate = true,
-                    AutoRegisterTemplateVersion = AutoRegisterTemplateVersion.ESv7,
-                    //RegisterTemplateFailure = RegisterTemplateRecovery.IndexAnyway,
-                    //TemplateName = "logs-template-name",
                     BatchPostingLimit = 1000,
                     Period = TimeSpan.FromSeconds(10),
                     MinimumLogEventLevel = LogEventLevel.Information,
                     FailureCallback = e => Console.WriteLine("Unable to submit log event to ELK: " + e.MessageTemplate),
                     EmitEventFailure = EmitEventFailureHandling.RaiseCallback,
-                    //IndexFormat = "logs-{0:yyyy.MM}",
-                    //DeadLetterIndexName = "test-deadletter-{0:yyyy.MM.dd}",
-                    CustomFormatter = new ExceptionAsObjectJsonFormatter(renderMessage: true),
+                    AutoRegisterTemplate = true,
+                    AutoRegisterTemplateVersion = AutoRegisterTemplateVersion.ESv7,
+                    OverwriteTemplate = false,
+                    RegisterTemplateFailure = RegisterTemplateRecovery.IndexAnyway,
+                    TemplateName = hostEnv.IsProduction() ? "ya-logs-prod-template" : "ya-logs-dev-template",
+                    TemplateCustomSettings = customIndexTemplateSettings,
+                    InlineFields = true,
+                    IndexFormat = hostEnv.IsProduction() ? "ya-logs-prod-{0:yyyy.MM.dd}" : "ya-logs-dev-{0:yyyy.MM.dd}",
+                    DeadLetterIndexName = hostEnv.IsProduction() ? "ya-prod-deadletter-{0:yyyy.MM.dd}" : "ya-dev-deadletter-{0:yyyy.MM.dd}",
+                    CustomFormatter = new ExceptionAsObjectJsonFormatter(renderMessage: true, inlineFields: true),
                     BufferCleanPayload = (failingEvent, statuscode, exception) =>
                     {
                         dynamic e = JObject.Parse(failingEvent);
