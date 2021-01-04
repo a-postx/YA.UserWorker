@@ -27,7 +27,6 @@ namespace YA.TenantWorker.Infrastructure.Logging.Requests
             if (context.User.Identity.IsAuthenticated)
             {
                 using (logger.BeginScopeWith((YaLogKeys.TenantId, context.User.GetClaimValue<Guid>(YaClaimNames.tid)),
-                    (YaLogKeys.Username, context.User.GetClaimValue<string>(YaClaimNames.username)),
                     (YaLogKeys.UserId, context.User.GetClaimValue<string>(YaClaimNames.uid))))
                 {
                     await _next(context);

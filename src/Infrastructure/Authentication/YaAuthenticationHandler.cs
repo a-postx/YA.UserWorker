@@ -89,7 +89,6 @@ namespace YA.TenantWorker.Infrastructure.Authentication
                 {
                     string clientId = validatedToken.Claims.FirstOrDefault(claim => claim.Type == YaClaimNames.azp)?.Value;
                     string userId = validatedToken.Claims.FirstOrDefault(claim => claim.Type == YaClaimNames.sub)?.Value;
-                    string userName = validatedToken.Claims.FirstOrDefault(claim => claim.Type == "http://yaapp.name")?.Value;
                     string email = validatedToken.Claims.FirstOrDefault(claim => claim.Type == "http://yaapp.email")?.Value;
                     string emailVerified = validatedToken.Claims.FirstOrDefault(claim => claim.Type == "http://yaapp.email_verified")?.Value;
 
@@ -101,10 +100,6 @@ namespace YA.TenantWorker.Infrastructure.Authentication
                     {
                         return AuthenticateResult.Fail($"{YaClaimNames.uid} claim cannot be found.");
                     }
-                    if (string.IsNullOrEmpty(userName))
-                    {
-                        return AuthenticateResult.Fail($"{YaClaimNames.name} claim cannot be found.");
-                    }
 
                     ClaimsIdentity userIdentity = new ClaimsIdentity(AuthType, YaClaimNames.name, YaClaimNames.role);
 
@@ -114,7 +109,6 @@ namespace YA.TenantWorker.Infrastructure.Authentication
                     userIdentity.AddClaim(new Claim(YaClaimNames.cid, clientId));
                     userIdentity.AddClaim(new Claim(YaClaimNames.uid, userId));
                     userIdentity.AddClaim(new Claim(YaClaimNames.tid, tenantId.ToString()));
-                    userIdentity.AddClaim(new Claim(YaClaimNames.name, userName));
 
                     if (email != null)
                     {
