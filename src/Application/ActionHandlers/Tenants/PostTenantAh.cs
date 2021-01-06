@@ -45,7 +45,6 @@ namespace YA.TenantWorker.Application.ActionHandlers.Tenants
             //делать запрос на /userinfo, чтобы убрать лишние удостоверения из токена доступа 
             string tenantId = user.Claims.FirstOrDefault(claim => claim.Type == YaClaimNames.tid)?.Value;
             string userId = user.Claims.FirstOrDefault(claim => claim.Type == YaClaimNames.uid)?.Value;
-            string userName = user.Claims.FirstOrDefault(claim => claim.Type == YaClaimNames.name)?.Value;
             string userEmail = user.Claims.FirstOrDefault(claim => claim.Type == YaClaimNames.email)?.Value;
             
             ////string emailVerified = user.Claims.FirstOrDefault(claim => claim.Type == YaClaimNames.email_verified)?.Value;
@@ -61,7 +60,7 @@ namespace YA.TenantWorker.Application.ActionHandlers.Tenants
             }
 
             ICommandResult<Tenant> result = await _mediator
-                .Send(new CreateTenantCommand(tenantId, userId, userName, userEmail), cancellationToken);
+                .Send(new CreateTenantCommand(tenantId, userId, userEmail), cancellationToken);
 
             switch (result.Status)
             {

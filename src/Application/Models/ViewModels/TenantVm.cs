@@ -13,11 +13,6 @@ namespace YA.TenantWorker.Application.Models.ViewModels
         public Guid TenantId { get; set; }
 
         /// <summary>
-        /// Tenant name.
-        /// </summary>
-        public string Name { get; set; }
-
-        /// <summary>
         /// URL used to retrieve the resource conforming to REST'ful JSON http://restfuljson.org/.
         /// </summary>
         public Uri Url { get; set; }

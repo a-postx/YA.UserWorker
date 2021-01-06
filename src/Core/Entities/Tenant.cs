@@ -18,7 +18,6 @@ namespace YA.TenantWorker.Core.Entities
     public class Tenant : IRowVersionedEntity, IAuditedEntityBase
     {
         public Guid TenantID { get; set; }
-        public string Name { get; set; }
         public TenantType Type { get; set; }
         public string Email { get; set; }
         public string AuthProvider { get; set; }

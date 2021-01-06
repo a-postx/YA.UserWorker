@@ -14,17 +14,15 @@ namespace YA.TenantWorker.Application.Features.Tenants.Commands
 {
     public class CreateTenantCommand : IRequest<ICommandResult<Tenant>>
     {
-        public CreateTenantCommand(string tenantId, string userId, string userName, string userEmail)
+        public CreateTenantCommand(string tenantId, string userId, string userEmail)
         {
             TenantId = tenantId;
             UserId = userId;
-            UserName = userName;
             UserEmail = userEmail;
         }
 
         public string TenantId { get; protected set; }
         public string UserId { get; protected set; }
-        public string UserName { get; protected set; }
         public string UserEmail { get; protected set; }
 
         public class CreateTenantHandler : IRequestHandler<CreateTenantCommand, ICommandResult<Tenant>>
@@ -50,7 +48,6 @@ namespace YA.TenantWorker.Application.Features.Tenants.Commands
             {
                 string tenantId = command.TenantId;
                 string userId = command.UserId;
-                string userName = command.UserName;
                 string userEmail = command.UserEmail;
 
                 Tenant existingTenant = await _dbContext.GetTenantWithPricingTierAsync(cancellationToken);
@@ -74,7 +71,6 @@ namespace YA.TenantWorker.Application.Features.Tenants.Commands
                 Tenant tenant = new Tenant
                 {
                     TenantID = tenantIdGuid,
-                    Name = userName,
                     Email = userEmail,
                     AuthProvider = provider,
                     ExternalId = externalId,
@@ -84,7 +80,9 @@ namespace YA.TenantWorker.Application.Features.Tenants.Commands
                 };
 
                 Guid defaultPricingTierId = Guid.Parse(SeedData.SeedPricingTierId);
+
                 tenant.PricingTierId = defaultPricingTierId;
+                tenant.PricingTierActivatedDateTime = DateTime.UtcNow;
 
                 await _dbContext.CreateTenantAsync(tenant, cancellationToken);
                 await _dbContext.ApplyChangesAsync(cancellationToken);

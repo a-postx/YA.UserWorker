@@ -130,7 +130,7 @@ namespace YA.TenantWorker.Application.Middlewares.ResourceFilters
                                 request.SetResultRouteName(createdRequestResult.RouteName);
 
                                 Dictionary<string, string> routeValues = createdRequestResult
-                                    .RouteValues.ToDictionary(r => r.Key, r => r.Value.ToString());
+                                    .RouteValues?.ToDictionary(r => r.Key, r => r.Value.ToString());
                                 request.SetResultRouteValues(routeValues);
 
                                 break;

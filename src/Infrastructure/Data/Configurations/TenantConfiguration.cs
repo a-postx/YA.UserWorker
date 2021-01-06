@@ -25,9 +25,6 @@ namespace YA.TenantWorker.Infrastructure.Data.Configurations
             modelBuilder.Property(p => p.PricingTierActivatedUntilDateTime)
                 .HasConversion(v => v, v => DateTime.SpecifyKind(v, DateTimeKind.Utc));
             modelBuilder.Property(p => p.tstamp).IsRowVersion();
-            modelBuilder.Property(p => p.Name)
-                .IsUnicode()
-                .HasMaxLength(512);
             modelBuilder.Property(p => p.Email)
                 .IsUnicode()
                 .HasMaxLength(128);

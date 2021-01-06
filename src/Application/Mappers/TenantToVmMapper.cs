@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using YA.TenantWorker.Constants;
 using YA.TenantWorker.Core.Entities;
 using YA.TenantWorker.Application.Models.ViewModels;
@@ -44,7 +44,6 @@ namespace YA.TenantWorker.Application.Mappers
             Guid tenantId = source.TenantID;
 
             destination.TenantId = source.TenantID;
-            destination.Name = source.Name;
             destination.PricingTierActivatedUntil = source.PricingTierActivatedUntilDateTime;
             destination.CreatedDateTime = source.CreatedDateTime;
             destination.LastModifiedDateTime = source.LastModifiedDateTime;
@@ -57,10 +56,14 @@ namespace YA.TenantWorker.Application.Mappers
             RouteData routeData = _httpContextAccessor.HttpContext.GetRouteData();
             string route = (string)routeData.Values["controller"] + (string)routeData.Values["action"];
 
-            if (route.Contains("All", StringComparison.Ordinal) || route.Contains("ById", StringComparison.Ordinal) || route.Contains("Post", StringComparison.Ordinal))
+            if (route.Contains("All", StringComparison.Ordinal) || route.Contains("ById", StringComparison.Ordinal))
             {
                 //property name of anonymous route value object must correspond to controller http route values
                 destination.Url = new Uri(_linkGenerator.GetUriByName(_httpContextAccessor.HttpContext, RouteNames.GetTenantById, new { tenantId }));
+            }
+            else if (route.Contains("Post", StringComparison.Ordinal))
+            {
+                destination.Url = new Uri(_linkGenerator.GetUriByAction(_httpContextAccessor.HttpContext));
             }
             else
             {
