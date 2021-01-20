@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using YA.TenantWorker.Application.Interfaces;
 
 namespace YA.TenantWorker.Application.Middlewares
@@ -22,6 +23,7 @@ namespace YA.TenantWorker.Application.Middlewares
         private readonly RequestDelegate _next;
 
         public async Task InvokeAsync(HttpContext context,
+            ILogger<HttpExceptionHandler> logger,
             IProblemDetailsFactory detailsFactory,
             IHostApplicationLifetime lifetime)
         {
@@ -38,14 +40,16 @@ namespace YA.TenantWorker.Application.Middlewares
             }
             catch (Exception ex)
             {
+                logger.LogError(ex, "Unhandled exception.");
                 await WriteProblemDetails(context, detailsFactory, lifetime, ex);
             }
         }
 
         private static async Task WriteProblemDetails(HttpContext context, IProblemDetailsFactory detailsFactory, IHostApplicationLifetime lifetime, Exception ex)
         {
-            ProblemDetails problemDetails = detailsFactory.CreateProblemDetails(context, StatusCodes.Status500InternalServerError,
-                                ex.Message, null, ex.Demystify().StackTrace, context.Request.HttpContext.Request.Path);
+            ProblemDetails problemDetails = detailsFactory
+                .CreateProblemDetails(context, StatusCodes.Status500InternalServerError,
+                ex.Message, null, ex.Demystify().StackTrace, context.Request.HttpContext.Request.Path);
 
             context.Response.ContentType = "application/problem+json";
             context.Response.StatusCode = StatusCodes.Status500InternalServerError;

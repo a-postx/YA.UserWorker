@@ -69,7 +69,7 @@ namespace YA.TenantWorker.Application.Middlewares.ResourceFilters
 
                 using (CancellationTokenSource cts = new CancellationTokenSource(Timeouts.ApiRequestFilterMs))
                 {
-                    (bool requestCreated, ApiRequest request) = await GetOrCreateRequestAsync(tenantId, requestId, method, path, query);
+                    (bool requestCreated, ApiRequest request) = await CheckAndGetOrCreateRequestAsync(tenantId, requestId, method, path, query);
 
                     if (!requestCreated)
                     {
@@ -130,7 +130,7 @@ namespace YA.TenantWorker.Application.Middlewares.ResourceFilters
                                 request.SetResultRouteName(createdRequestResult.RouteName);
 
                                 Dictionary<string, string> routeValues = createdRequestResult
-                                    .RouteValues?.ToDictionary(r => r.Key, r => r.Value.ToString());
+                                    .RouteValues.ToDictionary(r => r.Key, r => r.Value.ToString());
                                 request.SetResultRouteValues(routeValues);
 
                                 break;
@@ -172,14 +172,16 @@ namespace YA.TenantWorker.Application.Middlewares.ResourceFilters
             }
         }
 
-        private async Task<(bool created, ApiRequest request)> GetOrCreateRequestAsync(Guid tenantId, Guid clientRequestId, string method, string path, string query)
+        private async Task<(bool created, ApiRequest request)> CheckAndGetOrCreateRequestAsync(Guid tenantId, Guid clientRequestId, string method, string path, string query)
         {
             string key = $"{tenantId}:idempotency_keys:{clientRequestId}";
 
-            ApiRequest requestFromCache = await _cacheService.GetApiRequestAsync(key);
+            bool apiRequestIsCached = await _cacheService.ApiRequestExist(key);
 
-            if (requestFromCache != null)
+            if (apiRequestIsCached)
             {
+                ApiRequest requestFromCache = await _cacheService.GetApiRequestAsync(key);
+
                 return (false, requestFromCache);
             }
             else

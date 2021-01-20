@@ -5,6 +5,7 @@ namespace YA.TenantWorker.Application.Interfaces
 {
     public interface IApiRequestDistributedCache
     {
+        Task<bool> ApiRequestExist(string key);
         Task CreateApiRequestAsync(ApiRequest request);
         Task<ApiRequest> GetApiRequestAsync(string key);
         Task UpdateApiRequestAsync(ApiRequest request);

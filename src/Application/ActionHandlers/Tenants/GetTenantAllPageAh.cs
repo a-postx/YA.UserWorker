@@ -41,14 +41,14 @@ namespace YA.TenantWorker.Application.ActionHandlers.Tenants
         private readonly IPaginatedResultFactory _paginatedResultFactory;
         private readonly IMapper<Tenant, TenantVm> _tenantVmMapper;
 
-        public async Task<IActionResult> ExecuteAsync(PageOptions pageOptions, CancellationToken cancellationToken)
+        public async Task<IActionResult> ExecuteAsync(PageOptionsCursor pageOptions, CancellationToken cancellationToken)
         {
             DateTimeOffset? createdAfter = Cursor.FromCursor<DateTimeOffset?>(pageOptions.Before);
             DateTimeOffset? createdBefore = Cursor.FromCursor<DateTimeOffset?>(pageOptions.After);
             int? first = pageOptions.First;
             int? last = pageOptions.Last;
 
-            ICommandResult<PaginatedResult<Tenant>> result = await _mediator
+            ICommandResult<CursorPaginatedResult<Tenant>> result = await _mediator
                 .Send(new GetTenantAllPageCommand(first, last, createdAfter, createdBefore), cancellationToken);
 
             switch (result.Status)
@@ -59,14 +59,14 @@ namespace YA.TenantWorker.Application.ActionHandlers.Tenants
                 case CommandStatus.NotFound:
                     return new NotFoundResult();
                 case CommandStatus.Ok:
-                    PaginatedResult<Tenant> resultBm = result.Data;
+                    CursorPaginatedResult<Tenant> resultBm = result.Data;
 
                     (string startCursor, string endCursor) = Cursor.GetFirstAndLastCursor(resultBm.Items, x => x.CreatedDateTime);
 
                     List<TenantVm> items = _tenantVmMapper.MapList(resultBm.Items);
 
                     PaginatedResultVm<TenantVm> paginatedResultVm = _paginatedResultFactory
-                        .GetPaginatedResult(pageOptions, resultBm.HasNextPage, resultBm.HasPreviousPage,
+                        .GetCursorPaginatedResult(pageOptions, resultBm.HasNextPage, resultBm.HasPreviousPage,
                         resultBm.TotalCount, startCursor, endCursor, RouteNames.GetTenantPage, items);
 
                     _actionCtx.ActionContext.HttpContext

@@ -13,7 +13,7 @@ using YA.TenantWorker.Options;
 
 namespace YA.TenantWorker.Application.Features.Tenants.Queries
 {
-    public class GetTenantAllPageCommand : IRequest<ICommandResult<PaginatedResult<Tenant>>>
+    public class GetTenantAllPageCommand : IRequest<ICommandResult<CursorPaginatedResult<Tenant>>>
     {
         public GetTenantAllPageCommand(int? first, int? last, DateTimeOffset? createdAfter, DateTimeOffset? createdBefore)
         {
@@ -28,7 +28,7 @@ namespace YA.TenantWorker.Application.Features.Tenants.Queries
         public DateTimeOffset? CreatedAfter { get; protected set; }
         public DateTimeOffset? CreatedBefore { get; protected set; }
 
-        public class GetTenantAllPageHandler : IRequestHandler<GetTenantAllPageCommand, ICommandResult<PaginatedResult<Tenant>>>
+        public class GetTenantAllPageHandler : IRequestHandler<GetTenantAllPageCommand, ICommandResult<CursorPaginatedResult<Tenant>>>
         {
             public GetTenantAllPageHandler(ILogger<GetTenantAllPageHandler> logger,
                 ITenantWorkerDbContext dbContext,
@@ -43,7 +43,7 @@ namespace YA.TenantWorker.Application.Features.Tenants.Queries
             private readonly ITenantWorkerDbContext _dbContext;
             private readonly GeneralOptions _generalOptions;
 
-            public async Task<ICommandResult<PaginatedResult<Tenant>>> Handle(GetTenantAllPageCommand command, CancellationToken cancellationToken)
+            public async Task<ICommandResult<CursorPaginatedResult<Tenant>>> Handle(GetTenantAllPageCommand command, CancellationToken cancellationToken)
             {
                 int? first = command.First;
                 int? last = command.Last;
@@ -67,17 +67,17 @@ namespace YA.TenantWorker.Application.Features.Tenants.Queries
 
                 if (items == null)
                 {
-                    return new CommandResult<PaginatedResult<Tenant>>(CommandStatus.NotFound, null);
+                    return new CommandResult<CursorPaginatedResult<Tenant>>(CommandStatus.NotFound, null);
                 }
 
-                PaginatedResult<Tenant> result = new PaginatedResult<Tenant>(
+                CursorPaginatedResult<Tenant> result = new CursorPaginatedResult<Tenant>(
                     hasNextPage,
                     hasPreviousPage,
                     totalCount,
                     items
                 );
 
-                return new CommandResult<PaginatedResult<Tenant>>(CommandStatus.Ok, result);
+                return new CommandResult<CursorPaginatedResult<Tenant>>(CommandStatus.Ok, result);
             }
         }
     }

@@ -150,7 +150,7 @@ namespace YA.TenantWorker.Controllers
         [SwaggerResponse(StatusCodes.Status409Conflict, "Запрос-дубликат.", typeof(ProblemDetails))]
         public Task<IActionResult> GetTenantAllPageAsync(
             [FromServices] IGetTenantAllPageAh handler,
-            [FromQuery] PageOptions pageOptions,
+            [FromQuery] PageOptionsCursor pageOptions,
             CancellationToken cancellationToken)
         {
             return handler.ExecuteAsync(pageOptions, cancellationToken);

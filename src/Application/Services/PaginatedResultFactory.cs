@@ -26,7 +26,7 @@ namespace YA.TenantWorker.Application.Services
 
         private const string ApiVersionQueryKey = "api-version";
 
-        public PaginatedResultVm<T> GetPaginatedResult<T>(PageOptions pageOptions, bool hasNextPage, bool hasPreviousPage,
+        public PaginatedResultVm<T> GetCursorPaginatedResult<T>(PageOptionsCursor pageOptions, bool hasNextPage, bool hasPreviousPage,
             int totalCount, string startCursor, string endCursor, string routeName, ICollection<T> items) where T : class
         {
             if (pageOptions == null)
@@ -39,27 +39,27 @@ namespace YA.TenantWorker.Application.Services
                 throw new ArgumentNullException(nameof(routeName));
             }
 
-            ICollection<T> listItems = items ?? new List<T>();
+            ICollection<T> resultItems = items ?? new List<T>();
 
-            Tuple<ExpandoObject, ExpandoObject> baseQueryParams = GetUniqueQueryParams(pageOptions);
+            Tuple<ExpandoObject, ExpandoObject> baseQueryParams = GetCursorUniqueQueryParams(pageOptions);
 
             PageInfoVm pageInfo = new PageInfoVm()
             {
                 Count = items.Count,
                 HasNextPage = hasNextPage,
                 HasPreviousPage = hasPreviousPage,
-                NextPageUrl = hasNextPage ? GetNextPageUri(routeName, baseQueryParams, pageOptions, endCursor) : null,
-                PreviousPageUrl = hasPreviousPage ? GetPreviousPageUri(routeName, baseQueryParams, pageOptions, startCursor) : null,
-                FirstPageUrl = GetFirstPageUri(routeName, baseQueryParams, pageOptions),
-                LastPageUrl = GetLastPageUri(routeName, baseQueryParams, pageOptions),
+                NextPageUrl = hasNextPage ? GetCursorNextPageUri(routeName, baseQueryParams, pageOptions, endCursor) : null,
+                PreviousPageUrl = hasPreviousPage ? GetCursorPreviousPageUri(routeName, baseQueryParams, pageOptions, startCursor) : null,
+                FirstPageUrl = GetCursorFirstPageUri(routeName, baseQueryParams, pageOptions),
+                LastPageUrl = GetCursorLastPageUri(routeName, baseQueryParams, pageOptions),
             };
 
-            PaginatedResultVm<T> result = new PaginatedResultVm<T>(totalCount, pageInfo, listItems);
+            PaginatedResultVm<T> result = new PaginatedResultVm<T>(totalCount, pageInfo, resultItems);
 
             return result;
         }
 
-        private Tuple<ExpandoObject, ExpandoObject> GetUniqueQueryParams(PageOptions pageOptions)
+        private Tuple<ExpandoObject, ExpandoObject> GetCursorUniqueQueryParams(PageOptionsCursor pageOptions)
         {
             ExpandoObject uniqueParams = new ExpandoObject();
             ExpandoObject apiVersionParam = new ExpandoObject();
@@ -100,66 +100,125 @@ namespace YA.TenantWorker.Application.Services
             return clone;
         }
 
-        private Uri GetNextPageUri(string routeName, Tuple<ExpandoObject, ExpandoObject> baseUrlParams, PageOptions pageOptions, string endCursor)
+        private Uri GetCursorNextPageUri(string routeName, Tuple<ExpandoObject, ExpandoObject> baseUrlParams, PageOptionsCursor pageOptions, string endCursor)
         {
             ExpandoObject baseParams = CopyUniqueQueryParams(baseUrlParams.Item1);
 
             baseParams.TryAdd(nameof(pageOptions.First), pageOptions.First ?? pageOptions.Last);
             baseParams.TryAdd(nameof(pageOptions.After), endCursor);
 
-            IDictionary<string, object> apiKvp = baseUrlParams.Item2;
-            if (apiKvp.TryGetValue(ApiVersionQueryKey, out object versionValue))
-            {
-                baseParams.TryAdd(ApiVersionQueryKey, versionValue);
-            }
-
-            return new Uri(_linkGenerator.GetUriByRouteValues(_actionCtx.ActionContext.HttpContext, routeName, baseParams));
+            return GenerateLink(routeName, baseParams, baseUrlParams.Item2);
         }
 
-        private Uri GetPreviousPageUri(string routeName, Tuple<ExpandoObject, ExpandoObject> baseUrlParams, PageOptions pageOptions, string startCursor)
+        private Uri GetCursorPreviousPageUri(string routeName, Tuple<ExpandoObject, ExpandoObject> baseUrlParams, PageOptionsCursor pageOptions, string startCursor)
         {
             ExpandoObject baseParams = CopyUniqueQueryParams(baseUrlParams.Item1);
 
             baseParams.TryAdd(nameof(pageOptions.Last), pageOptions.First ?? pageOptions.Last);
             baseParams.TryAdd(nameof(pageOptions.Before), startCursor);
 
-            IDictionary<string, object> apiKvp = baseUrlParams.Item2;
-            if (apiKvp.TryGetValue(ApiVersionQueryKey, out object versionValue))
-            {
-                baseParams.TryAdd(ApiVersionQueryKey, versionValue);
-            }
-
-            return new Uri(_linkGenerator.GetUriByRouteValues(_actionCtx.ActionContext.HttpContext, routeName, baseParams));
+            return GenerateLink(routeName, baseParams, baseUrlParams.Item2);
         }
 
-        private Uri GetFirstPageUri(string routeName, Tuple<ExpandoObject, ExpandoObject> baseUrlParams, PageOptions pageOptions)
+        private Uri GetCursorFirstPageUri(string routeName, Tuple<ExpandoObject, ExpandoObject> baseUrlParams, PageOptionsCursor pageOptions)
         {
             ExpandoObject baseParams = CopyUniqueQueryParams(baseUrlParams.Item1);
 
             baseParams.TryAdd(nameof(pageOptions.First), pageOptions.First ?? pageOptions.Last);
 
-            IDictionary<string, object> apiKvp = baseUrlParams.Item2;
-            if (apiKvp.TryGetValue(ApiVersionQueryKey, out object versionValue))
-            {
-                baseParams.TryAdd(ApiVersionQueryKey, versionValue);
-            }
-
-            return new Uri(_linkGenerator.GetUriByRouteValues(_actionCtx.ActionContext.HttpContext, routeName, baseParams));
+            return GenerateLink(routeName, baseParams, baseUrlParams.Item2);
         }
 
-        private Uri GetLastPageUri(string routeName, Tuple<ExpandoObject, ExpandoObject> baseUrlParams, PageOptions pageOptions)
+        private Uri GetCursorLastPageUri(string routeName, Tuple<ExpandoObject, ExpandoObject> baseUrlParams, PageOptionsCursor pageOptions)
         {
             ExpandoObject baseParams = CopyUniqueQueryParams(baseUrlParams.Item1);
 
             baseParams.TryAdd(nameof(pageOptions.Last), pageOptions.First ?? pageOptions.Last);
 
-            IDictionary<string, object> apiKvp = baseUrlParams.Item2;
+            return GenerateLink(routeName, baseParams, baseUrlParams.Item2);
+        }
+
+        private Uri GenerateLink(string routeName, ExpandoObject queryParams, IDictionary<string, object> apiKvp)
+        {
             if (apiKvp.TryGetValue(ApiVersionQueryKey, out object versionValue))
             {
-                baseParams.TryAdd(ApiVersionQueryKey, versionValue);
+                queryParams.TryAdd(ApiVersionQueryKey, versionValue);
             }
 
-            return new Uri(_linkGenerator.GetUriByRouteValues(_actionCtx.ActionContext.HttpContext, routeName, baseParams));
+            Uri link = new Uri(_linkGenerator.GetUriByRouteValues(_actionCtx.ActionContext.HttpContext, routeName, queryParams));
+
+            return link;
+        }
+
+        public PaginatedResultVm<T> GetOffsetPaginatedResult<T>(PageOptionsOffset pageOptions, int totalCount, string routeName, ICollection<T> items) where T : class
+        {
+            if (string.IsNullOrEmpty(routeName))
+            {
+                throw new ArgumentNullException(nameof(routeName));
+            }
+
+            ICollection<T> resultItems = items ?? new List<T>();
+
+            Tuple<ExpandoObject, ExpandoObject> baseQueryParams = GetOffsetUniqueQueryParams(pageOptions);
+
+            double totalPages = ((double)totalCount / (double)pageOptions.PageSize);
+            int roundedTotalPages = Convert.ToInt32(Math.Ceiling(totalPages));
+
+            PageInfoVm pageInfo = new PageInfoVm()
+            {
+                Count = items.Count,
+                NextPageUrl = pageOptions.PageNumber >= 1 && pageOptions.PageNumber < roundedTotalPages
+                    ? GetPageUri(baseQueryParams, new PageOptionsOffset(pageOptions.PageNumber + 1, pageOptions.PageSize), routeName)
+                    : null,
+                PreviousPageUrl = pageOptions.PageNumber - 1 >= 1 && pageOptions.PageNumber <= roundedTotalPages
+                    ? GetPageUri(baseQueryParams, new PageOptionsOffset(pageOptions.PageNumber - 1, pageOptions.PageSize), routeName)
+                    : null,
+                FirstPageUrl = GetPageUri(baseQueryParams, new PageOptionsOffset(1, pageOptions.PageSize), routeName),
+                LastPageUrl = GetPageUri(baseQueryParams, new PageOptionsOffset(roundedTotalPages, pageOptions.PageSize), routeName)
+            };
+
+            pageInfo.HasNextPage = pageInfo.NextPageUrl != null;
+            pageInfo.HasPreviousPage = pageInfo.PreviousPageUrl != null;
+
+            PaginatedResultVm<T> result = new PaginatedResultVm<T>(totalCount, pageInfo, resultItems);
+
+            return result;
+        }
+
+        private Tuple<ExpandoObject, ExpandoObject> GetOffsetUniqueQueryParams(PageOptionsOffset pageOptions)
+        {
+            ExpandoObject uniqueParams = new ExpandoObject();
+            ExpandoObject apiVersionParam = new ExpandoObject();
+
+            foreach (KeyValuePair<string, StringValues> item in _actionCtx.ActionContext.HttpContext.Request.Query)
+            {
+                string key = item.Key.ToLowerInvariant();
+
+                if (key != nameof(pageOptions.PageNumber).ToLowerInvariant()
+                    && key != nameof(pageOptions.PageSize).ToLowerInvariant())
+                {
+                    if (key == ApiVersionQueryKey)
+                    {
+                        apiVersionParam.TryAdd(key, item.Value);
+                    }
+                    else
+                    {
+                        uniqueParams.TryAdd(key, item.Value);
+                    }
+                }
+            }
+
+            return new Tuple<ExpandoObject, ExpandoObject>(uniqueParams, apiVersionParam);
+        }
+
+        private Uri GetPageUri(Tuple<ExpandoObject, ExpandoObject> baseUrlParams, PageOptionsOffset pageOptions, string routeName)
+        {
+            ExpandoObject baseParams = CopyUniqueQueryParams(baseUrlParams.Item1);
+
+            baseParams.TryAdd(nameof(pageOptions.PageSize), pageOptions.PageSize);
+            baseParams.TryAdd(nameof(pageOptions.PageNumber), pageOptions.PageNumber);
+
+            return GenerateLink(routeName, baseParams, baseUrlParams.Item2);
         }
     }
 }

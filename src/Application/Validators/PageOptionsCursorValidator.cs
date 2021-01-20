@@ -3,9 +3,9 @@ using YA.TenantWorker.Application.Models.HttpQueryParams;
 
 namespace YA.TenantWorker.Application.Validators
 {
-    public class PageOptionsValidator : AbstractValidator<PageOptions>
+    public class PageOptionsCursorValidator : AbstractValidator<PageOptionsCursor>
     {
-        public PageOptionsValidator()
+        public PageOptionsCursorValidator()
         {
             RuleFor(e => e.First).InclusiveBetween(1, 50);
             RuleFor(e => e.Last).InclusiveBetween(1, 50);

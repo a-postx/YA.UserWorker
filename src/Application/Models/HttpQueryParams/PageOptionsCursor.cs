@@ -1,9 +1,9 @@
 namespace YA.TenantWorker.Application.Models.HttpQueryParams
 {
     /// <summary>
-    /// Page options for listing elements
+    /// Параметры курсорного запроса постраничного вывода.
     /// </summary>
-    public class PageOptions
+    public class PageOptionsCursor
     {
         public int? First { get; set; }
         public int? Last { get; set; }

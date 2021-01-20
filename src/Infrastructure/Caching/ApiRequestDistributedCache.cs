@@ -12,6 +12,9 @@ using YA.TenantWorker.Application.Models.Service;
 
 namespace YA.TenantWorker.Infrastructure.Caching
 {
+    /// <summary>
+    /// Распределённый кеш АПИ-запросов, реализованный с помощью Редис
+    /// </summary>
     public class ApiRequestDistributedCache : IApiRequestDistributedCache
     {
         public ApiRequestDistributedCache(ILogger<ApiRequestDistributedCache> logger,
@@ -37,6 +40,37 @@ namespace YA.TenantWorker.Infrastructure.Caching
         private const string ResultRouteName = "routename";
         private const string ResultRouteValues = "routevalues";
 
+        public async Task<bool> ApiRequestExist(string key)
+        {
+            Stopwatch sw = new Stopwatch();
+            sw.Start();
+
+            bool hashKeyExists = false;
+
+            try
+            {
+                hashKeyExists = await _cacheDb.KeyExistsAsync(key);
+            }
+            catch (RedisConnectionException ex)
+            {
+                _log.LogError(ex, "Connection error getting cached value for key {CacheKey}", key);
+            }
+            //в случае перезагрузки Редиса (установка патчей на Азуре)
+            catch (RedisTimeoutException ex)
+            {
+                _log.LogError(ex, "Timeout error getting cached value for key {CacheKey}", key);
+            }
+            catch (RedisException ex)
+            {
+                _log.LogError(ex, "Error getting cached value for key {CacheKey}", key);
+            }
+
+            sw.Stop();
+            _log.LogInformation("cache.request.idempotency.exist.msec {CacheRequestIdempotencyExistMsec}", sw.ElapsedMilliseconds);
+
+            return hashKeyExists;
+        }
+
         public async Task<ApiRequest> GetApiRequestAsync(string key)
         {
             Stopwatch sw = new Stopwatch();
@@ -51,6 +85,10 @@ namespace YA.TenantWorker.Infrastructure.Caching
             catch (RedisConnectionException ex)
             {
                 _log.LogError(ex, "Connection error getting cached value for key {CacheKey}", key);
+            }
+            catch (RedisTimeoutException ex)
+            {
+                _log.LogError(ex, "Timeout error getting cached value for key {CacheKey}", key);
             }
             catch (RedisException ex)
             {
@@ -171,6 +209,10 @@ namespace YA.TenantWorker.Infrastructure.Caching
             {
                 _log.LogError(ex, "Connection error on adding value for key {CacheKey}", request.CacheKey);
             }
+            catch (RedisTimeoutException ex)
+            {
+                _log.LogError(ex, "Timeout error on adding value for key {CacheKey}", request.CacheKey);
+            }
             catch (RedisException ex)
             {
                 _log.LogError(ex, "Error adding cached value for key {CacheKey}", request.CacheKey);
@@ -226,6 +268,10 @@ namespace YA.TenantWorker.Infrastructure.Caching
             catch (RedisConnectionException ex)
             {
                 _log.LogError(ex, "Connection error on updating value for key {CacheKey}", request.CacheKey);
+            }
+            catch (RedisTimeoutException ex)
+            {
+                _log.LogError(ex, "Timeout error updating cached value for key {CacheKey}", request.CacheKey);
             }
             catch (RedisException ex)
             {
