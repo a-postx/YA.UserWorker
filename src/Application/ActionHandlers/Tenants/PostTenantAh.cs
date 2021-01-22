@@ -75,7 +75,7 @@ namespace YA.TenantWorker.Application.ActionHandlers.Tenants
 
                     TenantVm tenantVm = _tenantVmMapper.Map(result.Data);
 
-                    return new CreatedAtRouteResult(RouteNames.GetTenant, null, tenantVm);
+                    return new CreatedAtRouteResult(RouteNames.GetTenant, new { }, tenantVm);
             }
         }
     }
