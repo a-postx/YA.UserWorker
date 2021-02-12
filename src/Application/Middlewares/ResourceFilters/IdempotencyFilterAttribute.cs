@@ -12,6 +12,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Primitives;
+using YA.TenantWorker.Application.Exceptions;
 using YA.TenantWorker.Application.Interfaces;
 using YA.TenantWorker.Application.Models.Service;
 using YA.TenantWorker.Constants;
@@ -29,34 +31,33 @@ namespace YA.TenantWorker.Application.Middlewares.ResourceFilters
     {
         public IdempotencyFilterAttribute(ILogger<IdempotencyFilterAttribute> logger,
             IApiRequestDistributedCache cacheService,
-            IRuntimeContextAccessor runtimeContextAccessor,
-            IOptions<GeneralOptions> options,
+            IHttpContextAccessor httpContextAccessor,
+            IOptions<IdempotencyControlOptions> options,
             IProblemDetailsFactory problemDetailsFactory)
         {
             _log = logger ?? throw new ArgumentNullException(nameof(logger));
             _cacheService = cacheService ?? throw new ArgumentNullException(nameof(cacheService));
-            _runtimeCtx = runtimeContextAccessor ?? throw new ArgumentNullException(nameof(runtimeContextAccessor));
-            _generalOptions = options.Value;
+            _httpCtx = httpContextAccessor ?? throw new ArgumentNullException(nameof(httpContextAccessor));
+            _idempotencyOptions = options.Value;
             _pdFactory = problemDetailsFactory ?? throw new ArgumentNullException(nameof(problemDetailsFactory));
         }
 
         private readonly ILogger<IdempotencyFilterAttribute> _log;
         private readonly IApiRequestDistributedCache _cacheService;
-        private readonly IRuntimeContextAccessor _runtimeCtx;
-        private readonly GeneralOptions _generalOptions;
+        private readonly IHttpContextAccessor _httpCtx;
+        private readonly IdempotencyControlOptions _idempotencyOptions;
         private readonly IProblemDetailsFactory _pdFactory;
 
         public async Task OnResourceExecutionAsync(ResourceExecutingContext context, ResourceExecutionDelegate next)
         {
-            if (_generalOptions.IdempotencyFilterEnabled.HasValue && _generalOptions.IdempotencyFilterEnabled.Value)
+            if (_idempotencyOptions.IdempotencyFilterEnabled.HasValue && _idempotencyOptions.IdempotencyFilterEnabled.Value)
             {
-                Guid tenantId = _runtimeCtx.GetTenantId();
-                Guid requestId = _runtimeCtx.GetClientRequestId();
+                Guid requestId = GetClientRequestId();
 
                 if (requestId == Guid.Empty)
                 {
                     ProblemDetails problemDetails = _pdFactory.CreateProblemDetails(context.HttpContext, StatusCodes.Status400BadRequest,
-                                $"Запрос не содержит заголовка {_generalOptions.ClientRequestIdHeader} или значение в нём неверно.",
+                                $"Запрос не содержит заголовка {_idempotencyOptions.ClientRequestIdHeader} или значение в нём неверно.",
                                 null, null, context.HttpContext.Request.Path);
 
                     context.Result = new BadRequestObjectResult(problemDetails);
@@ -69,7 +70,7 @@ namespace YA.TenantWorker.Application.Middlewares.ResourceFilters
 
                 using (CancellationTokenSource cts = new CancellationTokenSource(Timeouts.ApiRequestFilterMs))
                 {
-                    (bool requestCreated, ApiRequest request) = await CheckAndGetOrCreateRequestAsync(tenantId, requestId, method, path, query);
+                    (bool requestCreated, ApiRequest request) = await CheckAndGetOrCreateRequestAsync(requestId, method, path, query);
 
                     if (!requestCreated)
                     {
@@ -172,9 +173,9 @@ namespace YA.TenantWorker.Application.Middlewares.ResourceFilters
             }
         }
 
-        private async Task<(bool created, ApiRequest request)> CheckAndGetOrCreateRequestAsync(Guid tenantId, Guid clientRequestId, string method, string path, string query)
+        private async Task<(bool created, ApiRequest request)> CheckAndGetOrCreateRequestAsync(Guid clientRequestId, string method, string path, string query)
         {
-            string key = $"{tenantId}:idempotency_keys:{clientRequestId}";
+            string key = $"idempotency_keys:{clientRequestId}";
 
             bool apiRequestIsCached = await _cacheService.ApiRequestExist(key);
 
@@ -186,7 +187,7 @@ namespace YA.TenantWorker.Application.Middlewares.ResourceFilters
             }
             else
             {
-                ApiRequest apiRequest = new ApiRequest(tenantId, clientRequestId);
+                ApiRequest apiRequest = new ApiRequest(clientRequestId);
 
                 apiRequest.SetMethod(method);
                 apiRequest.SetPath(path);
@@ -201,6 +202,31 @@ namespace YA.TenantWorker.Application.Middlewares.ResourceFilters
         private async Task SetResponseAsync(ApiRequest request)
         {
             await _cacheService.UpdateApiRequestAsync(request);
+        }
+
+        private Guid GetClientRequestId()
+        {
+            if (_httpCtx.HttpContext != null)
+            {
+                if (_httpCtx.HttpContext.Request.Headers
+                    .TryGetValue(_idempotencyOptions.ClientRequestIdHeader, out StringValues clientRequestIdValue))
+                {
+                    if (Guid.TryParse(clientRequestIdValue, out Guid clientRequestId))
+                    {
+                        return clientRequestId;
+                    }
+                    else
+                    {
+                        return Guid.Empty;
+                    }
+                }
+                else
+                {
+                    return Guid.Empty;
+                }
+            }
+
+            throw new ClientRequestIdNotFoundException("Cannot obtain client request ID: no http context.");
         }
     }
 }

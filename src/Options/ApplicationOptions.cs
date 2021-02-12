@@ -38,6 +38,9 @@ namespace YA.TenantWorker.Options
         public GeneralOptions General { get; set; }
 
         [Required]
+        public IdempotencyControlOptions IdempotencyControl { get; set; }
+
+        [Required]
         public OauthOptions OAuth { get; set; }
     }
 }

@@ -36,19 +36,6 @@ namespace YA.TenantWorker
     /// </summary>
     public class Startup
     {
-        private readonly IConfiguration _config;
-        private readonly IWebHostEnvironment _webHostEnvironment;
-
-        // controller design generator search for this
-        private IConfiguration Configuration { get; }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="Startup"/> class.
-        /// </summary>
-        /// <param name="configuration">The application configuration, where key value pair settings are stored. See
-        /// http://docs.asp.net/en/latest/fundamentals/configuration.html</param>
-        /// <param name="webHostEnvironment">The environment the application is running under. This can be Development,
-        /// Staging or Production by default. See http://docs.asp.net/en/latest/fundamentals/environments.html</param>
         public Startup(IConfiguration configuration, IWebHostEnvironment webHostEnvironment)
         {
             _config = configuration ?? throw new ArgumentNullException(nameof(configuration));
@@ -56,6 +43,12 @@ namespace YA.TenantWorker
 
             Configuration = configuration;
         }
+
+        private readonly IConfiguration _config;
+        private readonly IWebHostEnvironment _webHostEnvironment;
+
+        // controller design generator search for this
+        private IConfiguration Configuration { get; }
 
         /// <summary>
         /// Configures the services to add to the ASP.NET Core Injection of Control (IoC) container. This method gets
@@ -70,6 +63,7 @@ namespace YA.TenantWorker
 
             AppSecrets secrets = _config.GetSection(nameof(AppSecrets)).Get<AppSecrets>();
             GeneralOptions generalOptions = _config.GetSection(nameof(ApplicationOptions.General)).Get<GeneralOptions>();
+            IdempotencyControlOptions idempotencyOptions = _config.GetSection(nameof(ApplicationOptions.IdempotencyControl)).Get<IdempotencyControlOptions>();
 
             AWSOptions awsOptions = _config.GetAWSOptions();
             services.AddDefaultAWSOptions(awsOptions);
@@ -94,7 +88,7 @@ namespace YA.TenantWorker
                 .AddResponseCaching()
                 .AddCustomResponseCompression(_config)
                 .AddCustomHealthChecks(secrets)
-                .AddCustomSwagger(secrets, generalOptions)
+                .AddCustomSwagger(secrets, idempotencyOptions)
                 .AddHttpContextAccessor()
 
                 .AddSingleton<IActionContextAccessor, ActionContextAccessor>()
@@ -149,7 +143,7 @@ namespace YA.TenantWorker
             services.AddCustomMessageBus(secrets);
 
             services.AddScoped<IdempotencyFilterAttribute>();
-            services.AddScoped<IApiRequestDistributedCache, ApiRequestDistributedCache>();
+            services.AddScoped<IApiRequestDistributedCache, ApiRequestRedisCache>();
             services.AddSingleton<IApiRequestMemoryCache, ApiRequestMemoryCache>();
         }
 
@@ -159,9 +153,14 @@ namespace YA.TenantWorker
         public void Configure(IApplicationBuilder application)
         {
             OauthOptions oauthOptions = _config.GetSection(nameof(ApplicationOptions.OAuth)).Get<OauthOptions>();
+            IdempotencyControlOptions idempotencyOptions = _config.GetSection(nameof(ApplicationOptions.IdempotencyControl)).Get<IdempotencyControlOptions>();
+
+            if (idempotencyOptions.IdempotencyFilterEnabled.HasValue && idempotencyOptions.IdempotencyFilterEnabled.Value)
+            {
+                application.UseClientRequestContextLogging();
+            }
 
             application
-                .UseClientRequestContextLogging()
                 .UseCorrelationId()
 
                 //.UseAllElasticApm(Configuration)

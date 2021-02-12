@@ -11,21 +11,16 @@ namespace YA.TenantWorker.Application.Models.Service
     {
         private ApiRequest() { }
 
-        public ApiRequest(Guid tenantId, Guid clientRequestId)
+        public ApiRequest(Guid clientRequestId)
         {
-            if (tenantId == Guid.Empty)
-            {
-                throw new ArgumentException(nameof(tenantId));
-            }
-
             if (clientRequestId == Guid.Empty)
             {
-                throw new ArgumentException(nameof(clientRequestId));
+                throw new ArgumentException("Client request ID cannot be empty", nameof(clientRequestId));
             }
 
             ApiRequestID = clientRequestId;
 
-            CacheKey = $"{tenantId}:idempotency_keys:{clientRequestId}";
+            CacheKey = $"idempotency_keys:{clientRequestId}";
             AbsoluteExpiration = new TimeSpan(24, 0, 0);
         }
 

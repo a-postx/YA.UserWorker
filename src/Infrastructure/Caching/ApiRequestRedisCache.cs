@@ -15,19 +15,15 @@ namespace YA.TenantWorker.Infrastructure.Caching
     /// <summary>
     /// Распределённый кеш АПИ-запросов, реализованный с помощью Редис
     /// </summary>
-    public class ApiRequestDistributedCache : IApiRequestDistributedCache
+    public class ApiRequestRedisCache : IApiRequestDistributedCache
     {
-        public ApiRequestDistributedCache(ILogger<ApiRequestDistributedCache> logger,
-            IRuntimeContextAccessor runtimeContext,
-            ConnectionMultiplexer connectionMultiplexer)
+        public ApiRequestRedisCache(ILogger<ApiRequestRedisCache> logger, IConnectionMultiplexer connectionMultiplexer)
         {
             _log = logger ?? throw new ArgumentNullException(nameof(logger));
-            _runtimeCtx = runtimeContext ?? throw new ArgumentNullException(nameof(runtimeContext));
             _cacheDb = connectionMultiplexer.GetDatabase();
         }
 
-        private readonly ILogger<ApiRequestDistributedCache> _log;
-        private readonly IRuntimeContextAccessor _runtimeCtx;
+        private readonly ILogger<ApiRequestRedisCache> _log;
         private readonly IDatabase _cacheDb;
 
         private const string Id = "id";
@@ -100,76 +96,7 @@ namespace YA.TenantWorker.Infrastructure.Caching
 
             if (hashEntries != null && hashEntries.Length > 0)
             {
-                ApiRequest cachedRequest = new ApiRequest(_runtimeCtx.GetTenantId(), _runtimeCtx.GetClientRequestId());
-
-                RedisValue methodItem = hashEntries
-                    .Where(i => i.Name == Method).Select(i => i.Value).FirstOrDefault();
-
-                if (!methodItem.IsNullOrEmpty)
-                {
-                    cachedRequest.SetMethod(methodItem);
-                }
-
-                RedisValue pathItem = hashEntries
-                    .Where(i => i.Name == Path).Select(i => i.Value).FirstOrDefault();
-
-                if (!pathItem.IsNullOrEmpty)
-                {
-                    cachedRequest.SetPath(pathItem);
-                }
-
-                RedisValue queryItem = hashEntries
-                    .Where(i => i.Name == Query).Select(i => i.Value).FirstOrDefault();
-
-                if (!queryItem.IsNullOrEmpty)
-                {
-                    cachedRequest.SetQuery(queryItem);
-                }
-
-                RedisValue statusItem = hashEntries
-                    .Where(i => i.Name == ResultStatus).Select(i => i.Value).FirstOrDefault();
-
-                if (!statusItem.IsNullOrEmpty)
-                {
-                    int statusCode = statusItem.HasValue ? Convert.ToInt32(statusItem, CultureInfo.InvariantCulture) : 0;
-                    cachedRequest.SetStatusCode(statusCode);
-                }
-
-                RedisValue bodyItem = hashEntries
-                    .Where(i => i.Name == ResultBody).Select(i => i.Value).FirstOrDefault();
-
-                if (!bodyItem.IsNullOrEmpty)
-                {
-                    cachedRequest.SetBody(bodyItem);
-                }
-
-                RedisValue headersItem = hashEntries
-                    .Where(i => i.Name == ResultHeaders).Select(i => i.Value).FirstOrDefault();
-
-                if (!headersItem.IsNullOrEmpty)
-                {
-                    Dictionary<string, List<string>> headers = JsonSerializer.Deserialize<Dictionary<string, List<string>>>(headersItem);
-                    cachedRequest.SetHeaders(headers);
-                }
-
-                RedisValue routeNameItem = hashEntries
-                    .Where(i => i.Name == ResultRouteName).Select(i => i.Value).FirstOrDefault();
-
-                if (!routeNameItem.IsNullOrEmpty)
-                {
-                    cachedRequest.SetResultRouteName(routeNameItem);
-                }
-
-                RedisValue routeValuesItem = hashEntries
-                    .Where(i => i.Name == ResultRouteValues).Select(i => i.Value).FirstOrDefault();
-
-                if (!routeValuesItem.IsNullOrEmpty)
-                {
-                    Dictionary<string, string> routeValues = JsonSerializer.Deserialize<Dictionary<string, string>>(routeValuesItem);
-                    cachedRequest.SetResultRouteValues(routeValues);
-                }
-
-                return cachedRequest;
+                return MaterializeApiRequest(key, hashEntries);
             }
             else
             {
@@ -280,6 +207,91 @@ namespace YA.TenantWorker.Infrastructure.Caching
 
             sw.Stop();
             _log.LogInformation("cache.request.idempotency.update.msec {CacheRequestIdempotencyUpdateMsec}", sw.ElapsedMilliseconds);
+        }
+
+        private ApiRequest MaterializeApiRequest(string key, HashEntry[] hashEntries)
+        {
+            string requestId = key.Substring(key.IndexOf(":", StringComparison.InvariantCultureIgnoreCase) + 1);
+
+            if (Guid.TryParse(requestId, out Guid guidRequestId))
+            {
+                ApiRequest cachedRequest = new ApiRequest(guidRequestId);
+
+                RedisValue methodItem = hashEntries
+                    .Where(i => i.Name == Method).Select(i => i.Value).FirstOrDefault();
+
+                if (!methodItem.IsNullOrEmpty)
+                {
+                    cachedRequest.SetMethod(methodItem);
+                }
+
+                RedisValue pathItem = hashEntries
+                    .Where(i => i.Name == Path).Select(i => i.Value).FirstOrDefault();
+
+                if (!pathItem.IsNullOrEmpty)
+                {
+                    cachedRequest.SetPath(pathItem);
+                }
+
+                RedisValue queryItem = hashEntries
+                    .Where(i => i.Name == Query).Select(i => i.Value).FirstOrDefault();
+
+                if (!queryItem.IsNullOrEmpty)
+                {
+                    cachedRequest.SetQuery(queryItem);
+                }
+
+                RedisValue statusItem = hashEntries
+                    .Where(i => i.Name == ResultStatus).Select(i => i.Value).FirstOrDefault();
+
+                if (!statusItem.IsNullOrEmpty)
+                {
+                    int statusCode = statusItem.HasValue ? Convert.ToInt32(statusItem, CultureInfo.InvariantCulture) : 0;
+                    cachedRequest.SetStatusCode(statusCode);
+                }
+
+                RedisValue bodyItem = hashEntries
+                    .Where(i => i.Name == ResultBody).Select(i => i.Value).FirstOrDefault();
+
+                if (!bodyItem.IsNullOrEmpty)
+                {
+                    cachedRequest.SetBody(bodyItem);
+                }
+
+                RedisValue headersItem = hashEntries
+                    .Where(i => i.Name == ResultHeaders).Select(i => i.Value).FirstOrDefault();
+
+                if (!headersItem.IsNullOrEmpty)
+                {
+                    Dictionary<string, List<string>> headers = JsonSerializer.Deserialize<Dictionary<string, List<string>>>(headersItem);
+                    cachedRequest.SetHeaders(headers);
+                }
+
+                RedisValue routeNameItem = hashEntries
+                    .Where(i => i.Name == ResultRouteName).Select(i => i.Value).FirstOrDefault();
+
+                if (!routeNameItem.IsNullOrEmpty)
+                {
+                    cachedRequest.SetResultRouteName(routeNameItem);
+                }
+
+                RedisValue routeValuesItem = hashEntries
+                    .Where(i => i.Name == ResultRouteValues).Select(i => i.Value).FirstOrDefault();
+
+                if (!routeValuesItem.IsNullOrEmpty)
+                {
+                    Dictionary<string, string> routeValues = JsonSerializer.Deserialize<Dictionary<string, string>>(routeValuesItem);
+                    cachedRequest.SetResultRouteValues(routeValues);
+                }
+
+                return cachedRequest;
+            }
+            else
+            {
+                _log.LogError("Error parsing request id value for key {CacheKey}", key);
+
+                return null;
+            }
         }
     }
 }

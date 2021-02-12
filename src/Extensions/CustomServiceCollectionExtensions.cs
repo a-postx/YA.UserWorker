@@ -107,8 +107,8 @@ namespace YA.TenantWorker.Extensions
                     options.ConfigurationOptions = config;
                 });
 
-            services.AddSingleton(sp => ConnectionMultiplexer.Connect(config));
-            services.AddScoped<IApiRequestDistributedCache, ApiRequestDistributedCache>();
+            services.AddSingleton<IConnectionMultiplexer>(sp => ConnectionMultiplexer.Connect(config));
+            services.AddScoped<IApiRequestDistributedCache, ApiRequestRedisCache>();
 
             return services;
         }
@@ -143,6 +143,7 @@ namespace YA.TenantWorker.Extensions
             services.AddSingleton<IValidateOptions<AwsOptions>, AwsOptionsValidator>();
             services.AddSingleton<IValidateOptions<OauthOptions>, OauthOptionsValidator>();
             services.AddSingleton<IValidateOptions<GeneralOptions>, GeneralOptionsValidator>();
+            services.AddSingleton<IValidateOptions<IdempotencyControlOptions>, IdempotencyControlOptionsValidator>();
 
             services.AddSingleton<IValidateOptions<TenantWorkerSecrets>, TenantWorkerSecretsValidator>();
             services.AddSingleton<IValidateOptions<AppSecrets>, AppSecretsValidator>();
@@ -156,7 +157,8 @@ namespace YA.TenantWorker.Extensions
                 .Configure<CacheProfileOptions>(configuration.GetSection(nameof(ApplicationOptions.CacheProfiles)), o => o.BindNonPublicProperties = false)
                 .Configure<KestrelServerOptions>(configuration.GetSection(nameof(ApplicationOptions.Kestrel)), o => o.BindNonPublicProperties = false)
                 .Configure<OauthOptions>(configuration.GetSection(nameof(ApplicationOptions.OAuth)), o => o.BindNonPublicProperties = false)
-                .Configure<GeneralOptions>(configuration.GetSection(nameof(ApplicationOptions.General)), o => o.BindNonPublicProperties = false);
+                .Configure<GeneralOptions>(configuration.GetSection(nameof(ApplicationOptions.General)), o => o.BindNonPublicProperties = false)
+                .Configure<IdempotencyControlOptions>(configuration.GetSection(nameof(ApplicationOptions.IdempotencyControl)), o => o.BindNonPublicProperties = false);
 
             services
                 .Configure<TenantWorkerSecrets>(configuration.GetSection($"{nameof(AppSecrets)}:{nameof(AppSecrets.TenantWorker)}"), o => o.BindNonPublicProperties = false)
@@ -177,6 +179,7 @@ namespace YA.TenantWorker.Extensions
                 ApplicationOptions applicationOptions = services.BuildServiceProvider().GetService<IOptions<ApplicationOptions>>().Value;
                 OauthOptions oauthOptions = services.BuildServiceProvider().GetService<IOptions<OauthOptions>>().Value;
                 GeneralOptions generalOptions = services.BuildServiceProvider().GetService<IOptions<GeneralOptions>>().Value;
+                IdempotencyControlOptions idempotencyOptions = services.BuildServiceProvider().GetService<IOptions<IdempotencyControlOptions>>().Value;
 
                 AppSecrets appSecrets = services.BuildServiceProvider().GetService<IOptions<AppSecrets>>().Value;
                 TenantWorkerSecrets tenantWorkerSecrets = services.BuildServiceProvider().GetService<IOptions<TenantWorkerSecrets>>().Value;
@@ -269,7 +272,7 @@ namespace YA.TenantWorker.Extensions
         /// <summary>
         /// Add and configure Swagger services.
         /// </summary>
-        public static IServiceCollection AddCustomSwagger(this IServiceCollection services, AppSecrets secrets, GeneralOptions generalOptions)
+        public static IServiceCollection AddCustomSwagger(this IServiceCollection services, AppSecrets secrets, IdempotencyControlOptions idempotencyOptions)
         {
             string swaggerAuthenticationSchemeName = "oauth2";
 
@@ -287,7 +290,12 @@ namespace YA.TenantWorker.Extensions
                 options.IncludeXmlCommentsIfExists(assembly);
 
                 options.OperationFilter<ApiVersionOperationFilter>();
-                options.OperationFilter<ClientRequestIdOperationFilter>(generalOptions.ClientRequestIdHeader);
+
+                if (idempotencyOptions.IdempotencyFilterEnabled.HasValue && idempotencyOptions.IdempotencyFilterEnabled.Value)
+                {
+                    options.OperationFilter<ClientRequestIdOperationFilter>(idempotencyOptions.ClientRequestIdHeader);
+                }
+
                 options.OperationFilter<ContentTypeOperationFilter>(true);
                 options.OperationFilter<ClaimsOperationFilter>(swaggerAuthenticationSchemeName);
                 options.OperationFilter<SecurityRequirementsOperationFilter>(true, swaggerAuthenticationSchemeName);

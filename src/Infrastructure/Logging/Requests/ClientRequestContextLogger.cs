@@ -24,7 +24,7 @@ namespace YA.TenantWorker.Infrastructure.Logging.Requests
 
         public async Task InvokeAsync(HttpContext httpContext,
             ILogger<AuthenticationContextLogger> logger,
-            IOptions<GeneralOptions> options)
+            IOptions<IdempotencyControlOptions> options)
         {
             HttpContext context = httpContext ?? throw new ArgumentNullException(nameof(httpContext));
             
