@@ -43,6 +43,7 @@ using YA.TenantWorker.Options.Validators;
 using StackExchange.Redis;
 using YA.TenantWorker.Application.Interfaces;
 using YA.TenantWorker.Infrastructure.Caching;
+using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace YA.TenantWorker.Extensions
 {
@@ -272,105 +273,21 @@ namespace YA.TenantWorker.Extensions
         /// <summary>
         /// Add and configure Swagger services.
         /// </summary>
-        public static IServiceCollection AddCustomSwagger(this IServiceCollection services, AppSecrets secrets, IdempotencyControlOptions idempotencyOptions)
+        public static IServiceCollection AddCustomSwagger(this IServiceCollection services)
         {
-            string swaggerAuthenticationSchemeName = "oauth2";
+            services
+                .AddTransient<IConfigureOptions<SwaggerGenOptions>, ConfigureSwaggerOptions>()
+                .AddSwaggerGen();
 
-            return services.AddSwaggerGen(options =>
-            {
-                Assembly assembly = typeof(Startup).Assembly;
-                string assemblyProduct = assembly.GetCustomAttribute<AssemblyProductAttribute>().Product;
-                string assemblyDescription = assembly.GetCustomAttribute<AssemblyDescriptionAttribute>().Description;
-
-                options.DescribeAllParametersInCamelCase();
-                options.EnableAnnotations();
-                options.AddFluentValidationRules();
-
-                // Add the XML comment file for this assembly, so its contents can be displayed.
-                options.IncludeXmlCommentsIfExists(assembly);
-
-                options.OperationFilter<ApiVersionOperationFilter>();
-
-                if (idempotencyOptions.IdempotencyFilterEnabled.HasValue && idempotencyOptions.IdempotencyFilterEnabled.Value)
-                {
-                    options.OperationFilter<ClientRequestIdOperationFilter>(idempotencyOptions.ClientRequestIdHeader);
-                }
-
-                options.OperationFilter<ContentTypeOperationFilter>(true);
-                options.OperationFilter<ClaimsOperationFilter>(swaggerAuthenticationSchemeName);
-                options.OperationFilter<SecurityRequirementsOperationFilter>(true, swaggerAuthenticationSchemeName);
-
-                options.AddSecurityRequirement(new OpenApiSecurityRequirement {
-                        {
-                            new OpenApiSecurityScheme
-                            {
-                                Reference = new OpenApiReference
-                                {
-                                    Type = ReferenceType.SecurityScheme,
-                                    Id = swaggerAuthenticationSchemeName
-                                }
-                            },
-                            Array.Empty<string>()
-                        }
-                    });
-
-                if (swaggerAuthenticationSchemeName == "oauth2")
-                {
-                    options.AddSecurityDefinition("oauth2", new OpenApiSecurityScheme
-                    {
-                        Type = SecuritySchemeType.OAuth2,
-                        Flows = new OpenApiOAuthFlows()
-                        {
-                            Implicit = new OpenApiOAuthFlow()
-                            {
-                                AuthorizationUrl = new Uri(secrets.OauthImplicitAuthorizationUrl),
-                                TokenUrl = new Uri(secrets.OauthImplicitTokenUrl),
-                                Scopes = new Dictionary<string, string>()
-                            }
-                        }
-                    });
-                }
-
-                if (swaggerAuthenticationSchemeName == "Bearer")
-                {
-                    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
-                    {
-                        In = ParameterLocation.Header,
-                        Description = "Заголовок JWT \"Authorization\" используя схему Bearer. Пример: \"Bearer {token}\"",
-                        Name = "Authorization",
-                        Type = SecuritySchemeType.ApiKey,
-                        Scheme = "bearer",
-                        BearerFormat = "JWT"
-                    });
-                }
-
-                // Show an example model for JsonPatchDocument<T>.
-                options.SchemaFilter<JsonPatchDocumentSchemaFilter>();
-
-                IApiVersionDescriptionProvider provider = services.BuildServiceProvider().GetRequiredService<IApiVersionDescriptionProvider>();
-
-                foreach (ApiVersionDescription apiVersionDescription in provider.ApiVersionDescriptions)
-                {
-                    OpenApiInfo info = new OpenApiInfo()
-                    {
-                        Title = assemblyProduct,
-                        Description = apiVersionDescription.IsDeprecated
-                            ? $"{assemblyDescription} This API version has been deprecated."
-                            : assemblyDescription,
-                        Version = apiVersionDescription.ApiVersion.ToString()
-                    };
-                    options.SwaggerDoc(apiVersionDescription.GroupName, info);
-                }
-            });
+            return services;
         }
 
         /// <summary>
-        /// Добавляет кастомизированную базу данных.
+        /// Добавляет основную базу данных приложения.
         /// </summary>
         public static IServiceCollection AddCustomDatabase(this IServiceCollection services, AppSecrets secrets, IWebHostEnvironment webHostEnvironment)
         {
             services
-                .AddEntityFrameworkSqlServer()
                 .AddDbContext<TenantWorkerDbContext>(options =>
                     options.UseSqlServer(secrets.TenantWorker.ConnectionString, sqlOptions =>
                         sqlOptions.EnableRetryOnFailure().CommandTimeout(Timeouts.SqlCommandTimeoutSec))

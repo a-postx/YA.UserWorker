@@ -88,7 +88,7 @@ namespace YA.TenantWorker
                 .AddResponseCaching()
                 .AddCustomResponseCompression(_config)
                 .AddCustomHealthChecks(secrets)
-                .AddCustomSwagger(secrets, idempotencyOptions)
+                .AddCustomSwagger()
                 .AddHttpContextAccessor()
 
                 .AddSingleton<IActionContextAccessor, ActionContextAccessor>()
