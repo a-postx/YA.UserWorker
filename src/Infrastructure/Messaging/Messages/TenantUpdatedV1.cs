@@ -1,8 +1,8 @@
 ﻿using MbEvents;
 using System;
-using YA.TenantWorker.Application.Models.Dto;
+using YA.UserWorker.Application.Models.Dto;
 
-namespace YA.TenantWorker.Infrastructure.Messaging.Messages
+namespace YA.UserWorker.Infrastructure.Messaging.Messages
 {
     internal class TenantUpdatedV1 : ITenantUpdatedV1
     {

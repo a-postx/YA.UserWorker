@@ -1,9 +1,9 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Caching.Memory;
-using YA.TenantWorker.Application.Interfaces;
+using YA.UserWorker.Application.Interfaces;
 
-namespace YA.TenantWorker.Infrastructure.Caching
+namespace YA.UserWorker.Infrastructure.Caching
 {
     /// <summary>
     /// Кэш входящих запросов и результатов в памяти

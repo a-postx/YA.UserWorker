@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace YA.TenantWorker.Options
+namespace YA.UserWorker.Options
 {
     /// <summary>
     /// The dynamic response compression options for the application.

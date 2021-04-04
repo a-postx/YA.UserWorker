@@ -5,7 +5,7 @@ using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
-namespace YA.TenantWorker.OperationFilters
+namespace YA.UserWorker.OperationFilters
 {
     /// <summary>
     /// Добавляет фильтр для документирования параметра предполагаемой версии АПИ.

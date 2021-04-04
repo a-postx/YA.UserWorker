@@ -1,4 +1,4 @@
-namespace YA.TenantWorker.Application.Enums
+namespace YA.UserWorker.Application.Enums
 {
     public enum CommandStatus
     {
@@ -10,6 +10,7 @@ namespace YA.TenantWorker.Application.Enums
         ModelInvalid = 5,
         UnprocessableEntity = 6,
         ConcurrencyIssue = 7,
-        EntityAlreadyExist = 8
+        EntityAlreadyExist = 8,
+        Forbidden = 9
     }
 }

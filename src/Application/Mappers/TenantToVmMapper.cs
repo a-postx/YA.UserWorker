@@ -1,16 +1,19 @@
 using System;
-using YA.TenantWorker.Constants;
-using YA.TenantWorker.Core.Entities;
-using YA.TenantWorker.Application.Models.ViewModels;
+using System.Collections.Generic;
+using AutoMapper;
 using Delobytes.Mapper;
-using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
-using Microsoft.Extensions.Primitives;
-using AutoMapper;
+using Microsoft.Extensions.Logging;
+using YA.UserWorker.Application.Models.ViewModels;
+using YA.UserWorker.Constants;
+using YA.UserWorker.Core.Entities;
 
-namespace YA.TenantWorker.Application.Mappers
+namespace YA.UserWorker.Application.Mappers
 {
+    /// <summary>
+    /// Ручной мапер сущностей, от автомапных отличается тем, что может проставлять УРЛ.
+    /// </summary>
     public class TenantToVmMapper : IMapper<Tenant, TenantVm>
     {
         public TenantToVmMapper(ILogger<TenantToVmMapper> logger,
@@ -44,13 +47,25 @@ namespace YA.TenantWorker.Application.Mappers
             Guid tenantId = source.TenantID;
 
             destination.TenantId = source.TenantID;
-            destination.PricingTierActivatedUntil = source.PricingTierActivatedUntilDateTime;
-            destination.CreatedDateTime = source.CreatedDateTime;
-            destination.LastModifiedDateTime = source.LastModifiedDateTime;
+            destination.Name = source.Name;
+            destination.PricingTierId = source.PricingTierId;
+            destination.PricingTierActivatedDateTime = source.PricingTierActivatedDateTime;
+            destination.PricingTierActivatedUntilDateTime = source.PricingTierActivatedUntilDateTime;
 
             if (source.PricingTier != null)
             {
                 destination.PricingTier = _mapper.Map<PricingTierVm>(source.PricingTier);
+            }
+
+            if (source.Memberships?.Count > 0)
+            {
+                destination.Memberships = new List<MembershipVm>();
+
+                foreach (Membership item in source.Memberships)
+                {
+                    MembershipVm membership = _mapper.Map<MembershipVm>(item);
+                    destination.Memberships.Add(membership);
+                }
             }
 
             RouteData routeData = _httpContextAccessor.HttpContext.GetRouteData();
@@ -69,22 +84,6 @@ namespace YA.TenantWorker.Application.Mappers
             {
                 destination.Url = new Uri(_linkGenerator.GetUriByAction(_httpContextAccessor.HttpContext));
             }
-            
-            ////var hhh = _linkGenerator.GetUriByName(_httpContextAccessor.HttpContext, RouteNames.GetTenant, new { tenantId });
-            ////bool gotGwHost = _httpContextAccessor.HttpContext.Request.Headers.TryGetValue("Gateway-Base-Url", out StringValues baseUrl);
-            ////if (gotGwHost)
-            ////{
-            ////    string[] gwHostValues = baseUrl.ToString().Split(':');
-            ////    string gwScheme = gwHostValues[0];
-            ////    string gwHost = gwHostValues[1].Replace("//", "");
-            ////    int gwPort = int.Parse(gwHostValues[2]);
-            ////    _httpContextAccessor.HttpContext.Request.Host = new HostString(gwHost, gwPort);
-            ////    destination.Url = _linkGenerator.GetUriByPage(_httpContextAccessor.HttpContext);
-            ////}
-            ////else
-            ////{
-            ////    destination.Url = _linkGenerator.GetUriByPage(_httpContextAccessor.HttpContext);
-            ////}
         }
     }
 }

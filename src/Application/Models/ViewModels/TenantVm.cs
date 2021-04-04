@@ -1,6 +1,7 @@
 using System;
+using System.Collections.Generic;
 
-namespace YA.TenantWorker.Application.Models.ViewModels
+namespace YA.UserWorker.Application.Models.ViewModels
 {
     /// <summary>
     /// Tenant view model.
@@ -11,6 +12,11 @@ namespace YA.TenantWorker.Application.Models.ViewModels
         /// Tenant unique identifier.
         /// </summary>
         public Guid TenantId { get; set; }
+        
+        /// <summary>
+        /// Tenant name.
+        /// </summary>
+        public string Name { get; set; }
 
         /// <summary>
         /// URL used to retrieve the resource conforming to REST'ful JSON http://restfuljson.org/.
@@ -18,23 +24,28 @@ namespace YA.TenantWorker.Application.Models.ViewModels
         public Uri Url { get; set; }
 
         /// <summary>
-        /// Current pricing tier
+        /// Current pricing tier identifier.
+        /// </summary>
+        public Guid PricingTierId { get; set; }
+
+        /// <summary>
+        /// Current pricing tier.
         /// </summary>
         public PricingTierVm PricingTier { get; set; }
 
         /// <summary>
-        /// Date the pricing tier is valid for
+        /// Date of pricing tier activation.
         /// </summary>
-        public DateTime PricingTierActivatedUntil { get; set; }
+        public DateTime PricingTierActivatedDateTime { get; set; }
 
         /// <summary>
-        /// Дата создания объекта.
+        /// Date the pricing tier is valid for.
         /// </summary>
-        public DateTime CreatedDateTime { get; set; }
+        public DateTime PricingTierActivatedUntilDateTime { get; set; }
 
         /// <summary>
-        /// Дата последней модификации объекта.
+        /// Членства пользователей в арендаторе.
         /// </summary>
-        public DateTime LastModifiedDateTime { get; set; }
+        public virtual ICollection<MembershipVm> Memberships { get; set; }
     }
 }

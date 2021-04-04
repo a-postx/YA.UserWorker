@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace YA.TenantWorker.Application.Models.ViewModels
+namespace YA.UserWorker.Application.Models.ViewModels
 {
     /// <summary>
     /// Постраничный результат вывода элементов общего типа.

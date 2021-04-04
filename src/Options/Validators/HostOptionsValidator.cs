@@ -3,7 +3,7 @@ using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 
-namespace YA.TenantWorker.Options.Validators
+namespace YA.UserWorker.Options.Validators
 {
     public class HostOptionsValidator : IValidateOptions<HostOptions>
     {

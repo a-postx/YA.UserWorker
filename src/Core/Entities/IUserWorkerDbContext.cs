@@ -4,9 +4,9 @@ using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace YA.TenantWorker.Core.Entities
+namespace YA.UserWorker.Core.Entities
 {
-    public interface ITenantWorkerDbContext
+    public interface IUserWorkerDbContext
     {
         Task CreateEntityAsync<T>(T item, CancellationToken cancellationToken) where T : class, ITenantEntity;
         Task<T> GetEntityWithTenantAsync<T>(Expression<Func<T, bool>> predicate, CancellationToken cancellationToken) where T : class, ITenantEntity;
@@ -21,11 +21,23 @@ namespace YA.TenantWorker.Core.Entities
         Task<int> GetEntitiesCountAsync<T>(CancellationToken cancellationToken) where T : class;
 
         Task CreateTenantAsync(Tenant item, CancellationToken cancellationToken);
-        Task<Tenant> GetTenantAsync(CancellationToken cancellationToken);
+        Task<Tenant> GetTenantAsync(Guid tenantId, CancellationToken cancellationToken);
         Task<Tenant> GetTenantAsync(Expression<Func<Tenant, bool>> predicate, CancellationToken cancellationToken);
-        Task<Tenant> GetTenantWithPricingTierAsync(CancellationToken cancellationToken);
+        Task<Tenant> GetTenantWithPricingTierAsync(Guid tenantId, CancellationToken cancellationToken);
         void UpdateTenant(Tenant item);
         void DeleteTenant(Tenant item);
+
+        Task CreateUserAsync(User item, CancellationToken cancellationToken);
+        Task<User> GetUserAsync(Guid userId, CancellationToken cancellationToken);
+        Task<User> GetUserAsync(string authProvider, string externalId, CancellationToken cancellationToken);
+        Task<User> GetUserWithMembershipsAsync(Guid userId, CancellationToken cancellationToken);
+        Task<User> GetUserWithMembershipsAsync(string authProvider, string externalId, CancellationToken cancellationToken);
+        void UpdateUser(User item);
+        void DeleteUser(User item);
+
+        Task CreateMembershipAsync(Membership item, CancellationToken cancellationToken);
+
+        Task CreateClientInfoAsync(YaClientInfo item, CancellationToken cancellationToken);
 
         int ApplyChanges();
         Task<int> ApplyChangesAsync(CancellationToken cancellationToken);

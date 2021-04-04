@@ -2,7 +2,7 @@
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using System.Linq;
 
-namespace YA.TenantWorker.Extensions
+namespace YA.UserWorker.Extensions
 {
     public static class EntityEntryExtensions
     {

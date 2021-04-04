@@ -1,6 +1,6 @@
-﻿using System;
+using System;
 
-namespace YA.TenantWorker.Application.Models.ViewModels
+namespace YA.UserWorker.Application.Models.ViewModels
 {
     /// <summary>
     /// Тарифный план, обзорная модель.
@@ -16,10 +16,5 @@ namespace YA.TenantWorker.Application.Models.ViewModels
         /// Название тарифного плана.
         /// </summary>
         public string Title { get; set; }
-
-        /// <summary>
-        /// Максимальное число сообществ ВКонтакте.
-        /// </summary>
-        public int MaxVkCommunities { get; set; }
     }
 }

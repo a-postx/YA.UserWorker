@@ -5,7 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 
-namespace YA.TenantWorker.Infrastructure.Health.System
+namespace YA.UserWorker.Infrastructure.Health.System
 {
     /// <summary>
     /// Checks uptime value of the application.

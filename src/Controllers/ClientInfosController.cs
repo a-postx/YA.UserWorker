@@ -6,13 +6,13 @@ using Microsoft.Net.Http.Headers;
 using Swashbuckle.AspNetCore.Annotations;
 using System.Threading;
 using System.Threading.Tasks;
-using YA.TenantWorker.Application.Middlewares.ResourceFilters;
-using YA.TenantWorker.Application.ActionHandlers.ClientInfos;
-using YA.TenantWorker.Application.Models.SaveModels;
-using YA.TenantWorker.Application.Models.ViewModels;
-using YA.TenantWorker.Constants;
+using YA.UserWorker.Application.Middlewares.ResourceFilters;
+using YA.UserWorker.Application.ActionHandlers.ClientInfos;
+using YA.UserWorker.Application.Models.SaveModels;
+using YA.UserWorker.Application.Models.ViewModels;
+using YA.UserWorker.Constants;
 
-namespace YA.TenantWorker.Controllers
+namespace YA.UserWorker.Controllers
 {
     /// <summary>
     /// Обрабатывает запросы с объектами информации о клиенте.

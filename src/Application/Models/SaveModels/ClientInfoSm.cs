@@ -1,4 +1,4 @@
-namespace YA.TenantWorker.Application.Models.SaveModels
+namespace YA.UserWorker.Application.Models.SaveModels
 {
     /// <summary>
     /// Информация о клиенте, модель сохранения

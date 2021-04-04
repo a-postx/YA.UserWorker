@@ -8,7 +8,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Swashbuckle.AspNetCore.Annotations;
 
-namespace YA.TenantWorker.Infrastructure.Health
+namespace YA.UserWorker.Infrastructure.Health
 {
     /// <summary>
     /// JSON-форматировщик для ответов здоровья.

@@ -2,18 +2,18 @@
 using System.Threading.Tasks;
 using MassTransit;
 
-namespace YA.TenantWorker.Infrastructure.Messaging.Test
+namespace YA.UserWorker.Infrastructure.Messaging.Test
 {
-    public class TestRequestConsumer : IConsumer<ITenantWorkerTestRequestV1>
+    public class TestRequestConsumer : IConsumer<IUserWorkerTestRequestV1>
     {
         public TestRequestConsumer()
         {
 
         }
 
-        public async Task Consume(ConsumeContext<ITenantWorkerTestRequestV1> context)
+        public async Task Consume(ConsumeContext<IUserWorkerTestRequestV1> context)
         {
-            await context.RespondAsync<ITenantWorkerTestResponseV1>(new
+            await context.RespondAsync<IUserWorkerTestResponseV1>(new
             {
                 GotIt = context.Message.Timestamp
             });

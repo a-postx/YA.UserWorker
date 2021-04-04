@@ -2,7 +2,7 @@
 using System;
 using System.Threading.Tasks;
 
-namespace YA.TenantWorker.Infrastructure.Caching
+namespace YA.UserWorker.Infrastructure.Caching
 {
     public class YaMemoryCache : IDisposable
     {

@@ -1,7 +1,7 @@
 ﻿using FluentValidation.Results;
-using YA.TenantWorker.Application.Enums;
+using YA.UserWorker.Application.Enums;
 
-namespace YA.TenantWorker.Application.Interfaces
+namespace YA.UserWorker.Application.Interfaces
 {
     public interface ICommandResult<TResult>
     {

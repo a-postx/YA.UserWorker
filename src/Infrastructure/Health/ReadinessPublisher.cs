@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 
-namespace YA.TenantWorker.Infrastructure.Health
+namespace YA.UserWorker.Infrastructure.Health
 {
     /// <summary>
     /// Публикатор для регулярной засылки проверок здоровья в пуш-системы.

@@ -1,7 +1,7 @@
 ﻿using GreenPipes;
 using System.Collections.Generic;
 
-namespace YA.TenantWorker.Infrastructure.Messaging.Filters
+namespace YA.UserWorker.Infrastructure.Messaging.Filters
 {
     public class MbMessageContextFilterPipeSpecification<T> : IPipeSpecification<T> where T : class, PipeContext
     {

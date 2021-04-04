@@ -1,11 +1,11 @@
 using Microsoft.Extensions.Options;
 using System.Collections.Generic;
 
-namespace YA.TenantWorker.Options.Validators
+namespace YA.UserWorker.Options.Validators
 {
-    public class TenantWorkerSecretsValidator : IValidateOptions<TenantWorkerSecrets>
+    public class UserWorkerSecretsValidator : IValidateOptions<UserWorkerSecrets>
     {
-        public ValidateOptionsResult Validate(string name, TenantWorkerSecrets options)
+        public ValidateOptionsResult Validate(string name, UserWorkerSecrets options)
         {
             List<string> failures = new List<string>();
 

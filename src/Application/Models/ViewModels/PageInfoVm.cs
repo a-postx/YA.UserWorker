@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace YA.TenantWorker.Application.Models.ViewModels
+namespace YA.UserWorker.Application.Models.ViewModels
 {
     public class PageInfoVm
     {

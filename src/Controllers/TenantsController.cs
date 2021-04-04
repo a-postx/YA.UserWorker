@@ -6,16 +6,16 @@ using Swashbuckle.AspNetCore.Annotations;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using YA.TenantWorker.Application.Middlewares.ResourceFilters;
-using YA.TenantWorker.Application.Models.SaveModels;
-using YA.TenantWorker.Application.Models.ViewModels;
-using YA.TenantWorker.Constants;
+using YA.UserWorker.Application.Middlewares.ResourceFilters;
+using YA.UserWorker.Application.Models.SaveModels;
+using YA.UserWorker.Application.Models.ViewModels;
+using YA.UserWorker.Constants;
 using Microsoft.AspNetCore.Authorization;
 using Delobytes.AspNetCore.Filters;
-using YA.TenantWorker.Application.ActionHandlers.Tenants;
-using YA.TenantWorker.Application.Models.HttpQueryParams;
+using YA.UserWorker.Application.ActionHandlers.Tenants;
+using YA.UserWorker.Application.Models.HttpQueryParams;
 
-namespace YA.TenantWorker.Controllers
+namespace YA.UserWorker.Controllers
 {
     /// <summary>
     /// Обрабатывает запросы при работе с арендаторами.
@@ -157,29 +157,6 @@ namespace YA.TenantWorker.Controllers
         }
 
         /// <summary>
-        /// Создать арендатора для текущего пользователя.
-        /// </summary>
-        /// <param name="handler">Обработчик.</param>
-        /// <param name="cancellationToken">Токен отмены.</param>
-        /// <returns>Ответ 200 ОК содержащий ИД арендатора,
-        /// 400 Недопустимый Запрос если запрос неправильно оформлен,
-        /// 409 Конфликт если запрос является дубликатом
-        /// или 422 Неперевариваемая Сущность если такой арендатор уже существует.</returns>
-        [HttpPost("", Name = RouteNames.PostTenant)]
-        [SwaggerResponse(StatusCodes.Status201Created, "Модель созданного арендатора.", typeof(TenantVm))]
-        [SwaggerResponse(StatusCodes.Status400BadRequest, "Недопустимый запрос.", typeof(ProblemDetails))]
-        [SwaggerResponse(StatusCodes.Status406NotAcceptable, "Недопустимый тип MIME в заголовке Accept.", typeof(ProblemDetails))]
-        [SwaggerResponse(StatusCodes.Status409Conflict, "Запрос-дубликат.", typeof(ProblemDetails))]        
-        [SwaggerResponse(StatusCodes.Status415UnsupportedMediaType, "Тип MIME в заголовке Content-Type не поддерживается.", typeof(ProblemDetails))]
-        [SwaggerResponse(StatusCodes.Status422UnprocessableEntity, "Арендатор не может быть создан, поскольку уже существует.", typeof(ProblemDetails))]
-        public Task<IActionResult> PostTenantAsync(
-            [FromServices] IPostTenantAh handler,
-            CancellationToken cancellationToken)
-        {
-            return handler.ExecuteAsync(cancellationToken);
-        }
-
-        /// <summary>
         /// Обновить текущего арендатора.
         /// </summary>
         /// <param name="handler">Обработчик.</param>
@@ -230,25 +207,6 @@ namespace YA.TenantWorker.Controllers
             CancellationToken cancellationToken)
         {
             return handler.ExecuteAsync(tenantId, patch, cancellationToken);
-        }
-
-        /// <summary>
-        /// Удалить текущего арендатора.
-        /// </summary>
-        /// <param name="handler">Обработчик.</param>
-        /// <param name="cancellationToken">Токен отмены.</param>
-        /// <returns>Ответ 204 Без Содержимого если арендатор был удалён
-        /// 404 Не Найден если текущий арендатор не был найден
-        /// или 409 Конфликт если запрос является дубликатом.</returns>
-        [HttpDelete("", Name = RouteNames.DeleteTenant)]
-        [SwaggerResponse(StatusCodes.Status204NoContent, "Арендатор был удалён.")]
-        [SwaggerResponse(StatusCodes.Status404NotFound, "Арендатор не найден.")]
-        [SwaggerResponse(StatusCodes.Status409Conflict, "Запрос-дубликат.", typeof(ProblemDetails))]
-        public Task<IActionResult> DeleteTenantAsync(
-            [FromServices] IDeleteTenantAh handler,
-            CancellationToken cancellationToken)
-        {
-            return handler.ExecuteAsync(cancellationToken);
         }
 
         /// <summary>

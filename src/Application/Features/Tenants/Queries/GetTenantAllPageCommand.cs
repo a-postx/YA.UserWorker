@@ -5,13 +5,13 @@ using System.Threading.Tasks;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using YA.TenantWorker.Application.Enums;
-using YA.TenantWorker.Application.Interfaces;
-using YA.TenantWorker.Core;
-using YA.TenantWorker.Core.Entities;
-using YA.TenantWorker.Options;
+using YA.UserWorker.Application.Enums;
+using YA.UserWorker.Application.Interfaces;
+using YA.UserWorker.Core;
+using YA.UserWorker.Core.Entities;
+using YA.UserWorker.Options;
 
-namespace YA.TenantWorker.Application.Features.Tenants.Queries
+namespace YA.UserWorker.Application.Features.Tenants.Queries
 {
     public class GetTenantAllPageCommand : IRequest<ICommandResult<CursorPaginatedResult<Tenant>>>
     {
@@ -31,7 +31,7 @@ namespace YA.TenantWorker.Application.Features.Tenants.Queries
         public class GetTenantAllPageHandler : IRequestHandler<GetTenantAllPageCommand, ICommandResult<CursorPaginatedResult<Tenant>>>
         {
             public GetTenantAllPageHandler(ILogger<GetTenantAllPageHandler> logger,
-                ITenantWorkerDbContext dbContext,
+                IUserWorkerDbContext dbContext,
                 IOptions<GeneralOptions> options)
             {
                 _log = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -40,7 +40,7 @@ namespace YA.TenantWorker.Application.Features.Tenants.Queries
             }
 
             private readonly ILogger<GetTenantAllPageHandler> _log;
-            private readonly ITenantWorkerDbContext _dbContext;
+            private readonly IUserWorkerDbContext _dbContext;
             private readonly GeneralOptions _generalOptions;
 
             public async Task<ICommandResult<CursorPaginatedResult<Tenant>>> Handle(GetTenantAllPageCommand command, CancellationToken cancellationToken)

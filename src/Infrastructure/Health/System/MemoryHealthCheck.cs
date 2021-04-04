@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Options;
 
-namespace YA.TenantWorker.Infrastructure.Health.System
+namespace YA.UserWorker.Infrastructure.Health.System
 {
     /// <summary>
     /// Checks memory-related values of the application.

@@ -1,7 +1,7 @@
 using Delobytes.AspNetCore;
-using YA.TenantWorker.Application.Models.HttpQueryParams;
+using YA.UserWorker.Application.Models.HttpQueryParams;
 
-namespace YA.TenantWorker.Application.ActionHandlers.Tenants
+namespace YA.UserWorker.Application.ActionHandlers.Tenants
 {
     public interface IGetTenantAllPageAh : IAsyncCommand<PageOptionsCursor>
     {

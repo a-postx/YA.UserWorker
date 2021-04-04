@@ -1,31 +1,40 @@
-﻿using MediatR;
-using Microsoft.Extensions.Logging;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using YA.TenantWorker.Application.Enums;
-using YA.TenantWorker.Application.Interfaces;
-using YA.TenantWorker.Core.Entities;
+using MediatR;
+using Microsoft.Extensions.Logging;
+using YA.UserWorker.Application.Enums;
+using YA.UserWorker.Application.Interfaces;
+using YA.UserWorker.Core.Entities;
 
-namespace YA.TenantWorker.Application.Features.Tenants.Queries
+namespace YA.UserWorker.Application.Features.Tenants.Queries
 {
     public class GetTenantCommand : IRequest<ICommandResult<Tenant>>
     {
+        public GetTenantCommand(Guid tenantId)
+        {
+            TenantId = tenantId;
+        }
+
+        public Guid TenantId { get; protected set; }
+
         public class GetTenantHandler : IRequestHandler<GetTenantCommand, ICommandResult<Tenant>>
         {
             public GetTenantHandler(ILogger<GetTenantHandler> logger,
-                ITenantWorkerDbContext dbContext)
+                IUserWorkerDbContext dbContext)
             {
                 _log = logger ?? throw new ArgumentNullException(nameof(logger));
                 _dbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
             }
 
             private readonly ILogger<GetTenantHandler> _log;
-            private readonly ITenantWorkerDbContext _dbContext;
+            private readonly IUserWorkerDbContext _dbContext;
 
             public async Task<ICommandResult<Tenant>> Handle(GetTenantCommand command, CancellationToken cancellationToken)
             {
-                Tenant tenant = await _dbContext.GetTenantWithPricingTierAsync(cancellationToken);
+                Guid tenantId = command.TenantId;
+
+                Tenant tenant = await _dbContext.GetTenantWithPricingTierAsync(tenantId, cancellationToken);
 
                 if (tenant == null)
                 {

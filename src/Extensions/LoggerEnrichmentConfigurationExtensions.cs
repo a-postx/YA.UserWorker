@@ -1,9 +1,9 @@
 using System;
 using Serilog;
 using Serilog.Configuration;
-using YA.TenantWorker.Infrastructure.Logging.Enrichers;
+using YA.UserWorker.Infrastructure.Logging.Enrichers;
 
-namespace YA.TenantWorker.Extensions
+namespace YA.UserWorker.Extensions
 {
     /// <summary>
     /// Provides various extension methods for configuring Serilog.

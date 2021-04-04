@@ -2,7 +2,6 @@ using System;
 using System.Reflection;
 using System.Text;
 using Amazon.Extensions.NETCore.Setup;
-using AutoMapper;
 using CorrelationId;
 using MassTransit;
 using MediatR;
@@ -20,16 +19,16 @@ using Microsoft.IdentityModel.Protocols;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Prometheus;
 using YA.Common.Constants;
-using YA.TenantWorker.Application.Interfaces;
-using YA.TenantWorker.Application.Middlewares.ResourceFilters;
-using YA.TenantWorker.Extensions;
-using YA.TenantWorker.Infrastructure.Health;
-using YA.TenantWorker.Infrastructure.Authentication;
-using YA.TenantWorker.Infrastructure.Caching;
-using YA.TenantWorker.Options;
+using YA.UserWorker.Application.Interfaces;
+using YA.UserWorker.Application.Middlewares.ResourceFilters;
+using YA.UserWorker.Extensions;
+using YA.UserWorker.Infrastructure.Health;
+using YA.UserWorker.Infrastructure.Authentication;
+using YA.UserWorker.Infrastructure.Caching;
+using YA.UserWorker.Options;
 //using Elastic.Apm.NetCoreAll;
 
-namespace YA.TenantWorker
+namespace YA.UserWorker
 {
     /// <summary>
     /// The main start-up class for the application.

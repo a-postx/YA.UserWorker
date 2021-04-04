@@ -1,19 +1,19 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-using YA.TenantWorker.Application.Interfaces;
+using YA.UserWorker.Application.Interfaces;
 
-namespace YA.TenantWorker.Infrastructure.Data
+namespace YA.UserWorker.Infrastructure.Data
 {
     public class DbQueryRunner : IDbQueryRunner
     {
-        public DbQueryRunner(TenantWorkerDbContext context)
+        public DbQueryRunner(UserWorkerDbContext context)
         {
             _context = context ?? throw new ArgumentNullException(nameof(context));
         }
 
         private bool _disposed;
-        private readonly TenantWorkerDbContext _context;
+        private readonly UserWorkerDbContext _context;
 
         public Task RunQueryAsync(string query, params object[] parameters)
         {

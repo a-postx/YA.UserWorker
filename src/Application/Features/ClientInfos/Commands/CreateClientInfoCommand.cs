@@ -4,12 +4,12 @@ using System.Threading.Tasks;
 using AutoMapper;
 using MediatR;
 using Microsoft.Extensions.Logging;
-using YA.TenantWorker.Application.Enums;
-using YA.TenantWorker.Application.Interfaces;
-using YA.TenantWorker.Application.Models.Dto;
-using YA.TenantWorker.Core.Entities;
+using YA.UserWorker.Application.Enums;
+using YA.UserWorker.Application.Interfaces;
+using YA.UserWorker.Application.Models.Dto;
+using YA.UserWorker.Core.Entities;
 
-namespace YA.TenantWorker.Application.Features.ClientInfos.Commands
+namespace YA.UserWorker.Application.Features.ClientInfos.Commands
 {
     public class CreateClientInfoCommand : IRequest<ICommandResult<EmptyCommandResult>>
     {
@@ -24,7 +24,7 @@ namespace YA.TenantWorker.Application.Features.ClientInfos.Commands
         {
             public CreateClientInfoHandler(ILogger<CreateClientInfoHandler> logger,
                 IMapper mapper,
-                ITenantWorkerDbContext dbContext)
+                IUserWorkerDbContext dbContext)
             {
                 _log = logger ?? throw new ArgumentNullException(nameof(logger));
                 _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
@@ -33,7 +33,7 @@ namespace YA.TenantWorker.Application.Features.ClientInfos.Commands
 
             private readonly ILogger<CreateClientInfoHandler> _log;
             private readonly IMapper _mapper;
-            private readonly ITenantWorkerDbContext _dbContext;
+            private readonly IUserWorkerDbContext _dbContext;
 
             public async Task<ICommandResult<EmptyCommandResult>> Handle(CreateClientInfoCommand command, CancellationToken cancellationToken)
             {
@@ -41,7 +41,7 @@ namespace YA.TenantWorker.Application.Features.ClientInfos.Commands
 
                 YaClientInfo yaClientInfo = _mapper.Map<YaClientInfo>(clientInfo);
 
-                await _dbContext.CreateEntityAsync(yaClientInfo, cancellationToken);
+                await _dbContext.CreateClientInfoAsync(yaClientInfo, cancellationToken);
                 await _dbContext.ApplyChangesAsync(cancellationToken);
 
                 return new CommandResult<EmptyCommandResult>(CommandStatus.Ok, null);

@@ -1,8 +1,8 @@
 using System.Collections.Generic;
-using YA.TenantWorker.Application.Models.HttpQueryParams;
-using YA.TenantWorker.Application.Models.ViewModels;
+using YA.UserWorker.Application.Models.HttpQueryParams;
+using YA.UserWorker.Application.Models.ViewModels;
 
-namespace YA.TenantWorker.Application.Interfaces
+namespace YA.UserWorker.Application.Interfaces
 {
     public interface IPaginatedResultFactory
     {

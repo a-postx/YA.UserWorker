@@ -7,11 +7,11 @@ using MassTransit.Audit;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using YA.Common.Constants;
-using YA.TenantWorker.Application.Enums;
-using YA.TenantWorker.Extensions;
-using YA.TenantWorker.Options;
+using YA.UserWorker.Application.Enums;
+using YA.UserWorker.Extensions;
+using YA.UserWorker.Options;
 
-namespace YA.TenantWorker.Infrastructure.Messaging
+namespace YA.UserWorker.Infrastructure.Messaging
 {
     /// <summary>
     /// Хранилище данных аудита сообщений шины данных, использующее простое логирование

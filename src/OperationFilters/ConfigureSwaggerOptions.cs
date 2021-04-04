@@ -10,9 +10,9 @@ using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.Swagger;
 using Swashbuckle.AspNetCore.SwaggerGen;
-using YA.TenantWorker.Options;
+using YA.UserWorker.Options;
 
-namespace YA.TenantWorker.OperationFilters
+namespace YA.UserWorker.OperationFilters
 {
     public class ConfigureSwaggerOptions : IConfigureOptions<SwaggerGenOptions>
     {

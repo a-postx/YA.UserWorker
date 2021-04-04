@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using Microsoft.Extensions.Options;
 
-namespace YA.TenantWorker.Options.Validators
+namespace YA.UserWorker.Options.Validators
 {
     public class IdempotencyControlOptionsValidator : IValidateOptions<IdempotencyControlOptions>
     {

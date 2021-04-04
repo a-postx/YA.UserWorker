@@ -1,3 +1,8 @@
+using System;
+using System.Globalization;
+using System.Threading;
+using System.Threading.Tasks;
+using Delobytes.Mapper;
 using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -5,41 +10,41 @@ using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
-using System;
-using System.Globalization;
-using System.Threading;
-using System.Threading.Tasks;
-using YA.TenantWorker.Application.Features.Tenants.Queries;
-using YA.TenantWorker.Application.Enums;
-using YA.TenantWorker.Application.Interfaces;
-using YA.TenantWorker.Application.Models.ViewModels;
-using YA.TenantWorker.Core.Entities;
-using Delobytes.Mapper;
+using YA.UserWorker.Application.Enums;
+using YA.UserWorker.Application.Features.Tenants.Queries;
+using YA.UserWorker.Application.Interfaces;
+using YA.UserWorker.Application.Models.ViewModels;
+using YA.UserWorker.Core.Entities;
 
-namespace YA.TenantWorker.Application.ActionHandlers.Tenants
+namespace YA.UserWorker.Application.ActionHandlers.Tenants
 {
     public class GetTenantAh : IGetTenantAh
     {
         public GetTenantAh(ILogger<GetTenantAh> logger,
             IActionContextAccessor actionCtx,
+            IRuntimeContextAccessor runtimeContext,
             IMediator mediator,
             IMapper<Tenant, TenantVm> tenantVmMapper)
         {
             _log = logger ?? throw new ArgumentNullException(nameof(logger));
             _actionCtx = actionCtx ?? throw new ArgumentNullException(nameof(actionCtx));
+            _runtimeCtx = runtimeContext ?? throw new ArgumentNullException(nameof(runtimeContext));
             _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
             _tenantVmMapper = tenantVmMapper ?? throw new ArgumentNullException(nameof(tenantVmMapper));
         }
 
         private readonly ILogger<GetTenantAh> _log;
         private readonly IActionContextAccessor _actionCtx;
+        private readonly IRuntimeContextAccessor _runtimeCtx;
         private readonly IMediator _mediator;
         private readonly IMapper<Tenant, TenantVm> _tenantVmMapper;
 
         public async Task<IActionResult> ExecuteAsync(CancellationToken cancellationToken)
         {
+            Guid tenantId = _runtimeCtx.GetTenantId();
+
             ICommandResult<Tenant> result = await _mediator
-                .Send(new GetTenantCommand(), cancellationToken);
+            .Send(new GetTenantCommand(tenantId), cancellationToken);
 
             switch (result.Status)
             {

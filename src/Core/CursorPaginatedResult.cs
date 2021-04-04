@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace YA.TenantWorker.Core
+namespace YA.UserWorker.Core
 {
     public class CursorPaginatedResult<T> : PaginatedResult<T> where T : class
     {

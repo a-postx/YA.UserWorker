@@ -1,7 +1,7 @@
 ﻿using Delobytes.AspNetCore;
 using System;
 
-namespace YA.TenantWorker.Application.ActionHandlers.Tenants
+namespace YA.UserWorker.Application.ActionHandlers.Tenants
 {
     public interface IGetTenantByIdAh : IAsyncCommand<Guid>
     {

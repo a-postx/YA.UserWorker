@@ -1,7 +1,7 @@
 using System;
-using YA.TenantWorker.Application.Enums;
+using YA.UserWorker.Application.Enums;
 
-namespace YA.TenantWorker.Application.Models.Dto
+namespace YA.UserWorker.Application.Models.Dto
 {
     public class TenantTm
     {

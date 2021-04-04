@@ -1,18 +1,20 @@
 using Delobytes.Mapper;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
-using YA.TenantWorker.Application.ActionHandlers.ClientInfos;
-using YA.TenantWorker.Application.ActionHandlers.Tenants;
-using YA.TenantWorker.Application.Interfaces;
-using YA.TenantWorker.Application.Mappers;
-using YA.TenantWorker.Application.Models.ViewModels;
-using YA.TenantWorker.Application.Services;
-using YA.TenantWorker.Core.Entities;
-using YA.TenantWorker.Infrastructure.Data;
-using YA.TenantWorker.Infrastructure.Messaging;
-using YA.TenantWorker.Infrastructure.Services;
+using YA.UserWorker.Application.ActionHandlers.ClientInfos;
+using YA.UserWorker.Application.ActionHandlers.Tenants;
+using YA.UserWorker.Application.ActionHandlers.Users;
+using YA.UserWorker.Application.Interfaces;
+using YA.UserWorker.Application.Mappers;
+using YA.UserWorker.Application.Models.ViewModels;
+using YA.UserWorker.Application.Services;
+using YA.UserWorker.Core.Entities;
+using YA.UserWorker.Infrastructure.Authentication;
+using YA.UserWorker.Infrastructure.Data;
+using YA.UserWorker.Infrastructure.Messaging;
+using YA.UserWorker.Infrastructure.Services;
 
-namespace YA.TenantWorker.Extensions
+namespace YA.UserWorker.Extensions
 {
     /// <summary>
     /// <see cref="IServiceCollection"/> extension methods add project services.
@@ -35,10 +37,13 @@ namespace YA.TenantWorker.Extensions
                 .AddScoped<IGetTenantAllPageAh, GetTenantAllPageAh>()
                 .AddScoped<IPatchTenantAh, PatchTenantAh>()
                 .AddScoped<IPatchTenantByIdAh, PatchTenantByIdAh>()
-                .AddScoped<IPostTenantAh, PostTenantAh>()
                 .AddScoped<IDeleteTenantAh, DeleteTenantAh>()
                 .AddScoped<IDeleteTenantByIdAh, DeleteTenantByIdAh>()
-                
+
+                 .AddScoped<IGetUserAh, GetUserAh>()
+                 .AddScoped<IPatchUserAh, PatchUserAh>()
+                 .AddScoped<IPostUserAh, PostUserAh>()
+
                 .AddScoped<IPostClientInfoAh, PostClientInfoAh>();
         }
 
@@ -66,7 +71,8 @@ namespace YA.TenantWorker.Extensions
         public static IServiceCollection AddProjectRepositories(this IServiceCollection services)
         {
             return services
-                .AddScoped<ITenantWorkerDbContext, TenantWorkerDbContext>();
+                .AddScoped<IUserWorkerDbContext, UserWorkerDbContext>();
+                //.AddScoped<IRootDbContext, RootDbContext>();
         }
 
         /// <summary>
@@ -78,7 +84,8 @@ namespace YA.TenantWorker.Extensions
                 .AddSingleton<IClockService, Clock>()
                 .AddScoped<IMessageBus, MessageBus>()
                 .AddScoped<IRuntimeContextAccessor, RuntimeContextAccessor>()
-                .AddSingleton<IRuntimeGeoDataService, IpWhoisRuntimeGeoData>();
+                .AddSingleton<IRuntimeGeoDataService, IpWhoisRuntimeGeoData>()
+                .AddScoped<IAuthProviderManager, Auth0AuthProviderManager>();
         }
 
         /// <summary>

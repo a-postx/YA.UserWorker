@@ -6,9 +6,9 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using YA.TenantWorker.Application.Interfaces;
+using YA.UserWorker.Application.Interfaces;
 
-namespace YA.TenantWorker.Application.Middlewares
+namespace YA.UserWorker.Application.Middlewares
 {
     /// <summary>
     /// Прослойка перехвата исключения в HTTP-контексте. Выводит в дополнение к коду детали проблемы. 

@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 
-namespace YA.TenantWorker.Application
+namespace YA.UserWorker.Application
 {
     public abstract class ValueObject
     {

@@ -2,7 +2,7 @@ using System;
 using System.Collections.Immutable;
 using System.Threading;
 
-namespace YA.TenantWorker.Infrastructure.Messaging.Filters
+namespace YA.UserWorker.Infrastructure.Messaging.Filters
 {
     /// <summary>
     /// Manages a Logical Call Context variable containing a stack of <typeparamref name="T"/> instances.

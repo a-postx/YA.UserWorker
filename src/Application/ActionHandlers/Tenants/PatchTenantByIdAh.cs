@@ -6,15 +6,15 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using YA.TenantWorker.Application.Features.Tenants.Commands;
-using YA.TenantWorker.Application.Enums;
-using YA.TenantWorker.Application.Interfaces;
-using YA.TenantWorker.Application.Models.SaveModels;
-using YA.TenantWorker.Application.Models.ViewModels;
-using YA.TenantWorker.Core.Entities;
+using YA.UserWorker.Application.Features.Tenants.Commands;
+using YA.UserWorker.Application.Enums;
+using YA.UserWorker.Application.Interfaces;
+using YA.UserWorker.Application.Models.SaveModels;
+using YA.UserWorker.Application.Models.ViewModels;
+using YA.UserWorker.Core.Entities;
 using Delobytes.Mapper;
 
-namespace YA.TenantWorker.Application.ActionHandlers.Tenants
+namespace YA.UserWorker.Application.ActionHandlers.Tenants
 {
     public class PatchTenantByIdAh : IPatchTenantByIdAh
     {

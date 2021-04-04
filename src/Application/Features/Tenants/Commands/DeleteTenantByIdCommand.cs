@@ -4,12 +4,12 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using YA.TenantWorker.Application.Enums;
-using YA.TenantWorker.Application.Interfaces;
-using YA.TenantWorker.Application.Models.Dto;
-using YA.TenantWorker.Core.Entities;
+using YA.UserWorker.Application.Enums;
+using YA.UserWorker.Application.Interfaces;
+using YA.UserWorker.Application.Models.Dto;
+using YA.UserWorker.Core.Entities;
 
-namespace YA.TenantWorker.Application.Features.Tenants.Commands
+namespace YA.UserWorker.Application.Features.Tenants.Commands
 {
     public class DeleteTenantByIdCommand : IRequest<ICommandResult<EmptyCommandResult>>
     {
@@ -24,7 +24,7 @@ namespace YA.TenantWorker.Application.Features.Tenants.Commands
         {
             public DeleteTenantByIdHandler(ILogger<DeleteTenantByIdHandler> logger,
                 IMapper mapper,
-                ITenantWorkerDbContext dbContext,
+                IUserWorkerDbContext dbContext,
                 IMessageBus messageBus)
             {
                 _log = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -35,7 +35,7 @@ namespace YA.TenantWorker.Application.Features.Tenants.Commands
 
             private readonly ILogger<DeleteTenantByIdHandler> _log;
             private readonly IMapper _mapper;
-            private readonly ITenantWorkerDbContext _dbContext;
+            private readonly IUserWorkerDbContext _dbContext;
             private readonly IMessageBus _messageBus;
 
             public async Task<ICommandResult<EmptyCommandResult>> Handle(DeleteTenantByIdCommand command, CancellationToken cancellationToken)

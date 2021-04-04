@@ -1,4 +1,4 @@
-﻿namespace YA.TenantWorker.Application.Features
+﻿namespace YA.UserWorker.Application.Features
 {
     public class EmptyCommandResult
     {

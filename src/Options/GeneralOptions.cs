@@ -1,4 +1,4 @@
-namespace YA.TenantWorker.Options
+namespace YA.UserWorker.Options
 {
     // оценка целесообразности: нужно ли брать дефолтные настройки из файла,
     // a к ним прикрутить настройки из Амазона (с приоритетом)

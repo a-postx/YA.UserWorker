@@ -1,4 +1,4 @@
-namespace YA.TenantWorker.Options
+namespace YA.UserWorker.Options
 {
     public class IdempotencyControlOptions
     {

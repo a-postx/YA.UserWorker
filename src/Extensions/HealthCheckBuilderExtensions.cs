@@ -1,9 +1,9 @@
 using System.Collections.Generic;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
-using YA.TenantWorker.Infrastructure.Health.System;
+using YA.UserWorker.Infrastructure.Health.System;
 
-namespace YA.TenantWorker.Extensions
+namespace YA.UserWorker.Extensions
 {
     public static class HealthCheckBuilderExtensions
     {

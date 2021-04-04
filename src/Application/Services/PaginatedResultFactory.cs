@@ -4,11 +4,11 @@ using System.Dynamic;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Primitives;
-using YA.TenantWorker.Application.Interfaces;
-using YA.TenantWorker.Application.Models.HttpQueryParams;
-using YA.TenantWorker.Application.Models.ViewModels;
+using YA.UserWorker.Application.Interfaces;
+using YA.UserWorker.Application.Models.HttpQueryParams;
+using YA.UserWorker.Application.Models.ViewModels;
 
-namespace YA.TenantWorker.Application.Services
+namespace YA.UserWorker.Application.Services
 {
     /// <summary>
 	/// Фабрика модели результата постраничного вывода

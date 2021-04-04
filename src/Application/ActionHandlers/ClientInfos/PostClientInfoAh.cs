@@ -9,15 +9,15 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using YA.Common.Constants;
-using YA.TenantWorker.Application.Features;
-using YA.TenantWorker.Application.Features.ClientInfos.Commands;
-using YA.TenantWorker.Application.Interfaces;
-using YA.TenantWorker.Application.Models.Dto;
-using YA.TenantWorker.Application.Models.SaveModels;
-using YA.TenantWorker.Application.Models.ViewModels;
-using YA.TenantWorker.Extensions;
+using YA.UserWorker.Application.Features;
+using YA.UserWorker.Application.Features.ClientInfos.Commands;
+using YA.UserWorker.Application.Interfaces;
+using YA.UserWorker.Application.Models.Dto;
+using YA.UserWorker.Application.Models.SaveModels;
+using YA.UserWorker.Application.Models.ViewModels;
+using YA.UserWorker.Extensions;
 
-namespace YA.TenantWorker.Application.ActionHandlers.ClientInfos
+namespace YA.UserWorker.Application.ActionHandlers.ClientInfos
 {
     public class PostClientInfoAh : IPostClientInfoAh
     {

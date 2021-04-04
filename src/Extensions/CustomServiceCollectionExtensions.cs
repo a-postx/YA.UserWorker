@@ -4,16 +4,12 @@ using System.IO.Compression;
 using System.Linq;
 using System.Reflection;
 using CorrelationId.DependencyInjection;
-using Delobytes.AspNetCore.Swagger;
-using Delobytes.AspNetCore.Swagger.OperationFilters;
-using Delobytes.AspNetCore.Swagger.SchemaFilters;
 using GreenPipes;
 using MassTransit;
 using MassTransit.Audit;
 using MassTransit.PrometheusIntegration;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.AspNetCore.Mvc.Versioning;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
@@ -26,26 +22,24 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
-using Microsoft.OpenApi.Models;
-using Swashbuckle.AspNetCore.Swagger;
-using YA.Common.Constants;
-using YA.TenantWorker.Constants;
-using YA.TenantWorker.Infrastructure.Health;
-using YA.TenantWorker.Infrastructure.Health.Services;
-using YA.TenantWorker.Infrastructure.Health.System;
-using YA.TenantWorker.Infrastructure.Data;
-using YA.TenantWorker.Infrastructure.Messaging;
-using YA.TenantWorker.Infrastructure.Messaging.Consumers;
-using YA.TenantWorker.Infrastructure.Messaging.Test;
-using YA.TenantWorker.OperationFilters;
-using YA.TenantWorker.Options;
-using YA.TenantWorker.Options.Validators;
 using StackExchange.Redis;
-using YA.TenantWorker.Application.Interfaces;
-using YA.TenantWorker.Infrastructure.Caching;
 using Swashbuckle.AspNetCore.SwaggerGen;
+using YA.Common.Constants;
+using YA.UserWorker.Application.Interfaces;
+using YA.UserWorker.Constants;
+using YA.UserWorker.Infrastructure.Caching;
+using YA.UserWorker.Infrastructure.Data;
+using YA.UserWorker.Infrastructure.Health;
+using YA.UserWorker.Infrastructure.Health.Services;
+using YA.UserWorker.Infrastructure.Health.System;
+using YA.UserWorker.Infrastructure.Messaging;
+using YA.UserWorker.Infrastructure.Messaging.Consumers;
+using YA.UserWorker.Infrastructure.Messaging.Test;
+using YA.UserWorker.OperationFilters;
+using YA.UserWorker.Options;
+using YA.UserWorker.Options.Validators;
 
-namespace YA.TenantWorker.Extensions
+namespace YA.UserWorker.Extensions
 {
     /// <summary>
     /// <see cref="IServiceCollection"/> extension methods which extend ASP.NET Core services.
@@ -146,7 +140,7 @@ namespace YA.TenantWorker.Extensions
             services.AddSingleton<IValidateOptions<GeneralOptions>, GeneralOptionsValidator>();
             services.AddSingleton<IValidateOptions<IdempotencyControlOptions>, IdempotencyControlOptionsValidator>();
 
-            services.AddSingleton<IValidateOptions<TenantWorkerSecrets>, TenantWorkerSecretsValidator>();
+            services.AddSingleton<IValidateOptions<UserWorkerSecrets>, UserWorkerSecretsValidator>();
             services.AddSingleton<IValidateOptions<AppSecrets>, AppSecretsValidator>();
 
             services
@@ -162,7 +156,7 @@ namespace YA.TenantWorker.Extensions
                 .Configure<IdempotencyControlOptions>(configuration.GetSection(nameof(ApplicationOptions.IdempotencyControl)), o => o.BindNonPublicProperties = false);
 
             services
-                .Configure<TenantWorkerSecrets>(configuration.GetSection($"{nameof(AppSecrets)}:{nameof(AppSecrets.TenantWorker)}"), o => o.BindNonPublicProperties = false)
+                .Configure<UserWorkerSecrets>(configuration.GetSection($"{nameof(AppSecrets)}:{nameof(AppSecrets.UserWorker)}"), o => o.BindNonPublicProperties = false)
                 .Configure<AppSecrets>(configuration.GetSection(nameof(AppSecrets)), o => o.BindNonPublicProperties = false);
 
             return services;
@@ -183,7 +177,7 @@ namespace YA.TenantWorker.Extensions
                 IdempotencyControlOptions idempotencyOptions = services.BuildServiceProvider().GetService<IOptions<IdempotencyControlOptions>>().Value;
 
                 AppSecrets appSecrets = services.BuildServiceProvider().GetService<IOptions<AppSecrets>>().Value;
-                TenantWorkerSecrets tenantWorkerSecrets = services.BuildServiceProvider().GetService<IOptions<TenantWorkerSecrets>>().Value;
+                UserWorkerSecrets userWorkerSecrets = services.BuildServiceProvider().GetService<IOptions<UserWorkerSecrets>>().Value;
             }
             catch (OptionsValidationException ex)
             {
@@ -238,7 +232,7 @@ namespace YA.TenantWorker.Extensions
                     .AddGenericHealthCheck<UptimeHealthCheck>("uptime")
                     .AddMemoryHealthCheck(HealthCheckNames.Memory)
                     //system components regular checks
-                    .AddSqlServer(secrets.TenantWorker.ConnectionString, "SELECT 1;", HealthCheckNames.Database, HealthStatus.Unhealthy, new string[] { "ready", "metric" })
+                    .AddSqlServer(secrets.UserWorker.ConnectionString, "SELECT 1;", HealthCheckNames.Database, HealthStatus.Unhealthy, new string[] { "ready", "metric" })
                     .AddRedis($"{secrets.DistributedCacheHost}:{secrets.DistributedCachePort},password={secrets.DistributedCachePassword}",
                         HealthCheckNames.DistributedCache, HealthStatus.Degraded, new[] { "ready", "metric" }, new TimeSpan(0, 0, 30))
                     .AddGenericHealthCheck<MessageBusServiceHealthCheck>(HealthCheckNames.MessageBus, HealthStatus.Degraded, new[] { "ready", "metric" });
@@ -288,8 +282,8 @@ namespace YA.TenantWorker.Extensions
         public static IServiceCollection AddCustomDatabase(this IServiceCollection services, AppSecrets secrets, IWebHostEnvironment webHostEnvironment)
         {
             services
-                .AddDbContext<TenantWorkerDbContext>(options =>
-                    options.UseSqlServer(secrets.TenantWorker.ConnectionString, sqlOptions =>
+                .AddDbContext<UserWorkerDbContext>(options =>
+                    options.UseSqlServer(secrets.UserWorker.ConnectionString, sqlOptions =>
                         sqlOptions.EnableRetryOnFailure().CommandTimeout(Timeouts.SqlCommandTimeoutSec))
                     .ConfigureWarnings(warnings =>
                     {
@@ -335,8 +329,8 @@ namespace YA.TenantWorker.Extensions
                     });
 
                     IMessageAuditStore auditStore = context.GetRequiredService<IMessageAuditStore>();
-                    cfg.ConnectSendAuditObservers(auditStore, c => c.Exclude(typeof(ITenantWorkerTestRequestV1), typeof(ITenantWorkerTestResponseV1)));
-                    cfg.ConnectConsumeAuditObserver(auditStore, c => c.Exclude(typeof(ITenantWorkerTestRequestV1), typeof(ITenantWorkerTestResponseV1)));
+                    cfg.ConnectSendAuditObservers(auditStore, c => c.Exclude(typeof(IUserWorkerTestRequestV1), typeof(IUserWorkerTestResponseV1)));
+                    cfg.ConnectConsumeAuditObserver(auditStore, c => c.Exclude(typeof(IUserWorkerTestRequestV1), typeof(IUserWorkerTestResponseV1)));
 
                     cfg.UseHealthCheck(context);
 

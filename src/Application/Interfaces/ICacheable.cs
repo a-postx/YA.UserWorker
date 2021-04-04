@@ -1,6 +1,6 @@
 using System;
 
-namespace YA.TenantWorker.Application.Interfaces
+namespace YA.UserWorker.Application.Interfaces
 {
     public interface ICacheable
     {

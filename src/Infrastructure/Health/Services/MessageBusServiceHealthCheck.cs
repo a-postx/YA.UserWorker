@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 using MassTransit;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
-using YA.TenantWorker.Infrastructure.Messaging.Test;
+using YA.UserWorker.Infrastructure.Messaging.Test;
 
-namespace YA.TenantWorker.Infrastructure.Health.Services
+namespace YA.UserWorker.Infrastructure.Health.Services
 {
     /// <summary>
     /// Regular check for availability of the message bus services.
@@ -27,7 +27,7 @@ namespace YA.TenantWorker.Infrastructure.Health.Services
         public async Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken = default)
         {
             DateTime now = DateTime.UtcNow;
-            Response<ITenantWorkerTestResponseV1> response = null;
+            Response<IUserWorkerTestResponseV1> response = null;
             Dictionary<string, object> healthData = new Dictionary<string, object>();
 
             Stopwatch mbSw = new Stopwatch();
@@ -35,7 +35,7 @@ namespace YA.TenantWorker.Infrastructure.Health.Services
 
             try
             {
-                response = await _bus.Request<ITenantWorkerTestRequestV1, ITenantWorkerTestResponseV1>(new {TimeStamp = now}, cancellationToken);
+                response = await _bus.Request<IUserWorkerTestRequestV1, IUserWorkerTestResponseV1>(new {TimeStamp = now}, cancellationToken);
             }
             catch (RequestException ex)
             {

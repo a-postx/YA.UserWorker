@@ -4,9 +4,9 @@ using Delobytes.AspNetCore;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using YA.Common.Constants;
-using YA.TenantWorker.Extensions;
+using YA.UserWorker.Extensions;
 
-namespace YA.TenantWorker.Infrastructure.Logging.Requests
+namespace YA.UserWorker.Infrastructure.Logging.Requests
 {
     /// <summary>
     /// Прослойка логирования контекста аутентификации. 

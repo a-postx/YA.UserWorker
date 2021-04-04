@@ -1,11 +1,9 @@
 using System;
 
-namespace YA.TenantWorker.Core.Entities
+namespace YA.UserWorker.Core.Entities
 {
-    public class YaClientInfo : ITenantEntity, IRowVersionedEntity, IAuditedEntityBase
+    public class YaClientInfo : IRowVersionedEntity, IAuditedEntityBase
     {
-        public Guid TenantId { get; set; }
-        public virtual Tenant Tenant { get; set; }
         public Guid YaClientInfoID { get; set; }
         public string Username { get; set; }
         public string ClientVersion { get; set; }

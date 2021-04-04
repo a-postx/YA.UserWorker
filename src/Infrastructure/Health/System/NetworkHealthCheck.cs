@@ -9,7 +9,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using YA.Common;
 
-namespace YA.TenantWorker.Infrastructure.Health.System
+namespace YA.UserWorker.Infrastructure.Health.System
 {
     /// <summary>
     /// Checks Internet connection of the application.

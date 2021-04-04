@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using FluentValidation.Results;
 using MediatR;
 using Microsoft.AspNetCore.JsonPatch;
@@ -6,29 +6,31 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using YA.TenantWorker.Application.Enums;
-using YA.TenantWorker.Application.Interfaces;
-using YA.TenantWorker.Application.Models.Dto;
-using YA.TenantWorker.Application.Models.SaveModels;
-using YA.TenantWorker.Application.Validators;
-using YA.TenantWorker.Core.Entities;
+using YA.UserWorker.Application.Enums;
+using YA.UserWorker.Application.Interfaces;
+using YA.UserWorker.Application.Models.Dto;
+using YA.UserWorker.Application.Models.SaveModels;
+using YA.UserWorker.Application.Validators;
+using YA.UserWorker.Core.Entities;
 
-namespace YA.TenantWorker.Application.Features.Tenants.Commands
+namespace YA.UserWorker.Application.Features.Tenants.Commands
 {
     public class UpdateTenantCommand : IRequest<ICommandResult<Tenant>>
     {
-        public UpdateTenantCommand(JsonPatchDocument<TenantSm> patch)
+        public UpdateTenantCommand(Guid tenantId, JsonPatchDocument<TenantSm> patch)
         {
+            TenantId = tenantId;
             Patch = patch;
         }
 
+        public Guid TenantId { get; protected set; }
         public JsonPatchDocument<TenantSm> Patch { get; protected set; }
 
         public class UpdateTenantHandler : IRequestHandler<UpdateTenantCommand, ICommandResult<Tenant>>
         {
             public UpdateTenantHandler(ILogger<UpdateTenantHandler> logger,
                 IMapper mapper,
-                ITenantWorkerDbContext dbContext,
+                IUserWorkerDbContext dbContext,
                 IMessageBus messageBus)
             {
                 _log = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -39,11 +41,12 @@ namespace YA.TenantWorker.Application.Features.Tenants.Commands
 
             private readonly ILogger<UpdateTenantHandler> _log;
             private readonly IMapper _mapper;
-            private readonly ITenantWorkerDbContext _dbContext;
+            private readonly IUserWorkerDbContext _dbContext;
             private readonly IMessageBus _messageBus;
 
             public async Task<ICommandResult<Tenant>> Handle(UpdateTenantCommand command, CancellationToken cancellationToken)
             {
+                Guid tenantId = command.TenantId;
                 JsonPatchDocument<TenantSm> patch = command.Patch;
 
                 if (patch == null)
@@ -51,7 +54,7 @@ namespace YA.TenantWorker.Application.Features.Tenants.Commands
                     return new CommandResult<Tenant>(CommandStatus.BadRequest, null);
                 }
 
-                Tenant tenant = await _dbContext.GetTenantAsync(cancellationToken);
+                Tenant tenant = await _dbContext.GetTenantAsync(tenantId, cancellationToken);
 
                 if (tenant == null)
                 {

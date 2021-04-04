@@ -1,4 +1,4 @@
-namespace YA.TenantWorker.Infrastructure.Health
+namespace YA.UserWorker.Infrastructure.Health
 {
     public static class HealthCheckNames
     {

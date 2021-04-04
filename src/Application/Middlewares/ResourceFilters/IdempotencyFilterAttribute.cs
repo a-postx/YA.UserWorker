@@ -13,13 +13,13 @@ using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
-using YA.TenantWorker.Application.Exceptions;
-using YA.TenantWorker.Application.Interfaces;
-using YA.TenantWorker.Application.Models.Service;
-using YA.TenantWorker.Constants;
-using YA.TenantWorker.Options;
+using YA.UserWorker.Application.Exceptions;
+using YA.UserWorker.Application.Interfaces;
+using YA.UserWorker.Application.Models.Service;
+using YA.UserWorker.Constants;
+using YA.UserWorker.Options;
 
-namespace YA.TenantWorker.Application.Middlewares.ResourceFilters
+namespace YA.UserWorker.Application.Middlewares.ResourceFilters
 {
     /// <summary>
     /// Фильтр идемпотентности: не допускает запросов без идентификатора,

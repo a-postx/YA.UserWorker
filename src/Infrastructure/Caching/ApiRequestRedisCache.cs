@@ -7,10 +7,10 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using StackExchange.Redis;
-using YA.TenantWorker.Application.Interfaces;
-using YA.TenantWorker.Application.Models.Service;
+using YA.UserWorker.Application.Interfaces;
+using YA.UserWorker.Application.Models.Service;
 
-namespace YA.TenantWorker.Infrastructure.Caching
+namespace YA.UserWorker.Infrastructure.Caching
 {
     /// <summary>
     /// Распределённый кеш АПИ-запросов, реализованный с помощью Редис

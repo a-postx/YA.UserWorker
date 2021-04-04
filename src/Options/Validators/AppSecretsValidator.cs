@@ -1,7 +1,7 @@
 using Microsoft.Extensions.Options;
 using System.Collections.Generic;
 
-namespace YA.TenantWorker.Options.Validators
+namespace YA.UserWorker.Options.Validators
 {
     public class AppSecretsValidator : IValidateOptions<AppSecrets>
     {
@@ -92,6 +92,21 @@ namespace YA.TenantWorker.Options.Validators
             if (string.IsNullOrWhiteSpace(options.OauthImplicitTokenUrl))
             {
                 failures.Add($"{nameof(options.OauthImplicitTokenUrl)} secret is not found.");
+            }
+
+            if (string.IsNullOrWhiteSpace(options.OauthManagementApiUrl))
+            {
+                failures.Add($"{nameof(options.OauthManagementApiUrl)} secret is not found.");
+            }
+
+            if (string.IsNullOrWhiteSpace(options.OauthManagementApiClientId))
+            {
+                failures.Add($"{nameof(options.OauthManagementApiClientId)} secret is not found.");
+            }
+
+            if (string.IsNullOrWhiteSpace(options.OauthManagementApiClientSecret))
+            {
+                failures.Add($"{nameof(options.OauthManagementApiClientSecret)} secret is not found.");
             }
 
             if (string.IsNullOrWhiteSpace(options.OidcProviderIssuer))

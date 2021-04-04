@@ -1,8 +1,8 @@
 using System;
 using System.IO;
-using YA.TenantWorker.Constants;
+using YA.UserWorker.Constants;
 
-namespace YA.TenantWorker
+namespace YA.UserWorker
 {
     internal static class Node
     {

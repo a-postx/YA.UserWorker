@@ -1,10 +1,10 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using YA.TenantWorker.Constants;
-using YA.TenantWorker.Core.Entities;
+using YA.UserWorker.Constants;
+using YA.UserWorker.Core.Entities;
 
-namespace YA.TenantWorker.Infrastructure.Data.Configurations
+namespace YA.UserWorker.Infrastructure.Data.Configurations
 {
     public class ClientInfoConfiguration : IEntityTypeConfiguration<YaClientInfo>
     {

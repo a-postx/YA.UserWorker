@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
-using YA.TenantWorker.Application.Interfaces;
+using YA.UserWorker.Application.Interfaces;
 
-namespace YA.TenantWorker.Application.Models.Service
+namespace YA.UserWorker.Application.Models.Service
 {
     /// <summary>
     /// Модель АПИ-запроса и результата.

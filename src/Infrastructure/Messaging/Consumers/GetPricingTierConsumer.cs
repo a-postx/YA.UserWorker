@@ -5,13 +5,13 @@ using MassTransit;
 using MbCommands;
 using MediatR;
 using Microsoft.Extensions.Logging;
-using YA.TenantWorker.Application.Features.PricingTiers.Queries;
-using YA.TenantWorker.Application.Interfaces;
-using YA.TenantWorker.Application.Models.Dto;
-using YA.TenantWorker.Core.Entities;
-using YA.TenantWorker.Infrastructure.Messaging.Messages;
+using YA.UserWorker.Application.Features.PricingTiers.Queries;
+using YA.UserWorker.Application.Interfaces;
+using YA.UserWorker.Application.Models.Dto;
+using YA.UserWorker.Core.Entities;
+using YA.UserWorker.Infrastructure.Messaging.Messages;
 
-namespace YA.TenantWorker.Infrastructure.Messaging.Consumers
+namespace YA.UserWorker.Infrastructure.Messaging.Consumers
 {
     public class GetPricingTierConsumer : IConsumer<IGetPricingTierV1>
     {
@@ -36,14 +36,18 @@ namespace YA.TenantWorker.Infrastructure.Messaging.Consumers
 
         public async Task Consume(ConsumeContext<IGetPricingTierV1> context)
         {
-            ICommandResult<PricingTier> result = await _mediator
-                .Send(new GetPricingTierCommand(), context.CancellationToken);
+            await Task.Delay(100);
 
-            PricingTier pricingTier = result.Data;
+            //не использовать - при отсутствии связи с воркером процесс зависает
 
-            PricingTierTm pricingTierTm = _mapper.Map<PricingTierTm>(pricingTier);
+            //ICommandResult<PricingTier> result = await _mediator
+            //    .Send(new GetPricingTierCommand(), context.CancellationToken);
 
-            await context.RespondAsync<ISendPricingTierV1>(new SendPricingTierV1(_runtimeCtx.GetCorrelationId(), _runtimeCtx.GetTenantId(), pricingTierTm));
+            //PricingTier pricingTier = result.Data;
+
+            //PricingTierTm pricingTierTm = _mapper.Map<PricingTierTm>(pricingTier);
+
+            //await context.RespondAsync<ISendPricingTierV1>(new SendPricingTierV1(_runtimeCtx.GetCorrelationId(), _runtimeCtx.GetTenantId(), pricingTierTm));
 
             //await _messageBus.PricingTierSentV1Async(_runtimeContext.GetCorrelationId(),
             //    _runtimeCtx.GetTenantId(), pricingTierTm, context.CancellationToken);

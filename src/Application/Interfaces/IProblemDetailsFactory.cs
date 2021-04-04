@@ -2,7 +2,7 @@ using FluentValidation.Results;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
-namespace YA.TenantWorker.Application.Interfaces
+namespace YA.UserWorker.Application.Interfaces
 {
     public interface IProblemDetailsFactory
     {

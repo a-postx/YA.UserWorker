@@ -7,9 +7,9 @@ using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
-using YA.TenantWorker.Application.Interfaces;
+using YA.UserWorker.Application.Interfaces;
 
-namespace YA.TenantWorker.Application.Services
+namespace YA.UserWorker.Application.Services
 {
     /// <summary>
 	/// Обработчик стандартного вывода деталей проблемы HTTP-запроса

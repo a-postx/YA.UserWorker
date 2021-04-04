@@ -13,15 +13,19 @@ using System.Threading;
 using System.Threading.Tasks;
 using YA.Common;
 using YA.Common.Extensions;
-using YA.TenantWorker.Application.Interfaces;
-using YA.TenantWorker.Core.Entities;
-using YA.TenantWorker.Extensions;
+using YA.UserWorker.Application.Interfaces;
+using YA.UserWorker.Core.Entities;
+using YA.UserWorker.Extensions;
 
-namespace YA.TenantWorker.Infrastructure.Data
+namespace YA.UserWorker.Infrastructure.Data
 {
-    public class TenantWorkerDbContext : DbContext, ITenantWorkerDbContext
+    /// <summary>
+    /// Контекст работы с базой данных приложения.
+    /// ПРЕДУПРЕЖДЕНИЕ БЕЗОПАСНОСТИ: присутствуют сущности без глобальных фильтров.
+    /// </summary>
+    public class UserWorkerDbContext : DbContext, IUserWorkerDbContext
     {
-        public TenantWorkerDbContext(DbContextOptions options, IRuntimeContextAccessor runtimeContext) : base(options)
+        public UserWorkerDbContext(DbContextOptions options, IRuntimeContextAccessor runtimeContext) : base(options)
         {
             if (runtimeContext == null)
             {
@@ -34,6 +38,7 @@ namespace YA.TenantWorker.Infrastructure.Data
         public DbSet<Tenant> Tenants { get; set; }
         public DbSet<PricingTier> PricingTiers { get; set; }
         public DbSet<User> Users { get; set; }
+        public DbSet<Membership> Memberships { get; set; }
         public DbSet<YaClientInfo> ClientInfos { get; set; }
 
         private readonly Guid _tenantId;
@@ -51,7 +56,7 @@ namespace YA.TenantWorker.Infrastructure.Data
         private static bool IsMustHaveTenantFilterEnabled => true;
         private static bool IsSoftDeleteFilterEnabled => true;
 
-        private static readonly MethodInfo ConfigureGlobalFiltersMethodInfo = typeof(TenantWorkerDbContext).GetMethod(nameof(ConfigureGlobalFilters), BindingFlags.Instance | BindingFlags.NonPublic);
+        private static readonly MethodInfo ConfigureGlobalFiltersMethodInfo = typeof(UserWorkerDbContext).GetMethod(nameof(ConfigureGlobalFilters), BindingFlags.Instance | BindingFlags.NonPublic);
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -59,11 +64,11 @@ namespace YA.TenantWorker.Infrastructure.Data
             {
                 throw new ArgumentNullException(nameof(modelBuilder));
             }
-
-            modelBuilder.ApplyConfigurationsFromAssembly(typeof(TenantWorkerDbContext).Assembly);
+            
+            modelBuilder.ApplyConfigurationsFromAssembly(typeof(UserWorkerDbContext).Assembly);
 
             modelBuilder.Seed();
-
+            
             foreach (IMutableEntityType entityType in modelBuilder.Model.GetEntityTypes())
             {
                 ConfigureGlobalFiltersMethodInfo
@@ -204,9 +209,9 @@ namespace YA.TenantWorker.Infrastructure.Data
             await Set<Tenant>().AddAsync(item, cancellationToken);
         }
 
-        public async Task<Tenant> GetTenantAsync(CancellationToken cancellationToken)
+        public async Task<Tenant> GetTenantAsync(Guid tenantId, CancellationToken cancellationToken)
         {
-            return await Tenants.SingleOrDefaultAsync(e => e.TenantID == _tenantId, cancellationToken);
+            return await Tenants.SingleOrDefaultAsync(e => e.TenantID == tenantId, cancellationToken);
         }
 
         public async Task<Tenant> GetTenantAsync(Expression<Func<Tenant, bool>> predicate, CancellationToken cancellationToken)
@@ -214,9 +219,12 @@ namespace YA.TenantWorker.Infrastructure.Data
             return await Set<Tenant>().SingleOrDefaultAsync(predicate, cancellationToken);
         }
 
-        public async Task<Tenant> GetTenantWithPricingTierAsync(CancellationToken cancellationToken)
+        public async Task<Tenant> GetTenantWithPricingTierAsync(Guid tenantId, CancellationToken cancellationToken)
         {
-            return await Set<Tenant>().Include(nameof(PricingTier)).SingleOrDefaultAsync(e => e.TenantID == _tenantId, cancellationToken);
+            return await Set<Tenant>()
+                .Include(nameof(PricingTier))
+                .Include("Memberships")
+                .SingleOrDefaultAsync(e => e.TenantID == tenantId, cancellationToken);
         }
 
         public void UpdateTenant(Tenant item)
@@ -229,6 +237,60 @@ namespace YA.TenantWorker.Infrastructure.Data
             Set<Tenant>().Remove(item);
         }
         #endregion
+
+        #region Users
+        public async Task CreateUserAsync(User item, CancellationToken cancellationToken)
+        {
+            await Set<User>().AddAsync(item, cancellationToken);
+        }
+
+        public async Task<User> GetUserAsync(Guid userId, CancellationToken cancellationToken)
+        {
+            return await Users.SingleOrDefaultAsync(e => e.UserID == userId, cancellationToken);
+        }
+
+        public async Task<User> GetUserAsync(string authProvider, string externalId, CancellationToken cancellationToken)
+        {
+            return await Users
+                .SingleOrDefaultAsync(e => e.AuthProvider == authProvider && e.ExternalId == externalId, cancellationToken);
+        }
+
+        public async Task<User> GetUserWithMembershipsAsync(string authProvider, string externalId, CancellationToken cancellationToken)
+        {
+            return await Users
+                .Include("Memberships")
+                .SingleOrDefaultAsync(e => e.AuthProvider == authProvider && e.ExternalId == externalId, cancellationToken);
+        }
+
+        public async Task<User> GetUserWithMembershipsAsync(Guid userId, CancellationToken cancellationToken)
+        {
+            return await Set<User>()
+                .Include("Memberships")
+                .SingleOrDefaultAsync(e => e.UserID == userId, cancellationToken);
+        }
+
+        public void UpdateUser(User item)
+        {
+            Set<User>().Update(item);
+        }
+
+        public void DeleteUser(User item)
+        {
+            Set<User>().Remove(item);
+        }
+        #endregion
+
+        #region Memberships
+        public async Task CreateMembershipAsync(Membership item, CancellationToken cancellationToken)
+        {
+            await Set<Membership>().AddAsync(item, cancellationToken);
+        }
+        #endregion
+
+        public async Task CreateClientInfoAsync(YaClientInfo item, CancellationToken cancellationToken)
+        {
+            await Set<YaClientInfo>().AddAsync(item, cancellationToken);
+        }
 
         #region Filtering
         private void ConfigureGlobalFilters<TEntity>(ModelBuilder modelBuilder, IMutableEntityType entityType) where TEntity : class

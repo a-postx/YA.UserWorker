@@ -1,7 +1,7 @@
 ﻿using GreenPipes;
 using System;
 
-namespace YA.TenantWorker.Infrastructure.Messaging.Filters
+namespace YA.UserWorker.Infrastructure.Messaging.Filters
 {
     /// <summary>
     /// Manages a Logical Call Context variable containing a stack of <see cref="PipeContext"/> instances.

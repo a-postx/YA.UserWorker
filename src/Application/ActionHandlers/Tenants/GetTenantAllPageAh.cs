@@ -9,16 +9,16 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.Logging;
 using YA.Common.Constants;
-using YA.TenantWorker.Application.Enums;
-using YA.TenantWorker.Application.Features.Tenants.Queries;
-using YA.TenantWorker.Application.Interfaces;
-using YA.TenantWorker.Application.Models.HttpQueryParams;
-using YA.TenantWorker.Application.Models.ViewModels;
-using YA.TenantWorker.Constants;
-using YA.TenantWorker.Core;
-using YA.TenantWorker.Core.Entities;
+using YA.UserWorker.Application.Enums;
+using YA.UserWorker.Application.Features.Tenants.Queries;
+using YA.UserWorker.Application.Interfaces;
+using YA.UserWorker.Application.Models.HttpQueryParams;
+using YA.UserWorker.Application.Models.ViewModels;
+using YA.UserWorker.Constants;
+using YA.UserWorker.Core;
+using YA.UserWorker.Core.Entities;
 
-namespace YA.TenantWorker.Application.ActionHandlers.Tenants
+namespace YA.UserWorker.Application.ActionHandlers.Tenants
 {
     public class GetTenantAllPageAh : IGetTenantAllPageAh
     {

@@ -1,4 +1,4 @@
-﻿namespace YA.TenantWorker.Constants
+﻿namespace YA.UserWorker.Constants
 {
     public static class SwaggerResponseDescriptions
     {

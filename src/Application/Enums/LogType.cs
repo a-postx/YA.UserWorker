@@ -1,4 +1,4 @@
-namespace YA.TenantWorker.Application.Enums
+namespace YA.UserWorker.Application.Enums
 {
     public enum LogType
     {

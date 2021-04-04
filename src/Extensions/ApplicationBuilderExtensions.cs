@@ -13,11 +13,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using YA.Common.Constants;
-using YA.TenantWorker.Application.Middlewares;
-using YA.TenantWorker.Infrastructure.Logging.Requests;
-using YA.TenantWorker.Options;
+using YA.UserWorker.Application.Middlewares;
+using YA.UserWorker.Infrastructure.Logging.Requests;
+using YA.UserWorker.Options;
 
-namespace YA.TenantWorker.Extensions
+namespace YA.UserWorker.Extensions
 {
     internal static class ApplicationBuilderExtensions
     {

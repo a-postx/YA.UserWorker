@@ -1,4 +1,4 @@
-namespace YA.TenantWorker.Application.Models.HttpQueryParams
+namespace YA.UserWorker.Application.Models.HttpQueryParams
 {
     /// <summary>
     /// Параметры оступного запроса постраничного вывода.

@@ -3,11 +3,11 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using YA.TenantWorker.Application.Enums;
-using YA.TenantWorker.Application.Interfaces;
-using YA.TenantWorker.Core.Entities;
+using YA.UserWorker.Application.Enums;
+using YA.UserWorker.Application.Interfaces;
+using YA.UserWorker.Core.Entities;
 
-namespace YA.TenantWorker.Application.Features.Tenants.Queries
+namespace YA.UserWorker.Application.Features.Tenants.Queries
 {
     public class GetTenantByIdCommand : IRequest<ICommandResult<Tenant>>
     {
@@ -21,14 +21,14 @@ namespace YA.TenantWorker.Application.Features.Tenants.Queries
         public class GetTenantByIdHandler : IRequestHandler<GetTenantByIdCommand, ICommandResult<Tenant>>
         {
             public GetTenantByIdHandler(ILogger<GetTenantByIdHandler> logger,
-                ITenantWorkerDbContext dbContext)
+                IUserWorkerDbContext dbContext)
             {
                 _log = logger ?? throw new ArgumentNullException(nameof(logger));
                 _dbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
             }
 
             private readonly ILogger<GetTenantByIdHandler> _log;
-            private readonly ITenantWorkerDbContext _dbContext;
+            private readonly IUserWorkerDbContext _dbContext;
 
             public async Task<ICommandResult<Tenant>> Handle(GetTenantByIdCommand command, CancellationToken cancellationToken)
             {

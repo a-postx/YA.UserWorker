@@ -12,10 +12,10 @@ using Microsoft.Extensions.Options;
 using Serilog;
 using Serilog.Context;
 using YA.Common.Constants;
-using YA.TenantWorker.Application.Enums;
-using YA.TenantWorker.Options;
+using YA.UserWorker.Application.Enums;
+using YA.UserWorker.Options;
 
-namespace YA.TenantWorker.Infrastructure.Logging.Requests
+namespace YA.UserWorker.Infrastructure.Logging.Requests
 {
     /// <summary>
     /// Прослойка логирования HTTP-контекста - запросов и ответов. 

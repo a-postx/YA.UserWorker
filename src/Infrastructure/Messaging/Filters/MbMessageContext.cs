@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace YA.TenantWorker.Infrastructure.Messaging.Filters
+namespace YA.UserWorker.Infrastructure.Messaging.Filters
 {
     /// <summary>
     /// Модель контекста исполнения сообщения шины данных

@@ -1,4 +1,4 @@
-﻿namespace YA.TenantWorker.Infrastructure.Services.GeoDataModels
+﻿namespace YA.UserWorker.Infrastructure.Services.GeoDataModels
 {
     public class IpWhoisGeoData
     {

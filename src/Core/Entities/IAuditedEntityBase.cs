@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace YA.TenantWorker.Core.Entities
+namespace YA.UserWorker.Core.Entities
 {
     public interface IAuditedEntityBase
     {

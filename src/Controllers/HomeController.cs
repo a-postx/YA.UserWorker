@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 
-namespace YA.TenantWorker.Controllers
+namespace YA.UserWorker.Controllers
 {
     [Route("/")]
     [ApiController]

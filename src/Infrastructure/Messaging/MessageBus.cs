@@ -1,15 +1,14 @@
-﻿using MassTransit;
-using MbCommands;
-using MbEvents;
-using Microsoft.Extensions.Logging;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using YA.TenantWorker.Application.Interfaces;
-using YA.TenantWorker.Application.Models.Dto;
-using YA.TenantWorker.Infrastructure.Messaging.Messages;
+using MassTransit;
+using MbEvents;
+using Microsoft.Extensions.Logging;
+using YA.UserWorker.Application.Interfaces;
+using YA.UserWorker.Application.Models.Dto;
+using YA.UserWorker.Infrastructure.Messaging.Messages;
 
-namespace YA.TenantWorker.Infrastructure.Messaging
+namespace YA.UserWorker.Infrastructure.Messaging
 {
     public class MessageBus : IMessageBus
     {
@@ -45,12 +44,6 @@ namespace YA.TenantWorker.Infrastructure.Messaging
         {
             await _publishEndpoint
                 .Publish<ITenantUpdatedV1>(new TenantUpdatedV1(_runtimeCtx.GetCorrelationId(), tenantId, tenantTm), cancellationToken);
-        }
-
-        public async Task PricingTierSentV1Async(PricingTierTm pricingTierTm, CancellationToken cancellationToken)
-        {
-            await _publishEndpoint
-                .Publish<ISendPricingTierV1>(new SendPricingTierV1(_runtimeCtx.GetCorrelationId(), _runtimeCtx.GetTenantId(), pricingTierTm), cancellationToken);
         }
     }
 }

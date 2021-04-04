@@ -1,8 +1,8 @@
 using GreenPipes;
 using System;
-using YA.TenantWorker.Infrastructure.Messaging.Filters;
+using YA.UserWorker.Infrastructure.Messaging.Filters;
 
-namespace YA.TenantWorker.Extensions
+namespace YA.UserWorker.Extensions
 {
     public static class MassTransitPipeConfiguratorExtensions
     {

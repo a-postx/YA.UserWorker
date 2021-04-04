@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc;
 
-namespace YA.TenantWorker.Options
+namespace YA.UserWorker.Options
 {
     /// <summary>
     /// The caching options for the application.

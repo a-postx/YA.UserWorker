@@ -31,14 +31,14 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
-using YA.TenantWorker.Application.Interfaces;
-using YA.TenantWorker.Constants;
-using YA.TenantWorker.Extensions;
-using YA.TenantWorker.Infrastructure.Data;
-using YA.TenantWorker.Options;
+using YA.UserWorker.Application.Interfaces;
+using YA.UserWorker.Constants;
+using YA.UserWorker.Extensions;
+using YA.UserWorker.Infrastructure.Data;
+using YA.UserWorker.Options;
 
 [assembly: CLSCompliant(false)]
-namespace YA.TenantWorker
+namespace YA.UserWorker
 {
     internal enum OsPlatforms
     {
@@ -84,7 +84,7 @@ namespace YA.TenantWorker
                 {
                     using (IServiceScope scope = host.Services.CreateScope())
                     {
-                        TenantWorkerDbContext dbContext = scope.ServiceProvider.GetService<TenantWorkerDbContext>();
+                        UserWorkerDbContext dbContext = scope.ServiceProvider.GetService<UserWorkerDbContext>();
 
                         using (CancellationTokenSource cts = new CancellationTokenSource(120000))
                         {

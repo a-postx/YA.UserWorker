@@ -1,4 +1,4 @@
-namespace YA.TenantWorker.Application.Models.ViewModels
+namespace YA.UserWorker.Application.Models.ViewModels
 {
     /// <summary>
     /// Событие публикации информации о клиенте.

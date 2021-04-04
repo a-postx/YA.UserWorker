@@ -1,4 +1,4 @@
-namespace YA.TenantWorker.Infrastructure.Health.System
+namespace YA.UserWorker.Infrastructure.Health.System
 {
     /// <summary>
     /// Network options for health checker.

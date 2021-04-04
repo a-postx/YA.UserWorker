@@ -3,9 +3,9 @@ using MassTransit;
 using MbEvents;
 using Serilog.Core;
 using Serilog.Events;
-using YA.TenantWorker.Infrastructure.Messaging.Filters;
+using YA.UserWorker.Infrastructure.Messaging.Filters;
 
-namespace YA.TenantWorker.Infrastructure.Logging.Enrichers
+namespace YA.UserWorker.Infrastructure.Logging.Enrichers
 {
     /// <summary>
     /// Enriches Serilog data with custom context data from bus message.

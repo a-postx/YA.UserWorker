@@ -17,9 +17,9 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
-using YA.TenantWorker.Options;
+using YA.UserWorker.Options;
 
-namespace YA.TenantWorker.Extensions
+namespace YA.UserWorker.Extensions
 {
     internal static class MvcBuilderExtensions
     {

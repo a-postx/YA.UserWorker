@@ -1,7 +1,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace YA.TenantWorker.Application.Interfaces
+namespace YA.UserWorker.Application.Interfaces
 {
     public enum RuntimeCountry
     {

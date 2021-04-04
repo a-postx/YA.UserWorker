@@ -1,16 +1,17 @@
 using System;
 using System.Diagnostics;
+using System.Linq;
 using CorrelationId.Abstractions;
 using Delobytes.AspNetCore;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using YA.Common.Constants;
-using YA.TenantWorker.Application.Exceptions;
-using YA.TenantWorker.Application.Interfaces;
-using YA.TenantWorker.Constants;
-using YA.TenantWorker.Infrastructure.Messaging.Filters;
+using YA.UserWorker.Application.Exceptions;
+using YA.UserWorker.Application.Interfaces;
+using YA.UserWorker.Constants;
+using YA.UserWorker.Infrastructure.Messaging.Filters;
 
-namespace YA.TenantWorker.Infrastructure.Services
+namespace YA.UserWorker.Infrastructure.Services
 {
     public class RuntimeContextAccessor : IRuntimeContextAccessor
     {
@@ -68,6 +69,18 @@ namespace YA.TenantWorker.Infrastructure.Services
             throw new CorrelationIdNotFoundException("Cannot obtain CorrelationID");
         }
 
+        public (string authId, string userId) GetUserIdentifiers()
+        {
+            string uid = _httpCtx.HttpContext.User.Claims
+                .Where(e => e.Type == YaClaimNames.uid).First().Value;
+
+            string[] userProps = uid.Split('|');
+            string userProvider = userProps[0];
+            string userExternalId = userProps[1];
+
+            return (userProvider, userExternalId);
+        }
+
         public Guid GetTenantId()
         {
             MbMessageContext mbMessageContext = MbMessageContextProvider.Current;
@@ -77,11 +90,7 @@ namespace YA.TenantWorker.Infrastructure.Services
             {
                 Guid httpTenantId = _httpCtx.HttpContext.User.GetClaimValue<Guid>(YaClaimNames.tid);
 
-                if (httpTenantId == Guid.Empty)
-                {
-                    throw new TenantIdNotFoundException("Cannot obtain TenantID from tid claim.");
-                }
-
+                //идентификатор может быть пустым для первый раз вошедшего пользователя
                 return httpTenantId;
             }
 

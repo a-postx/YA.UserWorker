@@ -6,10 +6,10 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using YA.TenantWorker.Application.Interfaces;
-using YA.TenantWorker.Infrastructure.Services.GeoDataModels;
+using YA.UserWorker.Application.Interfaces;
+using YA.UserWorker.Infrastructure.Services.GeoDataModels;
 
-namespace YA.TenantWorker.Infrastructure.Services
+namespace YA.UserWorker.Infrastructure.Services
 {
     public class IpWhoisRuntimeGeoData : IRuntimeGeoDataService
     {

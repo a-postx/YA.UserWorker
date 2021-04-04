@@ -1,7 +1,7 @@
 ﻿using FluentValidation;
-using YA.TenantWorker.Application.Models.SaveModels;
+using YA.UserWorker.Application.Models.SaveModels;
 
-namespace YA.TenantWorker.Application.Validators
+namespace YA.UserWorker.Application.Validators
 {
     public class ClientInfoSmValidator : AbstractValidator<ClientInfoSm>
     {

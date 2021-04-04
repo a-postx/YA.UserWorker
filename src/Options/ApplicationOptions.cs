@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.Hosting;
 
-namespace YA.TenantWorker.Options
+namespace YA.UserWorker.Options
 {
     /// <summary>
     /// Настройки приложения

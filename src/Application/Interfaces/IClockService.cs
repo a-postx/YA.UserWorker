@@ -1,6 +1,6 @@
 using System;
 
-namespace YA.TenantWorker.Application.Interfaces
+namespace YA.UserWorker.Application.Interfaces
 {
     /// <summary>
     /// Retrieves the current date and/or time. Helps with unit testing by letting you mock the system clock.

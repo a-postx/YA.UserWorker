@@ -1,10 +1,10 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using System;
-using YA.TenantWorker.Constants;
-using YA.TenantWorker.Core.Entities;
+using YA.UserWorker.Constants;
+using YA.UserWorker.Core.Entities;
 
-namespace YA.TenantWorker.Infrastructure.Data.Configurations
+namespace YA.UserWorker.Infrastructure.Data.Configurations
 {
     public class TenantConfiguration : IEntityTypeConfiguration<Tenant>
     {
@@ -25,21 +25,10 @@ namespace YA.TenantWorker.Infrastructure.Data.Configurations
             modelBuilder.Property(p => p.PricingTierActivatedUntilDateTime)
                 .HasConversion(v => v, v => DateTime.SpecifyKind(v, DateTimeKind.Utc));
             modelBuilder.Property(p => p.tstamp).IsRowVersion();
-            modelBuilder.Property(p => p.Email)
-                .IsUnicode()
-                .HasMaxLength(128);
-            modelBuilder.Property(p => p.AuthProvider)
-                .IsUnicode()
-                .HasMaxLength(128);
-            modelBuilder.Property(p => p.ExternalId)
-                .IsUnicode()
-                .HasMaxLength(256);
 
-            modelBuilder
-                .HasMany(c => c.Users)
-                .WithOne(u => u.Tenant)
-                .OnDelete(DeleteBehavior.Cascade)
-                .IsRequired();
+            modelBuilder.Property(p => p.Name)
+                .IsUnicode()
+                .HasMaxLength(128);
         }
     }
 }

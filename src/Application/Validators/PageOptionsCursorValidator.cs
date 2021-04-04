@@ -1,7 +1,7 @@
 using FluentValidation;
-using YA.TenantWorker.Application.Models.HttpQueryParams;
+using YA.UserWorker.Application.Models.HttpQueryParams;
 
-namespace YA.TenantWorker.Application.Validators
+namespace YA.UserWorker.Application.Validators
 {
     public class PageOptionsCursorValidator : AbstractValidator<PageOptionsCursor>
     {

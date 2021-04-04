@@ -6,9 +6,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
-using YA.TenantWorker.Extensions;
+using YA.UserWorker.Extensions;
 
-namespace YA.TenantWorker.Infrastructure.Health
+namespace YA.UserWorker.Infrastructure.Health
 {
     /// <summary>
     /// Публикатор для регулярной засылки метрик в ЕЛК.

@@ -1,7 +1,7 @@
 using System;
-using YA.TenantWorker.Application.Interfaces;
+using YA.UserWorker.Application.Interfaces;
 
-namespace YA.TenantWorker.Infrastructure.Services
+namespace YA.UserWorker.Infrastructure.Services
 {
     /// <summary>
     /// Retrieves the current date and/or time. Helps with unit testing by letting you mock the system clock.

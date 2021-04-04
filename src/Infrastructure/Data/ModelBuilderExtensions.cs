@@ -1,9 +1,9 @@
 using Microsoft.EntityFrameworkCore;
 using System;
-using YA.TenantWorker.Constants;
-using YA.TenantWorker.Core.Entities;
+using YA.UserWorker.Constants;
+using YA.UserWorker.Core.Entities;
 
-namespace YA.TenantWorker.Infrastructure.Data
+namespace YA.UserWorker.Infrastructure.Data
 {
     public static class ModelBuilderExtensions
     {
@@ -19,10 +19,7 @@ namespace YA.TenantWorker.Infrastructure.Data
                     Title = "Бесплатный",
                     Description = "Бесплатно для всех.",
                     HasTrial = false,
-                    MaxUsers = 1,
-                    MaxVkCommunities = 1,
-                    MaxVkCommunitySize = 1000,
-                    MaxScheduledTasks = 0
+                    MaxUsers = 1
                 },
                 new PricingTier
                 {
@@ -31,10 +28,7 @@ namespace YA.TenantWorker.Infrastructure.Data
                     Description = "За денежки",
                     HasTrial = true,
                     TrialPeriod = TimeSpan.FromDays(15),
-                    MaxUsers = 1,
-                    MaxVkCommunities = 1,
-                    MaxVkCommunitySize = 10000,
-                    MaxScheduledTasks = 1
+                    MaxUsers = 1
                 }
             );
 
@@ -47,7 +41,7 @@ namespace YA.TenantWorker.Infrastructure.Data
                     TenantID = defaultTenantId,
                     Name = "Системный",
                     Type = TenantType.System,
-                    Status = TenantStatus.Activated,
+                    Status = TenantStatus.Active,
                     PricingTierId = defaultPricingTierId,
                     PricingTierActivatedDateTime = DateTime.UtcNow,
                     PricingTierActivatedUntilDateTime = DateTime.MinValue,
@@ -58,7 +52,7 @@ namespace YA.TenantWorker.Infrastructure.Data
                     TenantID = seedPaidTenantId,
                     Name = "Уважаемый",
                     Type = TenantType.Custom,
-                    Status = TenantStatus.Activated,
+                    Status = TenantStatus.Active,
                     PricingTierId = paidPricingTierId,
                     PricingTierActivatedDateTime = DateTime.UtcNow,
                     PricingTierActivatedUntilDateTime = DateTime.UtcNow.AddDays(30),
@@ -66,22 +60,17 @@ namespace YA.TenantWorker.Infrastructure.Data
                 }
             );
 
-            Guid seedAdminId = Guid.Parse("00000000-0000-0000-0000-000000000011");
-            Guid seedUserId = Guid.Parse("00000000-0000-0000-0000-000000000012");
+            Guid seedAdminId = Guid.Parse("00000000-0000-0000-0000-000000000012");
+            Guid seedUserId = Guid.Parse("00000000-0000-0000-0000-000000000014");
 
             modelBuilder.Entity<User>().HasData(
                 new
                 {
                     UserID = seedAdminId,
-                    TenantId= defaultTenantId,
-                    Username = "admin@ya.ru",
-                    Password = "123",
-                    FirstName = "My",
-                    LastName = "Admin",
+                    Name = "Серый кардинал",
                     Email = "admin@email.com",
-                    Role = "Administrator",
-                    IsActive = true,
-                    IsPendingActivation = false,
+                    AuthProvider = "auth0",
+                    ExternalId = "lahblah",
                     IsDeleted = false,
                     CreatedDateTime = DateTime.UtcNow,
                     LastModifiedDateTime = DateTime.UtcNow
@@ -89,20 +78,44 @@ namespace YA.TenantWorker.Infrastructure.Data
                 new
                 {
                     UserID = seedUserId,
-                    TenantId = defaultTenantId,
-                    Username = "user@ya.ru",
-                    Password = "123",
-                    FirstName = "My",
-                    LastName = "User",
+                    Name = "Мышиный король",
                     Email = "user@email.com",
-                    Role = "User",
+                    AuthProvider = "auth0",
+                    ExternalId = "userLahblah",
                     IsActive = true,
-                    IsPendingActivation = false,
                     IsDeleted = false,
                     CreatedDateTime = DateTime.UtcNow,
                     LastModifiedDateTime = DateTime.UtcNow
                 }
             );
+
+            //добавление встроенных сущностей должно проходить после основной
+            modelBuilder.Entity<User>().OwnsOne(e => e.Settings).HasData(
+                new
+                {
+                    UserID = seedAdminId,
+                    ShowGettingStarted = true
+                },
+                new
+                {
+                    UserID = seedUserId,
+                    ShowGettingStarted = true
+                }
+            );
+
+            Guid seedUserMembershipId = Guid.Parse("00000000-0000-0000-0000-000000000015");
+
+            modelBuilder.Entity<Membership>().HasData(
+                new
+                {
+                    MembershipID = seedUserMembershipId,
+                    UserID = seedUserId,
+                    TenantID = seedPaidTenantId,
+                    AccessType = MembershipAccessType.Owner,
+                    IsDeleted = false
+                }
+            );
+
         }
     }
 }

@@ -1,9 +1,9 @@
 ﻿
 using FluentValidation.Results;
-using YA.TenantWorker.Application.Enums;
-using YA.TenantWorker.Application.Interfaces;
+using YA.UserWorker.Application.Enums;
+using YA.UserWorker.Application.Interfaces;
 
-namespace YA.TenantWorker.Application.Features
+namespace YA.UserWorker.Application.Features
 {
     public class CommandResult<TResult> : ICommandResult<TResult>
     {

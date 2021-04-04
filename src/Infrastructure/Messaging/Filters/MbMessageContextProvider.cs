@@ -3,7 +3,7 @@ using MassTransit;
 using MbEvents;
 using System;
 
-namespace YA.TenantWorker.Infrastructure.Messaging.Filters
+namespace YA.UserWorker.Infrastructure.Messaging.Filters
 {
     /// <summary>
     /// Provides tenant context from message bus message.

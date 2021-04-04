@@ -1,4 +1,4 @@
-namespace YA.TenantWorker.Options
+namespace YA.UserWorker.Options
 {
     /// <summary>
     /// Секреты приложения
@@ -23,6 +23,9 @@ namespace YA.TenantWorker.Options
         public string OidcProviderIssuer { get; set; }
         public string OauthImplicitAuthorizationUrl { get; set; }
         public string OauthImplicitTokenUrl { get; set; }
-        public TenantWorkerSecrets TenantWorker { get; set; }
+        public string OauthManagementApiUrl { get; set; }
+        public string OauthManagementApiClientId { get; set; }
+        public string OauthManagementApiClientSecret { get; set; }
+        public UserWorkerSecrets UserWorker { get; set; }
     }
 }

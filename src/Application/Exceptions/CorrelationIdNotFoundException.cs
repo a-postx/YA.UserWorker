@@ -1,6 +1,6 @@
 using System;
 
-namespace YA.TenantWorker.Application.Exceptions
+namespace YA.UserWorker.Application.Exceptions
 {
     public class CorrelationIdNotFoundException : Exception
     {

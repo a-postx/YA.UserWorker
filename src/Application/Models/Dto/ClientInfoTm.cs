@@ -1,4 +1,4 @@
-namespace YA.TenantWorker.Application.Models.Dto
+namespace YA.UserWorker.Application.Models.Dto
 {
     public class ClientInfoTm
     {

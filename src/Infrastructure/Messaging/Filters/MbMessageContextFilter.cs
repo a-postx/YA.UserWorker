@@ -1,7 +1,7 @@
 ﻿using GreenPipes;
 using System.Threading.Tasks;
 
-namespace YA.TenantWorker.Infrastructure.Messaging.Filters
+namespace YA.UserWorker.Infrastructure.Messaging.Filters
 {
     public class MbMessageContextFilter<T> : IFilter<T> where T : class, PipeContext
     {

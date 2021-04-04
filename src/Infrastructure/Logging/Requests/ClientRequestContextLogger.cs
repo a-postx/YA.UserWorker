@@ -5,10 +5,10 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
-using YA.TenantWorker.Extensions;
-using YA.TenantWorker.Options;
+using YA.UserWorker.Extensions;
+using YA.UserWorker.Options;
 
-namespace YA.TenantWorker.Infrastructure.Logging.Requests
+namespace YA.UserWorker.Infrastructure.Logging.Requests
 {
     /// <summary>
     /// Прослойка логирования контекста запроса с клиента. 

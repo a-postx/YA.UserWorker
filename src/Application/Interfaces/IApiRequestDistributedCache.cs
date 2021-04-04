@@ -1,7 +1,7 @@
 using System.Threading.Tasks;
-using YA.TenantWorker.Application.Models.Service;
+using YA.UserWorker.Application.Models.Service;
 
-namespace YA.TenantWorker.Application.Interfaces
+namespace YA.UserWorker.Application.Interfaces
 {
     public interface IApiRequestDistributedCache
     {
