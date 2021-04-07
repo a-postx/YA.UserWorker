@@ -54,7 +54,7 @@ namespace YA.UserWorker.Application.Features.Tenants.Commands
                     return new CommandResult<Tenant>(CommandStatus.BadRequest, null);
                 }
 
-                Tenant tenant = await _dbContext.GetTenantAsync(tenantId, cancellationToken);
+                Tenant tenant = await _dbContext.GetTenantWithPricingTierAsync(tenantId, cancellationToken);
 
                 if (tenant == null)
                 {
