@@ -84,7 +84,7 @@ namespace YA.UserWorker.Application.Features.Users.Commands
 
                     foreach (Membership membership in user.Memberships)
                     {
-                        Tenant tenant = await _dbContext.GetTenantAsync(membership.TenantID, cancellationToken);
+                        Tenant tenant = await _dbContext.GetTenantWithPricingTierAsync(membership.TenantID, cancellationToken);
                         user.Tenants.Add(tenant);
                     }
                 }
