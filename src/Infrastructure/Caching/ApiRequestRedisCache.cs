@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Text.Json;
@@ -38,8 +37,7 @@ namespace YA.UserWorker.Infrastructure.Caching
 
         public async Task<bool> ApiRequestExist(string key)
         {
-            Stopwatch sw = new Stopwatch();
-            sw.Start();
+            DateTime startDt = DateTime.UtcNow;
 
             bool hashKeyExists = false;
 
@@ -61,16 +59,16 @@ namespace YA.UserWorker.Infrastructure.Caching
                 _log.LogError(ex, "Error getting cached value for key {CacheKey}", key);
             }
 
-            sw.Stop();
-            _log.LogInformation("cache.request.idempotency.exist.msec {CacheRequestIdempotencyExistMsec}", sw.ElapsedMilliseconds);
+            DateTime stopDt = DateTime.UtcNow;
+            TimeSpan processingTime = stopDt - startDt;
+            _log.LogInformation("cache.request.idempotency.exist.msec {CacheRequestIdempotencyExistMsec}", (int)processingTime.TotalMilliseconds);
 
             return hashKeyExists;
         }
 
         public async Task<ApiRequest> GetApiRequestAsync(string key)
         {
-            Stopwatch sw = new Stopwatch();
-            sw.Start();
+            DateTime startDt = DateTime.UtcNow;
 
             HashEntry[] hashEntries = null;
 
@@ -91,8 +89,9 @@ namespace YA.UserWorker.Infrastructure.Caching
                 _log.LogError(ex, "Error getting cached value for key {CacheKey}", key);
             }
 
-            sw.Stop();
-            _log.LogInformation("cache.request.idempotency.get.msec {CacheRequestIdempotencyGetMsec}", sw.ElapsedMilliseconds);
+            DateTime stopDt = DateTime.UtcNow;
+            TimeSpan processingTime = stopDt - startDt;
+            _log.LogInformation("cache.request.idempotency.get.msec {CacheRequestIdempotencyGetMsec}", (int)processingTime.TotalMilliseconds);
 
             if (hashEntries != null && hashEntries.Length > 0)
             {
@@ -124,8 +123,7 @@ namespace YA.UserWorker.Infrastructure.Caching
 
             HashEntry[] apiRequestHashSet = hashList.ToArray();
 
-            Stopwatch sw = new Stopwatch();
-            sw.Start();
+            DateTime startDt = DateTime.UtcNow;
 
             try
             {
@@ -145,14 +143,14 @@ namespace YA.UserWorker.Infrastructure.Caching
                 _log.LogError(ex, "Error adding cached value for key {CacheKey}", request.CacheKey);
             }
 
-            sw.Stop();
-            _log.LogInformation("cache.request.idempotency.create.msec {CacheRequestIdempotencyCreateMsec}", sw.ElapsedMilliseconds);
+            DateTime stopDt = DateTime.UtcNow;
+            TimeSpan processingTime = stopDt - startDt;
+            _log.LogInformation("cache.request.idempotency.create.msec {CacheRequestIdempotencyCreateMsec}", (int)processingTime.TotalMilliseconds);
         }
 
         public async Task UpdateApiRequestAsync(ApiRequest request)
         {
-            Stopwatch sw = new Stopwatch();
-            sw.Start();
+            DateTime startDt = DateTime.UtcNow;
 
             List<HashEntry> hashList = new List<HashEntry>
             {
@@ -205,8 +203,9 @@ namespace YA.UserWorker.Infrastructure.Caching
                 _log.LogError(ex, "Error updating cached value for key {CacheKey}", request.CacheKey);
             }
 
-            sw.Stop();
-            _log.LogInformation("cache.request.idempotency.update.msec {CacheRequestIdempotencyUpdateMsec}", sw.ElapsedMilliseconds);
+            DateTime stopDt = DateTime.UtcNow;
+            TimeSpan processingTime = stopDt - startDt;
+            _log.LogInformation("cache.request.idempotency.update.msec {CacheRequestIdempotencyUpdateMsec}", (int)processingTime.TotalMilliseconds);
         }
 
         private ApiRequest MaterializeApiRequest(string key, HashEntry[] hashEntries)

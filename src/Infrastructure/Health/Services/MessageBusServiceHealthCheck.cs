@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using MassTransit;
@@ -30,8 +29,7 @@ namespace YA.UserWorker.Infrastructure.Health.Services
             Response<IUserWorkerTestResponseV1> response = null;
             Dictionary<string, object> healthData = new Dictionary<string, object>();
 
-            Stopwatch mbSw = new Stopwatch();
-            mbSw.Start();
+            DateTime startDt = DateTime.UtcNow;
 
             try
             {
@@ -48,8 +46,9 @@ namespace YA.UserWorker.Infrastructure.Health.Services
             }
             finally
             {
-                mbSw.Stop();
-                healthData.Add("MessageBusDelayMsec", mbSw.ElapsedMilliseconds);
+                DateTime stopDt = DateTime.UtcNow;
+                TimeSpan processingTime = stopDt - startDt;
+                healthData.Add("MessageBusDelayMsec", (int)processingTime.TotalMilliseconds);
             }
 
             if (response?.Message?.GotIt == now)

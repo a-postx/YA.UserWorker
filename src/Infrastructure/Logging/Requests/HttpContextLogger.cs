@@ -1,5 +1,4 @@
 using System;
-using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -78,11 +77,12 @@ namespace YA.UserWorker.Infrastructure.Logging.Requests
                         Stream originalResponseBodyReference = context.Response.Body;
                         context.Response.Body = responseBodyMemoryStream;
 
-                        long start = Stopwatch.GetTimestamp();
+                        DateTime startDt = DateTime.UtcNow;
 
                         await _next(context);
 
-                        double elapsedMs = GetElapsedMilliseconds(start, Stopwatch.GetTimestamp());
+                        DateTime stopDt = DateTime.UtcNow;
+                        TimeSpan elapsedTimespan = stopDt - startDt;
 
                         context.Response.Body.Seek(0, SeekOrigin.Begin);
 
@@ -99,7 +99,7 @@ namespace YA.UserWorker.Infrastructure.Logging.Requests
                             Log.ForContext(YaLogKeys.ResponseHeaders, context.Response.Headers.ToDictionary(h => h.Key, h => h.Value.ToString()), true)
                                 .ForContext(YaLogKeys.StatusCode, context.Response.StatusCode)
                                 .ForContext(YaLogKeys.ResponseBody, endResponseBody)
-                                .ForContext(YaLogKeys.ElapsedMilliseconds, elapsedMs)
+                                .ForContext(YaLogKeys.ElapsedMilliseconds, (int)elapsedTimespan.TotalMilliseconds)
                                 .ForContext(YaLogKeys.RequestProtocol, context.Request.Protocol)
                                 .ForContext(YaLogKeys.RequestScheme, context.Request.Scheme)
                                 .ForContext(YaLogKeys.RequestHost, context.Request.Host.Value)
@@ -115,11 +115,6 @@ namespace YA.UserWorker.Infrastructure.Logging.Requests
                     }
                 }
             }
-        }
-
-        private static double GetElapsedMilliseconds(long start, long stop)
-        {
-            return (stop - start) * 1000 / (double)Stopwatch.Frequency;
         }
 
         private static string GetFullPath(HttpContext httpContext)
