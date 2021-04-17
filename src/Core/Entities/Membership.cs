@@ -2,7 +2,7 @@ using System;
 
 namespace YA.UserWorker.Core.Entities
 {
-    public enum MembershipAccessType
+    public enum YaMembershipAccessType
     {
         Unknown = 0,
         ReadOnly = 1,
@@ -18,7 +18,7 @@ namespace YA.UserWorker.Core.Entities
         public virtual User User { get; set; }
         public Guid TenantID { get; set; }
         public virtual Tenant Tenant { get; set; }
-        public MembershipAccessType AccessType { get; set; }
+        public YaMembershipAccessType AccessType { get; set; }
         public bool IsDeleted { get; set; }
         public DateTime CreatedDateTime { get; set; }
         public DateTime LastModifiedDateTime { get; set; }

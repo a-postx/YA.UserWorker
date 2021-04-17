@@ -16,7 +16,7 @@ namespace YA.UserWorker.Migrations
 #pragma warning disable 612, 618
             modelBuilder
                 .HasAnnotation("Relational:MaxIdentifierLength", 128)
-                .HasAnnotation("ProductVersion", "5.0.4")
+                .HasAnnotation("ProductVersion", "5.0.5")
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
             modelBuilder.Entity("YA.UserWorker.Core.Entities.Membership", b =>
@@ -178,9 +178,6 @@ namespace YA.UserWorker.Migrations
                     b.Property<int>("Type")
                         .HasColumnType("int");
 
-                    b.Property<Guid?>("UserID")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<byte[]>("tstamp")
                         .IsConcurrencyToken()
                         .ValueGeneratedOnAddOrUpdate()
@@ -190,8 +187,6 @@ namespace YA.UserWorker.Migrations
 
                     b.HasIndex("PricingTierId");
 
-                    b.HasIndex("UserID");
-
                     b.ToTable("Tenants");
 
                     b.HasData(
@@ -200,7 +195,7 @@ namespace YA.UserWorker.Migrations
                             TenantID = new Guid("00000000-0000-0000-0000-000000000001"),
                             IsReadOnly = false,
                             Name = "Системный",
-                            PricingTierActivatedDateTime = new DateTime(2021, 4, 2, 14, 42, 22, 631, DateTimeKind.Utc).AddTicks(4347),
+                            PricingTierActivatedDateTime = new DateTime(2021, 4, 17, 4, 9, 49, 640, DateTimeKind.Utc).AddTicks(1460),
                             PricingTierActivatedUntilDateTime = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             PricingTierId = new Guid("00000000-0000-0000-0000-000000000001"),
                             Status = 1,
@@ -211,8 +206,8 @@ namespace YA.UserWorker.Migrations
                             TenantID = new Guid("00000000-0000-0000-0000-000000000002"),
                             IsReadOnly = false,
                             Name = "Уважаемый",
-                            PricingTierActivatedDateTime = new DateTime(2021, 4, 2, 14, 42, 22, 631, DateTimeKind.Utc).AddTicks(6683),
-                            PricingTierActivatedUntilDateTime = new DateTime(2021, 5, 2, 14, 42, 22, 631, DateTimeKind.Utc).AddTicks(6698),
+                            PricingTierActivatedDateTime = new DateTime(2021, 4, 17, 4, 9, 49, 640, DateTimeKind.Utc).AddTicks(3042),
+                            PricingTierActivatedUntilDateTime = new DateTime(2021, 5, 17, 4, 9, 49, 640, DateTimeKind.Utc).AddTicks(3048),
                             PricingTierId = new Guid("00000000-0000-0000-0000-000000000013"),
                             Status = 1,
                             Type = 1
@@ -284,22 +279,22 @@ namespace YA.UserWorker.Migrations
                         {
                             UserID = new Guid("00000000-0000-0000-0000-000000000012"),
                             AuthProvider = "auth0",
-                            CreatedDateTime = new DateTime(2021, 4, 2, 14, 42, 22, 631, DateTimeKind.Utc).AddTicks(8036),
+                            CreatedDateTime = new DateTime(2021, 4, 17, 4, 9, 49, 640, DateTimeKind.Utc).AddTicks(4125),
                             Email = "admin@email.com",
                             ExternalId = "lahblah",
                             IsDeleted = false,
-                            LastModifiedDateTime = new DateTime(2021, 4, 2, 14, 42, 22, 631, DateTimeKind.Utc).AddTicks(8044),
+                            LastModifiedDateTime = new DateTime(2021, 4, 17, 4, 9, 49, 640, DateTimeKind.Utc).AddTicks(4129),
                             Name = "Серый кардинал"
                         },
                         new
                         {
                             UserID = new Guid("00000000-0000-0000-0000-000000000014"),
                             AuthProvider = "auth0",
-                            CreatedDateTime = new DateTime(2021, 4, 2, 14, 42, 22, 631, DateTimeKind.Utc).AddTicks(9586),
+                            CreatedDateTime = new DateTime(2021, 4, 17, 4, 9, 49, 640, DateTimeKind.Utc).AddTicks(5591),
                             Email = "user@email.com",
                             ExternalId = "userLahblah",
                             IsDeleted = false,
-                            LastModifiedDateTime = new DateTime(2021, 4, 2, 14, 42, 22, 631, DateTimeKind.Utc).AddTicks(9594),
+                            LastModifiedDateTime = new DateTime(2021, 4, 17, 4, 9, 49, 640, DateTimeKind.Utc).AddTicks(5597),
                             Name = "Мышиный король"
                         });
                 });
@@ -420,10 +415,6 @@ namespace YA.UserWorker.Migrations
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
-                    b.HasOne("YA.UserWorker.Core.Entities.User", null)
-                        .WithMany("Tenants")
-                        .HasForeignKey("UserID");
-
                     b.Navigation("PricingTier");
                 });
 
@@ -474,8 +465,6 @@ namespace YA.UserWorker.Migrations
             modelBuilder.Entity("YA.UserWorker.Core.Entities.User", b =>
                 {
                     b.Navigation("Memberships");
-
-                    b.Navigation("Tenants");
                 });
 #pragma warning restore 612, 618
         }

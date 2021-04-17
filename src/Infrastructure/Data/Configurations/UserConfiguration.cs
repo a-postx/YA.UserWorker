@@ -14,6 +14,9 @@ namespace YA.UserWorker.Infrastructure.Data.Configurations
 
             modelBuilder.HasIndex(i => new { i.AuthProvider, i.ExternalId });
 
+            //используется только в визуальных моделях, добавлено для сокращения количества запросов
+            modelBuilder.Ignore(p => p.Tenants);
+
             OwnedNavigationBuilder<User, UserSetting> settingsBuilder = modelBuilder
                 .OwnsOne(o => o.Settings);
 

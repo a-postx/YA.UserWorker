@@ -40,8 +40,8 @@ namespace YA.UserWorker.Infrastructure.Data
                 {
                     TenantID = defaultTenantId,
                     Name = "Системный",
-                    Type = TenantType.System,
-                    Status = TenantStatus.Active,
+                    Type = YaTenantType.System,
+                    Status = YaTenantStatus.Active,
                     PricingTierId = defaultPricingTierId,
                     PricingTierActivatedDateTime = DateTime.UtcNow,
                     PricingTierActivatedUntilDateTime = DateTime.MinValue,
@@ -51,8 +51,8 @@ namespace YA.UserWorker.Infrastructure.Data
                 {
                     TenantID = seedPaidTenantId,
                     Name = "Уважаемый",
-                    Type = TenantType.Custom,
-                    Status = TenantStatus.Active,
+                    Type = YaTenantType.Custom,
+                    Status = YaTenantStatus.Active,
                     PricingTierId = paidPricingTierId,
                     PricingTierActivatedDateTime = DateTime.UtcNow,
                     PricingTierActivatedUntilDateTime = DateTime.UtcNow.AddDays(30),
@@ -111,7 +111,7 @@ namespace YA.UserWorker.Infrastructure.Data
                     MembershipID = seedUserMembershipId,
                     UserID = seedUserId,
                     TenantID = seedPaidTenantId,
-                    AccessType = MembershipAccessType.Owner,
+                    AccessType = YaMembershipAccessType.Owner,
                     IsDeleted = false
                 }
             );

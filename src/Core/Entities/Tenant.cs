@@ -3,13 +3,13 @@ using System.Collections.Generic;
 
 namespace YA.UserWorker.Core.Entities
 {
-    public enum TenantType
+    public enum YaTenantType
     {
         System = 0,
         Custom = 1
     }
 
-    public enum TenantStatus
+    public enum YaTenantStatus
     {
         New = 0,
         Active = 1
@@ -22,13 +22,13 @@ namespace YA.UserWorker.Core.Entities
     public class Tenant : IRowVersionedEntity, IAuditedEntityBase
     {
         public Guid TenantID { get; set; }
-        public TenantType Type { get; set; }
+        public YaTenantType Type { get; set; }
         public string Name { get; set; }
         public Guid PricingTierId { get; set; }
         public virtual PricingTier PricingTier { get; set; }
         public DateTime PricingTierActivatedDateTime { get; set; }
         public DateTime PricingTierActivatedUntilDateTime { get; set; }
-        public TenantStatus Status { get; set; }
+        public YaTenantStatus Status { get; set; }
         public bool IsReadOnly { get; set; }
         public virtual ICollection<Membership> Memberships { get; set; }
         public DateTime CreatedDateTime { get; set; }

@@ -16,7 +16,8 @@ namespace YA.UserWorker.Core.Entities
         public string Nickname { get; set; }
         public virtual UserSetting Settings { get; set; }
         public virtual ICollection<Membership> Memberships { get; set; }
-        public virtual ICollection<Tenant> Tenants { get; set; }
+        //используется только в визуальных моделях, добавлено для сокращения количества запросов
+        public ICollection<Tenant> Tenants { get; set; }
         public bool IsDeleted { get; set; }
         public DateTime CreatedDateTime { get; set; }
         public DateTime LastModifiedDateTime { get; set; }

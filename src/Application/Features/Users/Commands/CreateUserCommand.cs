@@ -112,8 +112,8 @@ namespace YA.UserWorker.Application.Features.Users.Commands
                 Tenant tenant = new Tenant
                 {
                     Name = string.IsNullOrEmpty(userEmail) ? "<неизвестный>" : userEmail,
-                    Status = Core.Entities.TenantStatus.New,
-                    Type = Core.Entities.TenantType.Custom
+                    Status = YaTenantStatus.New,
+                    Type = YaTenantType.Custom
                 };
 
                 Guid defaultPricingTierId = Guid.Parse(SeedData.SeedPricingTierId);
@@ -130,7 +130,7 @@ namespace YA.UserWorker.Application.Features.Users.Commands
                 {
                     UserID = user.UserID,
                     TenantID = tenant.TenantID,
-                    AccessType = Core.Entities.MembershipAccessType.Owner
+                    AccessType = YaMembershipAccessType.Owner
                 };
 
                 await _dbContext.CreateMembershipAsync(membership, cancellationToken);
