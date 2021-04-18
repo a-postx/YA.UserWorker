@@ -106,6 +106,12 @@ namespace YA.UserWorker.Extensions
                 jsonSystemOutputFormatterMediaTypes.Insert(0, ContentType.ProblemJson);
                 ////xmlOutputFormatterMediaTypes.Insert(0, ContentType.ProblemXml);
 
+                // Add plain JSON formatter as default
+                jsonSystemInputFormatterMediaTypes.Remove("application/json");
+                jsonSystemOutputFormatterMediaTypes.Remove("application/json");
+                jsonSystemInputFormatterMediaTypes.Insert(0, ContentType.Json);
+                jsonSystemOutputFormatterMediaTypes.Insert(0, ContentType.Json);
+
                 // Add support for Newtonsoft JSON Patch (application/json-patch+json), configure formatters and make Newtonsoft default.
                 options.InputFormatters.Insert(0, GetJsonPatchInputFormatter());
                 options.InputFormatters.Insert(0, GetJsonInputFormatter());
@@ -128,6 +134,12 @@ namespace YA.UserWorker.Extensions
                 jsonNewtonsoftInputFormatterMediaTypes.Insert(0, ContentType.RestfulJson);
                 jsonNewtonsoftOutputFormatterMediaTypes.Insert(0, ContentType.RestfulJson);
                 jsonNewtonsoftOutputFormatterMediaTypes.Insert(0, ContentType.ProblemJson);
+
+                // Add plain JSON formatter as default
+                jsonNewtonsoftInputFormatterMediaTypes.Remove("application/json");
+                jsonNewtonsoftOutputFormatterMediaTypes.Remove("application/json");
+                jsonNewtonsoftInputFormatterMediaTypes.Insert(0, ContentType.Json);
+                jsonNewtonsoftOutputFormatterMediaTypes.Insert(0, ContentType.Json);
 
                 // Returns a 406 Not Acceptable if the MIME type in the Accept HTTP header is not valid.
                 options.ReturnHttpNotAcceptable = true;
