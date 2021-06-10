@@ -40,9 +40,10 @@ namespace YA.UserWorker.Extensions
                 .AddScoped<IDeleteTenantAh, DeleteTenantAh>()
                 .AddScoped<IDeleteTenantByIdAh, DeleteTenantByIdAh>()
 
-                 .AddScoped<IGetUserAh, GetUserAh>()
-                 .AddScoped<IPatchUserAh, PatchUserAh>()
-                 .AddScoped<IPostUserAh, PostUserAh>()
+                .AddScoped<IGetUserAh, GetUserAh>()
+                .AddScoped<IPatchUserAh, PatchUserAh>()
+                .AddScoped<IPostUserAh, PostUserAh>()
+                .AddScoped<ISwitchUserTenantAh, SwitchUserTenantAh>()
 
                 .AddScoped<IPostClientInfoAh, PostClientInfoAh>();
         }

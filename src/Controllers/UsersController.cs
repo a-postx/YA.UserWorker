@@ -1,3 +1,4 @@
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Delobytes.AspNetCore.Filters;
@@ -91,6 +92,31 @@ namespace YA.UserWorker.Controllers
             CancellationToken cancellationToken)
         {
             return handler.ExecuteAsync(accessInfo, cancellationToken);
+        }
+
+        /// <summary>
+        /// Переключить арендатора текущему пользователю.
+        /// </summary>
+        /// <param name="handler">Обработчик.</param>
+        /// <param name="targetTenantId">Идентификатор арендатора, на который необходимо переключиться.</param>
+        /// <param name="cancellationToken">Токен отмены.</param>
+        /// <returns>Ответ 200 ОК,
+        /// 400 Недопустимый Запрос если запрос неправильно оформлен,
+        /// 404 Не Найден если пользователь или целевой арендатор не найдены,
+        /// 409 Конфликт если запрос является дубликатом</returns>
+        [HttpPost("switchtenant", Name = RouteNames.SwitchUserTenant)]
+        [SwaggerResponse(StatusCodes.Status200OK, "Арендатор переключен.")]
+        [SwaggerResponse(StatusCodes.Status404NotFound, "Арендатор или пользователь не найдены.")]
+        [SwaggerResponse(StatusCodes.Status400BadRequest, "Недопустимый запрос.", typeof(ProblemDetails))]
+        [SwaggerResponse(StatusCodes.Status406NotAcceptable, "Недопустимый тип MIME в заголовке Accept.", typeof(ProblemDetails))]
+        [SwaggerResponse(StatusCodes.Status409Conflict, "Запрос-дубликат.", typeof(ProblemDetails))]
+        [SwaggerResponse(StatusCodes.Status415UnsupportedMediaType, "Тип MIME в заголовке Content-Type не поддерживается.", typeof(ProblemDetails))]
+        public Task<IActionResult> SwitchUserTenantAsync(
+            [FromServices] ISwitchUserTenantAh handler,
+            [FromQuery] Guid targetTenantId,
+            CancellationToken cancellationToken)
+        {
+            return handler.ExecuteAsync(targetTenantId, cancellationToken);
         }
 
         /// <summary>

@@ -106,7 +106,7 @@ namespace YA.UserWorker.Application.Features.Users.Commands
                     Nickname = nickname,
                     Settings = new UserSetting { ShowGettingStarted = true }
                 };
-
+                
                 await _dbContext.CreateUserAsync(user, cancellationToken);
 
                 Tenant tenant = new Tenant

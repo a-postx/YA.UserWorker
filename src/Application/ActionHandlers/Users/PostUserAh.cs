@@ -81,8 +81,6 @@ namespace YA.UserWorker.Application.ActionHandlers.Users
             }
 
             JwtSecurityToken jst = securityToken as JwtSecurityToken;
-
-
             string userInfoUri = jst.Audiences.FirstOrDefault(e => e.Contains("userinfo", StringComparison.OrdinalIgnoreCase));
 
             if (string.IsNullOrEmpty(userInfoUri))

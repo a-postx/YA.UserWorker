@@ -9,6 +9,7 @@ namespace YA.UserWorker.Constants
         public const string OptionsUser = ControllerName.Users + nameof(OptionsUser);
         public const string PostUser = ControllerName.Users + nameof(PostUser);
         public const string PatchUser = ControllerName.Users + nameof(PatchUser);
+        public const string SwitchUserTenant = ControllerName.Users + nameof(SwitchUserTenant);
 
         public const string GetTenantById = ControllerName.Tenants + nameof(GetTenantById);
         public const string GetTenantPage = ControllerName.Tenants + nameof(GetTenantPage);

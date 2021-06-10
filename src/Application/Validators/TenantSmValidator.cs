@@ -1,4 +1,4 @@
-﻿using FluentValidation;
+using FluentValidation;
 using YA.UserWorker.Application.Models.SaveModels;
 
 namespace YA.UserWorker.Application.Validators
@@ -7,7 +7,7 @@ namespace YA.UserWorker.Application.Validators
     {
         public TenantSmValidator()
         {
-            RuleFor(e => e.Name).NotEmpty();
+            RuleFor(e => e.Name).NotEmpty().MaximumLength(64);
         }
     }
 }
