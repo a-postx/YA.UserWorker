@@ -11,7 +11,7 @@
   </PropertyGroup>
 
   <PropertyGroup Label="Package">
-    <Version>0.1.13.1</Version>
+    <Version>0.1.14.8</Version>
     <Authors>Alexey Yakubin</Authors>
     <Company>Delobytes</Company>
     <Product>YA.UserWorker</Product>

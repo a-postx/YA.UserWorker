@@ -2,13 +2,14 @@ using System;
 
 namespace YA.UserWorker.Core.Entities
 {
+    [Flags]
     public enum YaMembershipAccessType
     {
         Unknown = 0,
         ReadOnly = 1,
         ReadWrite = 2,
-        Admin = 3,
-        Owner = 4
+        Admin = 4,
+        Owner = 8
     }
 
     public class Membership : IAuditedEntityBase, IRowVersionedEntity, ISoftDeleteEntity

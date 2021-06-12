@@ -2,8 +2,6 @@ namespace YA.UserWorker.Constants
 {
     public static class RouteNames
     {
-        public const string GetToken = ControllerName.Token + nameof(GetToken);
-
         public const string GetUser = ControllerName.Users + nameof(GetUser);
         public const string HeadUser = ControllerName.Users + nameof(HeadUser);
         public const string OptionsUser = ControllerName.Users + nameof(OptionsUser);
