@@ -62,6 +62,7 @@ namespace YA.UserWorker.Application.ActionHandlers.Users
                     return new NotFoundResult();
                 case CommandStatus.Ok:
                     UserVm userVm = _mapper.Map<UserVm>(result.Data);
+                    //update Auth0
                     return new OkObjectResult(userVm);
             }
         }

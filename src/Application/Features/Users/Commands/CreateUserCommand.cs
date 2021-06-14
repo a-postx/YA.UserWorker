@@ -73,27 +73,19 @@ namespace YA.UserWorker.Application.Features.Users.Commands
                     return new CommandResult<User>(CommandStatus.UnprocessableEntity, null);
                 }
 
+                //последний приоритет, поскольку может быть пустым для каких-то поставщиков идентификации (напр. ВКонтакте)
                 string userName = userEmail;
 
-                if (authId == "auth0" && !string.IsNullOrEmpty(name))
+                //для auth0, google-oauth2 и yandex
+                if (!string.IsNullOrEmpty(name))
                 {
                     userName = name;
                 }
 
-                if (authId == "vkontakte" && name.Contains("id", StringComparison.OrdinalIgnoreCase)
-                    && !string.IsNullOrEmpty(givenName) && !string.IsNullOrEmpty(familyName))
+                // для vkontakte
+                if (authId == "vkontakte" && !string.IsNullOrEmpty(givenName) && !string.IsNullOrEmpty(familyName))
                 {
                     userName = givenName + " " + familyName;
-                }
-
-                if (authId == "yandex" && !string.IsNullOrEmpty(name))
-                {
-                    userName = name;
-                }
-
-                if (authId == "google-oauth2" && !string.IsNullOrEmpty(name))
-                {
-                    userName = name;
                 }
 
                 User user = new User
