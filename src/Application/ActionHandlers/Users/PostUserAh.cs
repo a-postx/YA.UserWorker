@@ -137,7 +137,8 @@ namespace YA.UserWorker.Application.ActionHandlers.Users
                 case CommandStatus.Ok:
                     Guid tenantId = result.Data.Tenants.First().TenantID;
 
-                    await _authProviderManager.SetTenantIdAsync(authId + "|" + userId, tenantId, cancellationToken);
+                    await _authProviderManager
+                        .SetTenantAsync(authId + "|" + userId, tenantId, YaMembershipAccessType.Owner, cancellationToken);
 
                     _actionCtx.ActionContext.HttpContext
                         .Response.Headers.Add(HeaderNames.LastModified, result.Data.LastModifiedDateTime.ToString("R", CultureInfo.InvariantCulture));

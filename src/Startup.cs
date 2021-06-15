@@ -124,6 +124,35 @@ namespace YA.UserWorker
                     {
                         policy.RequireClaim(YaClaimNames.role, "Administrator");
                     });
+                    options.AddPolicy("Owners", policy =>
+                    {
+                        policy.RequireAssertion(context =>
+                            context.User.HasClaim(c => c.Type == YaClaimNames.tenantaccesstype && c.Value == "Owner"));
+                    });
+                    options.AddPolicy("Admins", policy =>
+                    {
+                        policy.RequireAssertion(context =>
+                            context.User.HasClaim(c =>
+                                (c.Type == YaClaimNames.tenantaccesstype && c.Value == "Owner")
+                                || (c.Type == YaClaimNames.tenantaccesstype && c.Value == "Admin")));
+                    });
+                    options.AddPolicy("Writers", policy =>
+                    {
+                        policy.RequireAssertion(context =>
+                            context.User.HasClaim(c =>
+                                (c.Type == YaClaimNames.tenantaccesstype && c.Value == "Owner")
+                                || (c.Type == YaClaimNames.tenantaccesstype && c.Value == "Admin")
+                                || (c.Type == YaClaimNames.tenantaccesstype && c.Value == "ReadWrite")));
+                    });
+                    options.AddPolicy("Readers", policy =>
+                    {
+                        policy.RequireAssertion(context =>
+                            context.User.HasClaim(c =>
+                                (c.Type == YaClaimNames.tenantaccesstype && c.Value == "Owner")
+                                || (c.Type == YaClaimNames.tenantaccesstype && c.Value == "Admin")
+                                || (c.Type == YaClaimNames.tenantaccesstype && c.Value == "ReadWrite")
+                                || (c.Type == YaClaimNames.tenantaccesstype && c.Value == "ReadOnly")));
+                    });
                 });
 
             services.AddHttpClient();

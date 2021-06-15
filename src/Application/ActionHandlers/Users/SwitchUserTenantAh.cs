@@ -53,14 +53,24 @@ namespace YA.UserWorker.Application.ActionHandlers.Users
                 case CommandStatus.Ok:
                     if (result.Data.Tenants.Where(e => e.TenantID == targetTenantId).Any())
                     {
-                        await _authProviderManager.SetTenantIdAsync(authId + "|" + userId, targetTenantId, cancellationToken);
+                        Membership membership = result.Data.Memberships.Where(e => e.TenantID == targetTenantId).FirstOrDefault();
 
-                        _log.LogInformation("User {UserId} has updated with tenant {TenantId}", userId, targetTenantId);
+                        if (membership is not null)
+                        {
+                            await _authProviderManager
+                                .SetTenantAsync(authId + "|" + userId, targetTenantId, membership.AccessType, cancellationToken);
 
-                        _actionCtx.ActionContext.HttpContext
-                            .Response.Headers.Add(HeaderNames.LastModified, result.Data.LastModifiedDateTime.ToString("R", CultureInfo.InvariantCulture));
+                            _log.LogInformation("User {UserId} has updated with tenant {TenantId}", userId, targetTenantId);
 
-                        return new OkResult();
+                            _actionCtx.ActionContext.HttpContext
+                                .Response.Headers.Add(HeaderNames.LastModified, result.Data.LastModifiedDateTime.ToString("R", CultureInfo.InvariantCulture));
+
+                            return new OkResult();
+                        }
+                        else
+                        {
+                            return new NotFoundResult();
+                        }
                     }
                     else
                     {

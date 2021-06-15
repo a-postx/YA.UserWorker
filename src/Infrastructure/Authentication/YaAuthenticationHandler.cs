@@ -88,6 +88,7 @@ namespace YA.UserWorker.Infrastructure.Authentication
             string clientId = string.Empty;
             string userId = string.Empty;
             string tenantId = string.Empty;
+            string tenantAccessType = string.Empty;
             string email = string.Empty;
             string emailVerified = string.Empty;
 
@@ -115,6 +116,7 @@ namespace YA.UserWorker.Infrastructure.Authentication
                         AppMetadata appMetadata = JsonSerializer
                             .Deserialize<AppMetadata>(appMetadataValue, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
                         tenantId = appMetadata.Tid;
+                        tenantAccessType = appMetadata.TenantAccessType;
                     }
 
                     if (string.IsNullOrEmpty(clientId))
@@ -140,7 +142,8 @@ namespace YA.UserWorker.Infrastructure.Authentication
             if (string.IsNullOrEmpty(errorMessage))
 #pragma warning restore CA1508 // Avoid dead conditional code
             {
-                AuthenticationTicket ticket = CreateAuthenticationTicket(clientId, userId, tenantId, email, emailVerified, validatedToken);
+                AuthenticationTicket ticket = CreateAuthenticationTicket(clientId, userId, tenantId, tenantAccessType,
+                    email, emailVerified, validatedToken);
 
                 _log.LogInformation("User {UserId} is authenticated.", userId);
 
@@ -159,7 +162,7 @@ namespace YA.UserWorker.Infrastructure.Authentication
         }
 
         private AuthenticationTicket CreateAuthenticationTicket(string clientId, string userId, string tenantId,
-            string email, string emailVerified, JwtSecurityToken validatedToken)
+            string tenantAccessType, string email, string emailVerified, JwtSecurityToken validatedToken)
         {
             ClaimsIdentity userIdentity = new(AuthType, YaClaimNames.name, YaClaimNames.role);
 
@@ -179,6 +182,7 @@ namespace YA.UserWorker.Infrastructure.Authentication
             if (!string.IsNullOrEmpty(tenantId) && Guid.TryParse(tenantId, out Guid tid))
             {
                 userIdentity.AddClaim(new Claim(YaClaimNames.tid, tenantId));
+                userIdentity.AddClaim(new Claim(YaClaimNames.tenantaccesstype, tenantAccessType));
             }
 
             GenericPrincipal userPricipal = new GenericPrincipal(userIdentity, new string[] { "user" });

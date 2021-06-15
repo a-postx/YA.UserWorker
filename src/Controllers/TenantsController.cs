@@ -93,6 +93,7 @@ namespace YA.UserWorker.Controllers
         /// или 409 Конфликт если запрос является дубликатом.</returns>
         [HttpGet("", Name = RouteNames.GetTenant)]
         [HttpHead("", Name = RouteNames.HeadTenant)]
+        [Authorize(Policy = "Readers")]
         [SwaggerResponse(StatusCodes.Status200OK, "Текущий арендатор.", typeof(TenantVm))]
         [SwaggerResponse(StatusCodes.Status304NotModified, "Арендатор не изменён с даты в заголовке If-Modified-Since.")]
         [SwaggerResponse(StatusCodes.Status404NotFound, "Арендатор не найден.")]
@@ -167,6 +168,7 @@ namespace YA.UserWorker.Controllers
         /// 404 Не Найдено если текущий арендатор не был найден
         /// или 409 Конфликт если запрос является дубликатом.</returns>
         [HttpPatch("", Name = RouteNames.PatchTenant)]
+        [Authorize(Policy = "Admins")]
         [SwaggerResponse(StatusCodes.Status200OK, "Модель изменённого арендатора.", typeof(TenantVm))]
         [SwaggerResponse(StatusCodes.Status400BadRequest, "Патч-документ неверен.", typeof(ProblemDetails))]
         [SwaggerResponse(StatusCodes.Status404NotFound, "Арендатор не найден.")]

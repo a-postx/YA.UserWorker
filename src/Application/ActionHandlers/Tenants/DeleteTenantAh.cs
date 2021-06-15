@@ -78,7 +78,7 @@ namespace YA.UserWorker.Application.ActionHandlers.Tenants
                 case CommandStatus.NotFound:
                     return new NotFoundResult();
                 case CommandStatus.Ok:
-                    await _authProviderManager.RemoveTenantIdAsync(authId + "|" + userId, cancellationToken);
+                    await _authProviderManager.RemoveTenantAsync(authId + "|" + userId, cancellationToken);
 
                     return new NoContentResult();
             }

@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using YA.UserWorker.Application.Interfaces;
+using YA.UserWorker.Core.Entities;
 using YA.UserWorker.Infrastructure.Authentication.Dto;
 using YA.UserWorker.Options;
 
@@ -77,8 +78,9 @@ namespace YA.UserWorker.Infrastructure.Authentication
         /// </summary>
         /// <param name="userId">Идентификатор пользователя (sub).</param>
         /// <param name="tenantId">Идентификатор арендатора.</param>
+        /// <param name="accessType">Тип доступа пользователя к арендатору</param>
         /// <param name="cancellationToken">Токен отмены.</param>
-        public async Task SetTenantIdAsync(string userId, Guid tenantId, CancellationToken cancellationToken)
+        public async Task SetTenantAsync(string userId, Guid tenantId, YaMembershipAccessType accessType, CancellationToken cancellationToken)
         {
             string managementToken = await GetManagementTokenAsync(cancellationToken);
 
@@ -90,7 +92,7 @@ namespace YA.UserWorker.Infrastructure.Authentication
                 string correlationId = _runtimeCtx.GetCorrelationId().ToString();
                 client.DefaultRequestHeaders.Add("x-correlation-id", correlationId);
 
-                string requestBody = "{\"app_metadata\": { \"tid\": \"" + tenantId + "\" }}";
+                string requestBody = "{\"app_metadata\": { \"tid\": \"" + tenantId + "\", \"tenantaccesstype\": \"" + accessType + "\" }}";
                 updateRequest.Content = new StringContent(requestBody, Encoding.UTF8, "application/json");
 
                 HttpResponseMessage updateResponse = await client.SendAsync(updateRequest, cancellationToken);
@@ -110,7 +112,7 @@ namespace YA.UserWorker.Infrastructure.Authentication
         /// </summary>
         /// <param name="userId">Идентификатор пользователя (sub).</param>
         /// <param name="cancellationToken">Токен отмены.</param>
-        public async Task RemoveTenantIdAsync(string userId, CancellationToken cancellationToken)
+        public async Task RemoveTenantAsync(string userId, CancellationToken cancellationToken)
         {
             string managementToken = await GetManagementTokenAsync(cancellationToken);
 
