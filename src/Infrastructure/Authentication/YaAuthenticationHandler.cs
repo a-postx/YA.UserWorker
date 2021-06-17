@@ -182,6 +182,10 @@ namespace YA.UserWorker.Infrastructure.Authentication
             if (!string.IsNullOrEmpty(tenantId) && Guid.TryParse(tenantId, out Guid tid))
             {
                 userIdentity.AddClaim(new Claim(YaClaimNames.tid, tenantId));
+            }
+
+            if (!string.IsNullOrEmpty(tenantAccessType))
+            {
                 userIdentity.AddClaim(new Claim(YaClaimNames.tenantaccesstype, tenantAccessType));
             }
 
