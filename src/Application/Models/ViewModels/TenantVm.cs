@@ -46,6 +46,11 @@ namespace YA.UserWorker.Application.Models.ViewModels
         /// <summary>
         /// Членства пользователей в арендаторе.
         /// </summary>
-        public virtual ICollection<MembershipVm> Memberships { get; set; }
+        public ICollection<MembershipVm> Memberships { get; set; }
+
+        /// <summary>
+        /// Приглашения пользователей в арендатор.
+        /// </summary>
+        public ICollection<InvitationVm> Invitations { get; set; }
     }
 }

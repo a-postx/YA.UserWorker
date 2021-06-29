@@ -3,7 +3,7 @@ using YA.UserWorker.Application.Models.SaveModels;
 
 namespace YA.UserWorker.Application.Validators
 {
-    public class AccessInfoSmValidator : AbstractValidator<AccessInfoSm>
+    public class AccessInfoSmValidator : AbstractValidator<UserRegistrationInfoSm>
     {
         public AccessInfoSmValidator()
         {

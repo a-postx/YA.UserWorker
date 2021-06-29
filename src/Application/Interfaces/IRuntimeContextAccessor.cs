@@ -5,8 +5,10 @@ namespace YA.UserWorker.Application.Interfaces
     public interface IRuntimeContextAccessor
     {
         Guid GetCorrelationId();
-        (string authId, string userId) GetUserIdentifiers();
-        Guid GetTenantId();
         string GetTraceId();
+
+        Guid GetTenantId();
+        
+        (string authId, string userId) GetUserIdentifiers();
     }
 }

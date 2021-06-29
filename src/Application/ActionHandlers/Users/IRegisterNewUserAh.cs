@@ -3,7 +3,7 @@ using YA.UserWorker.Application.Models.SaveModels;
 
 namespace YA.UserWorker.Application.ActionHandlers.Users
 {
-    public interface IPostUserAh : IAsyncCommand<AccessInfoSm>
+    public interface IRegisterNewUserAh : IAsyncCommand<UserRegistrationInfoSm>
     {
 
     }

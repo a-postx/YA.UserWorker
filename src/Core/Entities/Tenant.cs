@@ -31,6 +31,7 @@ namespace YA.UserWorker.Core.Entities
         public YaTenantStatus Status { get; set; }
         public bool IsReadOnly { get; set; }
         public virtual ICollection<Membership> Memberships { get; set; }
+        public virtual ICollection<YaInvitation> Invitations { get; set; }
         public DateTime CreatedDateTime { get; set; }
         public DateTime LastModifiedDateTime { get; set; }
         public byte[] tstamp { get; set; }

@@ -15,7 +15,7 @@ namespace YA.UserWorker.Application.Models.ViewModels
         /// <summary>
         /// Пользователь.
         /// </summary>
-        public Guid UserId { get; set; }
+        public MembershipUserVm User { get; set; }
         /// <summary>
         /// Арендатор.
         /// </summary>
@@ -24,5 +24,9 @@ namespace YA.UserWorker.Application.Models.ViewModels
         /// Тип доступа пользователя к арендатору.
         /// </summary>
         public MembershipAccessType AccessType { get; set; }
+        /// <summary>
+        /// Дата создания членства.
+        /// </summary>
+        public DateTime CreatedDateTime { get; set; }
     }
 }

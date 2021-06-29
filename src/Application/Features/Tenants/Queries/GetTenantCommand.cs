@@ -34,7 +34,7 @@ namespace YA.UserWorker.Application.Features.Tenants.Queries
             {
                 Guid tenantId = command.TenantId;
 
-                Tenant tenant = await _dbContext.GetTenantWithPricingTierAsync(tenantId, cancellationToken);
+                Tenant tenant = await _dbContext.GetTenantWithAllRelativesAsync(tenantId, cancellationToken);
 
                 if (tenant == null)
                 {

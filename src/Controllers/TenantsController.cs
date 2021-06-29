@@ -1,19 +1,20 @@
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+using Delobytes.AspNetCore.Filters;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Net.Http.Headers;
 using Swashbuckle.AspNetCore.Annotations;
-using System;
-using System.Threading;
-using System.Threading.Tasks;
+using YA.Common.Constants;
+using YA.UserWorker.Application.ActionHandlers.Tenants;
 using YA.UserWorker.Application.Middlewares.ResourceFilters;
+using YA.UserWorker.Application.Models.HttpQueryParams;
 using YA.UserWorker.Application.Models.SaveModels;
 using YA.UserWorker.Application.Models.ViewModels;
 using YA.UserWorker.Constants;
-using Microsoft.AspNetCore.Authorization;
-using Delobytes.AspNetCore.Filters;
-using YA.UserWorker.Application.ActionHandlers.Tenants;
-using YA.UserWorker.Application.Models.HttpQueryParams;
 
 namespace YA.UserWorker.Controllers
 {
@@ -58,6 +59,7 @@ namespace YA.UserWorker.Controllers
             HttpContext.Response.Headers.AppendCommaSeparatedValues(
                 HeaderNames.Allow,
                 HttpMethods.Get,
+                HttpMethods.Head,
                 HttpMethods.Options,
                 HttpMethods.Patch,
                 HttpMethods.Delete);
@@ -93,7 +95,7 @@ namespace YA.UserWorker.Controllers
         /// или 409 Конфликт если запрос является дубликатом.</returns>
         [HttpGet("", Name = RouteNames.GetTenant)]
         [HttpHead("", Name = RouteNames.HeadTenant)]
-        [Authorize(Policy = "Readers")]
+        [Authorize(Policy = YaPolicyNames.Reader)]
         [SwaggerResponse(StatusCodes.Status200OK, "Текущий арендатор.", typeof(TenantVm))]
         [SwaggerResponse(StatusCodes.Status304NotModified, "Арендатор не изменён с даты в заголовке If-Modified-Since.")]
         [SwaggerResponse(StatusCodes.Status404NotFound, "Арендатор не найден.")]
@@ -168,7 +170,7 @@ namespace YA.UserWorker.Controllers
         /// 404 Не Найдено если текущий арендатор не был найден
         /// или 409 Конфликт если запрос является дубликатом.</returns>
         [HttpPatch("", Name = RouteNames.PatchTenant)]
-        [Authorize(Policy = "Admins")]
+        [Authorize(Policy = YaPolicyNames.Admin)]
         [SwaggerResponse(StatusCodes.Status200OK, "Модель изменённого арендатора.", typeof(TenantVm))]
         [SwaggerResponse(StatusCodes.Status400BadRequest, "Патч-документ неверен.", typeof(ProblemDetails))]
         [SwaggerResponse(StatusCodes.Status404NotFound, "Арендатор не найден.")]

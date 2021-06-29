@@ -102,6 +102,34 @@ namespace YA.UserWorker.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Invitations",
+                columns: table => new
+                {
+                    YaInvitationID = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    TenantId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    InvitedBy = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
+                    Email = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
+                    AccessType = table.Column<int>(type: "int", nullable: false),
+                    ExpirationDate = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    Claimed = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
+                    ClaimedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    CreatedMembershipId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    CreatedDateTime = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETUTCDATE()"),
+                    LastModifiedDateTime = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETUTCDATE()"),
+                    tstamp = table.Column<byte[]>(type: "rowversion", rowVersion: true, nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Invitations", x => x.YaInvitationID);
+                    table.ForeignKey(
+                        name: "FK_Invitations_Tenants_TenantId",
+                        column: x => x.TenantId,
+                        principalTable: "Tenants",
+                        principalColumn: "TenantID",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Memberships",
                 columns: table => new
                 {
@@ -145,24 +173,29 @@ namespace YA.UserWorker.Migrations
                 columns: new[] { "UserID", "AuthProvider", "CreatedDateTime", "Email", "ExternalId", "IsDeleted", "LastModifiedDateTime", "Name", "Nickname", "Picture", "Settings_ShowGettingStarted" },
                 values: new object[,]
                 {
-                    { new Guid("00000000-0000-0000-0000-000000000012"), "auth0", new DateTime(2021, 4, 17, 4, 9, 49, 640, DateTimeKind.Utc).AddTicks(4125), "admin@email.com", "lahblah", false, new DateTime(2021, 4, 17, 4, 9, 49, 640, DateTimeKind.Utc).AddTicks(4129), "Серый кардинал", null, null, true },
-                    { new Guid("00000000-0000-0000-0000-000000000014"), "auth0", new DateTime(2021, 4, 17, 4, 9, 49, 640, DateTimeKind.Utc).AddTicks(5591), "user@email.com", "userLahblah", false, new DateTime(2021, 4, 17, 4, 9, 49, 640, DateTimeKind.Utc).AddTicks(5597), "Мышиный король", null, null, true }
+                    { new Guid("00000000-0000-0000-0000-000000000012"), "auth0", new DateTime(2021, 6, 29, 2, 4, 12, 195, DateTimeKind.Utc).AddTicks(1198), "admin@email.com", "lahblah", false, new DateTime(2021, 6, 29, 2, 4, 12, 195, DateTimeKind.Utc).AddTicks(1206), "Серый кардинал", null, null, true },
+                    { new Guid("00000000-0000-0000-0000-000000000014"), "auth0", new DateTime(2021, 6, 29, 2, 4, 12, 195, DateTimeKind.Utc).AddTicks(2880), "user@email.com", "userLahblah", false, new DateTime(2021, 6, 29, 2, 4, 12, 195, DateTimeKind.Utc).AddTicks(2887), "Мышиный король", null, null, true }
                 });
 
             migrationBuilder.InsertData(
                 table: "Tenants",
                 columns: new[] { "TenantID", "IsReadOnly", "Name", "PricingTierActivatedDateTime", "PricingTierActivatedUntilDateTime", "PricingTierId", "Status", "Type" },
-                values: new object[] { new Guid("00000000-0000-0000-0000-000000000001"), false, "Системный", new DateTime(2021, 4, 17, 4, 9, 49, 640, DateTimeKind.Utc).AddTicks(1460), new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new Guid("00000000-0000-0000-0000-000000000001"), 1, 0 });
+                values: new object[] { new Guid("00000000-0000-0000-0000-000000000001"), false, "Системный", new DateTime(2021, 6, 29, 2, 4, 12, 194, DateTimeKind.Utc).AddTicks(8006), new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new Guid("00000000-0000-0000-0000-000000000001"), 1, 0 });
 
             migrationBuilder.InsertData(
                 table: "Tenants",
                 columns: new[] { "TenantID", "IsReadOnly", "Name", "PricingTierActivatedDateTime", "PricingTierActivatedUntilDateTime", "PricingTierId", "Status", "Type" },
-                values: new object[] { new Guid("00000000-0000-0000-0000-000000000002"), false, "Уважаемый", new DateTime(2021, 4, 17, 4, 9, 49, 640, DateTimeKind.Utc).AddTicks(3042), new DateTime(2021, 5, 17, 4, 9, 49, 640, DateTimeKind.Utc).AddTicks(3048), new Guid("00000000-0000-0000-0000-000000000013"), 1, 1 });
+                values: new object[] { new Guid("00000000-0000-0000-0000-000000000002"), false, "Уважаемый", new DateTime(2021, 6, 29, 2, 4, 12, 194, DateTimeKind.Utc).AddTicks(9880), new DateTime(2021, 7, 29, 2, 4, 12, 194, DateTimeKind.Utc).AddTicks(9887), new Guid("00000000-0000-0000-0000-000000000013"), 1, 1 });
 
             migrationBuilder.InsertData(
                 table: "Memberships",
                 columns: new[] { "MembershipID", "AccessType", "IsDeleted", "TenantID", "UserID" },
-                values: new object[] { new Guid("00000000-0000-0000-0000-000000000015"), 4, false, new Guid("00000000-0000-0000-0000-000000000002"), new Guid("00000000-0000-0000-0000-000000000014") });
+                values: new object[] { new Guid("00000000-0000-0000-0000-000000000015"), 8, false, new Guid("00000000-0000-0000-0000-000000000002"), new Guid("00000000-0000-0000-0000-000000000014") });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Invitations_TenantId",
+                table: "Invitations",
+                column: "TenantId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Memberships_TenantID",
@@ -189,6 +222,9 @@ namespace YA.UserWorker.Migrations
         {
             migrationBuilder.DropTable(
                 name: "ClientInfos");
+
+            migrationBuilder.DropTable(
+                name: "Invitations");
 
             migrationBuilder.DropTable(
                 name: "Memberships");

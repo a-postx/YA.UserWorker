@@ -12,6 +12,9 @@ namespace YA.UserWorker.Core.Entities
         Owner = 8
     }
 
+    /// <summary>
+    /// Членство в арендаторе. Сущность не реализует ITenantEntity поскольку используется при регистрации пользователя.
+    /// </summary>
     public class Membership : IAuditedEntityBase, IRowVersionedEntity, ISoftDeleteEntity
     {
         public Guid MembershipID { get; set; }

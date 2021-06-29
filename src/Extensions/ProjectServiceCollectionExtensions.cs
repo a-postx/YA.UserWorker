@@ -2,6 +2,8 @@ using Delobytes.Mapper;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 using YA.UserWorker.Application.ActionHandlers.ClientInfos;
+using YA.UserWorker.Application.ActionHandlers.Invitations;
+using YA.UserWorker.Application.ActionHandlers.Memberships;
 using YA.UserWorker.Application.ActionHandlers.Tenants;
 using YA.UserWorker.Application.ActionHandlers.Users;
 using YA.UserWorker.Application.Interfaces;
@@ -42,8 +44,15 @@ namespace YA.UserWorker.Extensions
 
                 .AddScoped<IGetUserAh, GetUserAh>()
                 .AddScoped<IPatchUserAh, PatchUserAh>()
-                .AddScoped<IPostUserAh, PostUserAh>()
+                .AddScoped<IRegisterNewUserAh, RegisterNewUserAh>()
                 .AddScoped<ISwitchUserTenantAh, SwitchUserTenantAh>()
+
+                .AddScoped<IPostInvitationAh, PostInvitationAh>()
+                .AddScoped<IGetInvitationAh, GetInvitationAh>()
+                .AddScoped<IDeleteInvitationAh, DeleteInvitationAh>()
+
+                .AddScoped<IPostMembershipAh, PostMembershipAh>()
+                .AddScoped<IDeleteMembershipAh, DeleteMembershipAh>()
 
                 .AddScoped<IPostClientInfoAh, PostClientInfoAh>();
         }

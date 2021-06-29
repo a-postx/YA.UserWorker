@@ -62,7 +62,7 @@ namespace YA.UserWorker.Application.ActionHandlers.Tenants
             
             Membership userMembership = memberships.Where(e => e.TenantID == tenantId).FirstOrDefault();
 
-            if (userMembership == null || userMembership.AccessType != Core.Entities.YaMembershipAccessType.Owner)
+            if (userMembership == null || userMembership.AccessType != YaMembershipAccessType.Owner)
             {
                 return new ForbidResult();
             }

@@ -124,19 +124,19 @@ namespace YA.UserWorker
                     {
                         policy.RequireClaim(YaClaimNames.role, "Administrator");
                     });
-                    options.AddPolicy("Owners", policy =>
+                    options.AddPolicy(YaPolicyNames.Owner, policy =>
                     {
                         policy.RequireAssertion(context =>
                             context.User.HasClaim(c => c.Type == YaClaimNames.tenantaccesstype && c.Value == "Owner"));
                     });
-                    options.AddPolicy("Admins", policy =>
+                    options.AddPolicy(YaPolicyNames.Admin, policy =>
                     {
                         policy.RequireAssertion(context =>
                             context.User.HasClaim(c =>
                                 (c.Type == YaClaimNames.tenantaccesstype && c.Value == "Owner")
                                 || (c.Type == YaClaimNames.tenantaccesstype && c.Value == "Admin")));
                     });
-                    options.AddPolicy("Writers", policy =>
+                    options.AddPolicy(YaPolicyNames.Writer, policy =>
                     {
                         policy.RequireAssertion(context =>
                             context.User.HasClaim(c =>
@@ -144,7 +144,7 @@ namespace YA.UserWorker
                                 || (c.Type == YaClaimNames.tenantaccesstype && c.Value == "Admin")
                                 || (c.Type == YaClaimNames.tenantaccesstype && c.Value == "ReadWrite")));
                     });
-                    options.AddPolicy("Readers", policy =>
+                    options.AddPolicy(YaPolicyNames.Reader, policy =>
                     {
                         policy.RequireAssertion(context =>
                             context.User.HasClaim(c =>

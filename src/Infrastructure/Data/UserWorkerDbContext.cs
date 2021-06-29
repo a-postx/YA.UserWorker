@@ -39,6 +39,7 @@ namespace YA.UserWorker.Infrastructure.Data
         public DbSet<PricingTier> PricingTiers { get; set; }
         public DbSet<User> Users { get; set; }
         public DbSet<Membership> Memberships { get; set; }
+        public DbSet<YaInvitation> Invitations { get; set; }
         public DbSet<YaClientInfo> ClientInfos { get; set; }
 
         private readonly Guid _tenantId;
@@ -81,6 +82,11 @@ namespace YA.UserWorker.Infrastructure.Data
         public async Task CreateEntityAsync<T>(T item, CancellationToken cancellationToken) where T : class, ITenantEntity
         {
             await Set<T>().AddAsync(item, cancellationToken);
+        }
+
+        public async Task<T> GetEntityAsync<T>(Expression<Func<T, bool>> predicate, CancellationToken cancellationToken) where T : class, ITenantEntity
+        {
+            return await Set<T>().SingleOrDefaultAsync(predicate, cancellationToken);
         }
 
         public async Task<T> GetEntityWithTenantAsync<T>(Expression<Func<T, bool>> predicate, CancellationToken cancellationToken) where T : class, ITenantEntity
@@ -201,6 +207,11 @@ namespace YA.UserWorker.Infrastructure.Data
         {
             return await Set<T>().CountAsync(cancellationToken);
         }
+
+        public void DeleteEntity<T>(T item) where T : class, ITenantEntity
+        {
+            Set<T>().Remove(item);
+        }
         #endregion
 
         #region Tenants
@@ -219,11 +230,13 @@ namespace YA.UserWorker.Infrastructure.Data
             return await Set<Tenant>().SingleOrDefaultAsync(predicate, cancellationToken);
         }
 
-        public async Task<Tenant> GetTenantWithPricingTierAsync(Guid tenantId, CancellationToken cancellationToken)
+        public async Task<Tenant> GetTenantWithAllRelativesAsync(Guid tenantId, CancellationToken cancellationToken)
         {
             return await Set<Tenant>()
                 .Include(nameof(PricingTier))
-                .Include("Memberships")
+                .Include(e => e.Memberships)
+                    .ThenInclude(c => c.User)
+                .Include(e => e.Invitations)
                 .SingleOrDefaultAsync(e => e.TenantID == tenantId, cancellationToken);
         }
 
@@ -258,14 +271,14 @@ namespace YA.UserWorker.Infrastructure.Data
         public async Task<User> GetUserWithMembershipsAsync(string authProvider, string externalId, CancellationToken cancellationToken)
         {
             return await Users
-                .Include("Memberships")
+                .Include(e => e.Memberships)
                 .SingleOrDefaultAsync(e => e.AuthProvider == authProvider && e.ExternalId == externalId, cancellationToken);
         }
 
         public async Task<User> GetUserWithMembershipsAsync(Guid userId, CancellationToken cancellationToken)
         {
             return await Set<User>()
-                .Include("Memberships")
+                .Include(e => e.Memberships)
                 .SingleOrDefaultAsync(e => e.UserID == userId, cancellationToken);
         }
 
@@ -280,10 +293,37 @@ namespace YA.UserWorker.Infrastructure.Data
         }
         #endregion
 
+        #region TenantInvitations
+        public async Task CreateInvitationAsync(YaInvitation item, CancellationToken cancellationToken)
+        {
+            await Set<YaInvitation>().AddAsync(item, cancellationToken);
+        }
+
+        public async Task<YaInvitation> GetInvitationAsync(Expression<Func<YaInvitation, bool>> predicate, CancellationToken cancellationToken)
+        {
+            return await Set<YaInvitation>().Include(e => e.Tenant).SingleOrDefaultAsync(predicate, cancellationToken);
+        }
+
+        public void DeleteInvitation(YaInvitation item)
+        {
+            Set<YaInvitation>().Remove(item);
+        }
+        #endregion
+
         #region Memberships
         public async Task CreateMembershipAsync(Membership item, CancellationToken cancellationToken)
         {
             await Set<Membership>().AddAsync(item, cancellationToken);
+        }
+
+        public async Task<Membership> GetMembershipAsync(Expression<Func<Membership, bool>> predicate, CancellationToken cancellationToken)
+        {
+            return await Set<Membership>().SingleOrDefaultAsync(predicate, cancellationToken);
+        }
+
+        public void DeleteMembership(Membership item)
+        {
+            Set<Membership>().Remove(item);
         }
         #endregion
 

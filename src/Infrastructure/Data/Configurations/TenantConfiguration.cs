@@ -26,6 +26,20 @@ namespace YA.UserWorker.Infrastructure.Data.Configurations
                 .HasConversion(v => v, v => DateTime.SpecifyKind(v, DateTimeKind.Utc));
             modelBuilder.Property(p => p.tstamp).IsRowVersion();
 
+            modelBuilder
+                .HasMany(c => c.Invitations)
+                .WithOne(u => u.Tenant)
+                .HasForeignKey(k => k.TenantId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .IsRequired();
+
+            modelBuilder
+                .HasMany(c => c.Memberships)
+                .WithOne(u => u.Tenant)
+                .HasForeignKey(k => k.TenantID)
+                .OnDelete(DeleteBehavior.Cascade)
+                .IsRequired();
+
             modelBuilder.Property(p => p.Name)
                 .IsUnicode()
                 .HasMaxLength(128);

@@ -1,7 +1,10 @@
+using System;
+
 namespace YA.UserWorker.Application.Models.SaveModels
 {
-    public class AccessInfoSm
+    public class UserRegistrationInfoSm
     {
         public string AccessToken { get; set; }
+        public Guid? JoinTeamToken { get; set; }
     }
 }

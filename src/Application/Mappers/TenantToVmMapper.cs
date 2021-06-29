@@ -68,6 +68,17 @@ namespace YA.UserWorker.Application.Mappers
                 }
             }
 
+            if (source.Invitations?.Count > 0)
+            {
+                destination.Invitations = new List<InvitationVm>();
+
+                foreach (YaInvitation item in source.Invitations)
+                {
+                    InvitationVm invite = _mapper.Map<InvitationVm>(item);
+                    destination.Invitations.Add(invite);
+                }
+            }
+
             RouteData routeData = _httpContextAccessor.HttpContext.GetRouteData();
             string route = (string)routeData.Values["controller"] + (string)routeData.Values["action"];
 

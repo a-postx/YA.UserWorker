@@ -10,7 +10,7 @@ using YA.UserWorker.Infrastructure.Data;
 namespace YA.UserWorker.Migrations
 {
     [DbContext(typeof(UserWorkerDbContext))]
-    [Migration("20210417040950_init")]
+    [Migration("20210629020413_init")]
     partial class init
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -18,7 +18,7 @@ namespace YA.UserWorker.Migrations
 #pragma warning disable 612, 618
             modelBuilder
                 .HasAnnotation("Relational:MaxIdentifierLength", 128)
-                .HasAnnotation("ProductVersion", "5.0.5")
+                .HasAnnotation("ProductVersion", "5.0.7")
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
             modelBuilder.Entity("YA.UserWorker.Core.Entities.Membership", b =>
@@ -66,7 +66,7 @@ namespace YA.UserWorker.Migrations
                         new
                         {
                             MembershipID = new Guid("00000000-0000-0000-0000-000000000015"),
-                            AccessType = 4,
+                            AccessType = 8,
                             IsDeleted = false,
                             TenantID = new Guid("00000000-0000-0000-0000-000000000002"),
                             UserID = new Guid("00000000-0000-0000-0000-000000000014")
@@ -197,7 +197,7 @@ namespace YA.UserWorker.Migrations
                             TenantID = new Guid("00000000-0000-0000-0000-000000000001"),
                             IsReadOnly = false,
                             Name = "Системный",
-                            PricingTierActivatedDateTime = new DateTime(2021, 4, 17, 4, 9, 49, 640, DateTimeKind.Utc).AddTicks(1460),
+                            PricingTierActivatedDateTime = new DateTime(2021, 6, 29, 2, 4, 12, 194, DateTimeKind.Utc).AddTicks(8006),
                             PricingTierActivatedUntilDateTime = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             PricingTierId = new Guid("00000000-0000-0000-0000-000000000001"),
                             Status = 1,
@@ -208,8 +208,8 @@ namespace YA.UserWorker.Migrations
                             TenantID = new Guid("00000000-0000-0000-0000-000000000002"),
                             IsReadOnly = false,
                             Name = "Уважаемый",
-                            PricingTierActivatedDateTime = new DateTime(2021, 4, 17, 4, 9, 49, 640, DateTimeKind.Utc).AddTicks(3042),
-                            PricingTierActivatedUntilDateTime = new DateTime(2021, 5, 17, 4, 9, 49, 640, DateTimeKind.Utc).AddTicks(3048),
+                            PricingTierActivatedDateTime = new DateTime(2021, 6, 29, 2, 4, 12, 194, DateTimeKind.Utc).AddTicks(9880),
+                            PricingTierActivatedUntilDateTime = new DateTime(2021, 7, 29, 2, 4, 12, 194, DateTimeKind.Utc).AddTicks(9887),
                             PricingTierId = new Guid("00000000-0000-0000-0000-000000000013"),
                             Status = 1,
                             Type = 1
@@ -281,22 +281,22 @@ namespace YA.UserWorker.Migrations
                         {
                             UserID = new Guid("00000000-0000-0000-0000-000000000012"),
                             AuthProvider = "auth0",
-                            CreatedDateTime = new DateTime(2021, 4, 17, 4, 9, 49, 640, DateTimeKind.Utc).AddTicks(4125),
+                            CreatedDateTime = new DateTime(2021, 6, 29, 2, 4, 12, 195, DateTimeKind.Utc).AddTicks(1198),
                             Email = "admin@email.com",
                             ExternalId = "lahblah",
                             IsDeleted = false,
-                            LastModifiedDateTime = new DateTime(2021, 4, 17, 4, 9, 49, 640, DateTimeKind.Utc).AddTicks(4129),
+                            LastModifiedDateTime = new DateTime(2021, 6, 29, 2, 4, 12, 195, DateTimeKind.Utc).AddTicks(1206),
                             Name = "Серый кардинал"
                         },
                         new
                         {
                             UserID = new Guid("00000000-0000-0000-0000-000000000014"),
                             AuthProvider = "auth0",
-                            CreatedDateTime = new DateTime(2021, 4, 17, 4, 9, 49, 640, DateTimeKind.Utc).AddTicks(5591),
+                            CreatedDateTime = new DateTime(2021, 6, 29, 2, 4, 12, 195, DateTimeKind.Utc).AddTicks(2880),
                             Email = "user@email.com",
                             ExternalId = "userLahblah",
                             IsDeleted = false,
-                            LastModifiedDateTime = new DateTime(2021, 4, 17, 4, 9, 49, 640, DateTimeKind.Utc).AddTicks(5597),
+                            LastModifiedDateTime = new DateTime(2021, 6, 29, 2, 4, 12, 195, DateTimeKind.Utc).AddTicks(2887),
                             Name = "Мышиный король"
                         });
                 });
@@ -390,6 +390,64 @@ namespace YA.UserWorker.Migrations
                     b.ToTable("ClientInfos");
                 });
 
+            modelBuilder.Entity("YA.UserWorker.Core.Entities.YaInvitation", b =>
+                {
+                    b.Property<Guid>("YaInvitationID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("AccessType")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("Claimed")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false);
+
+                    b.Property<DateTime?>("ClaimedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("CreatedDateTime")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETUTCDATE()");
+
+                    b.Property<Guid?>("CreatedMembershipId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<DateTime?>("ExpirationDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("InvitedBy")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<DateTime>("LastModifiedDateTime")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETUTCDATE()");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<byte[]>("tstamp")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.HasKey("YaInvitationID");
+
+                    b.HasIndex("TenantId");
+
+                    b.ToTable("Invitations");
+                });
+
             modelBuilder.Entity("YA.UserWorker.Core.Entities.Membership", b =>
                 {
                     b.HasOne("YA.UserWorker.Core.Entities.Tenant", "Tenant")
@@ -454,6 +512,17 @@ namespace YA.UserWorker.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("YA.UserWorker.Core.Entities.YaInvitation", b =>
+                {
+                    b.HasOne("YA.UserWorker.Core.Entities.Tenant", "Tenant")
+                        .WithMany("Invitations")
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Tenant");
+                });
+
             modelBuilder.Entity("YA.UserWorker.Core.Entities.PricingTier", b =>
                 {
                     b.Navigation("Tenants");
@@ -461,6 +530,8 @@ namespace YA.UserWorker.Migrations
 
             modelBuilder.Entity("YA.UserWorker.Core.Entities.Tenant", b =>
                 {
+                    b.Navigation("Invitations");
+
                     b.Navigation("Memberships");
                 });
 

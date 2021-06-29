@@ -23,7 +23,19 @@ namespace YA.UserWorker.Constants
         public const string DeleteTenantById = ControllerName.Tenants + nameof(DeleteTenantById);
         public const string DeleteTenant = ControllerName.Tenants + nameof(DeleteTenant);
 
-        public const string OptionsClientInfo = ControllerName.ClientInfo + nameof(OptionsClientInfo);
-        public const string PostClientInfo = ControllerName.ClientInfo + nameof(PostClientInfo);
+        public const string GetInvitation = ControllerName.TenantInvitations + nameof(GetInvitation);
+        public const string HeadInvitation = ControllerName.TenantInvitations + nameof(HeadInvitation);
+        public const string OptionsInvitation = ControllerName.TenantInvitations + nameof(OptionsInvitation);
+        public const string DeleteInvitation = ControllerName.TenantInvitations + nameof(DeleteInvitation);
+        public const string OptionsTenantInvitations = ControllerName.TenantInvitations + nameof(OptionsTenantInvitations);
+        public const string PostTenantInvitation = ControllerName.TenantInvitations + nameof(PostTenantInvitation);
+
+        public const string OptionsMembership = ControllerName.TenantMemberships + nameof(OptionsMembership);
+        public const string DeleteMembership = ControllerName.TenantMemberships + nameof(DeleteMembership);
+        public const string OptionsTenantMemberships = ControllerName.TenantInvitations + nameof(OptionsTenantMemberships);
+        public const string PostTenantMembership = ControllerName.TenantMemberships + nameof(PostTenantMembership);
+
+        public const string OptionsClientInfo = ControllerName.ClientInfos + nameof(OptionsClientInfo);
+        public const string PostClientInfo = ControllerName.ClientInfos + nameof(PostClientInfo);
     }
 }

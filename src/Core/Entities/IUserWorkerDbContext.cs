@@ -9,6 +9,7 @@ namespace YA.UserWorker.Core.Entities
     public interface IUserWorkerDbContext
     {
         Task CreateEntityAsync<T>(T item, CancellationToken cancellationToken) where T : class, ITenantEntity;
+        Task<T> GetEntityAsync<T>(Expression<Func<T, bool>> predicate, CancellationToken cancellationToken) where T : class, ITenantEntity;
         Task<T> GetEntityWithTenantAsync<T>(Expression<Func<T, bool>> predicate, CancellationToken cancellationToken) where T : class, ITenantEntity;
         Task<List<T>> GetEntitiesFromAllTenantsWithTenantAsync<T>(Expression<Func<T, bool>> predicate, CancellationToken cancellationToken) where T : class, ITenantEntity;
         Task<List<T>> GetEntitiesPagedAsync<T>(int? first, DateTimeOffset? createdAfter, DateTimeOffset? createdBefore, CancellationToken cancellationToken) where T : class, IAuditedEntityBase, IRowVersionedEntity;
@@ -20,10 +21,13 @@ namespace YA.UserWorker.Core.Entities
         Task<bool> GetHasPreviousPageAsync<T>(int? last, DateTimeOffset? createdAfter, DateTimeOffset? createdBefore, CancellationToken cancellationToken) where T : class, IAuditedEntityBase, IRowVersionedEntity;
         Task<int> GetEntitiesCountAsync<T>(CancellationToken cancellationToken) where T : class;
 
+        void DeleteEntity<T>(T item) where T : class, ITenantEntity;
+
+
         Task CreateTenantAsync(Tenant item, CancellationToken cancellationToken);
         Task<Tenant> GetTenantAsync(Guid tenantId, CancellationToken cancellationToken);
         Task<Tenant> GetTenantAsync(Expression<Func<Tenant, bool>> predicate, CancellationToken cancellationToken);
-        Task<Tenant> GetTenantWithPricingTierAsync(Guid tenantId, CancellationToken cancellationToken);
+        Task<Tenant> GetTenantWithAllRelativesAsync(Guid tenantId, CancellationToken cancellationToken);
         void UpdateTenant(Tenant item);
         void DeleteTenant(Tenant item);
 
@@ -35,7 +39,13 @@ namespace YA.UserWorker.Core.Entities
         void UpdateUser(User item);
         void DeleteUser(User item);
 
+        Task CreateInvitationAsync(YaInvitation item, CancellationToken cancellationToken);
+        Task<YaInvitation> GetInvitationAsync(Expression<Func<YaInvitation, bool>> predicate, CancellationToken cancellationToken);
+        void DeleteInvitation(YaInvitation item);
+
         Task CreateMembershipAsync(Membership item, CancellationToken cancellationToken);
+        Task<Membership> GetMembershipAsync(Expression<Func<Membership, bool>> predicate, CancellationToken cancellationToken);
+        void DeleteMembership(Membership item);
 
         Task CreateClientInfoAsync(YaClientInfo item, CancellationToken cancellationToken);
 
