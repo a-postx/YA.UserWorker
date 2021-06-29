@@ -107,6 +107,8 @@ namespace YA.UserWorker.Application.ActionHandlers.Memberships
                 case CommandStatus.Unknown:
                 default:
                     throw new ArgumentOutOfRangeException(nameof(membershipResult.Status), membershipResult.Status, null);
+                case CommandStatus.UnprocessableEntity: //пользователь уже является членом этого арендатора
+                    return new BadRequestResult();
                 case CommandStatus.Ok:
                     break;
             }

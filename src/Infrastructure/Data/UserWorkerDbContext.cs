@@ -316,9 +316,11 @@ namespace YA.UserWorker.Infrastructure.Data
             await Set<Membership>().AddAsync(item, cancellationToken);
         }
 
-        public async Task<Membership> GetMembershipAsync(Expression<Func<Membership, bool>> predicate, CancellationToken cancellationToken)
+        public async Task<Membership> GetMembershipWithUserAsync(Expression<Func<Membership, bool>> predicate, CancellationToken cancellationToken)
         {
-            return await Set<Membership>().SingleOrDefaultAsync(predicate, cancellationToken);
+            return await Set<Membership>()
+                .Include(e => e.User)
+                .SingleOrDefaultAsync(predicate, cancellationToken);
         }
 
         public void DeleteMembership(Membership item)

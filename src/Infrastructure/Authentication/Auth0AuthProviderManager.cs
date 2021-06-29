@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
@@ -8,6 +9,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using YA.UserWorker.Application.Interfaces;
+using YA.UserWorker.Application.Models.Internal;
 using YA.UserWorker.Core.Entities;
 using YA.UserWorker.Infrastructure.Authentication.Dto;
 using YA.UserWorker.Options;
@@ -16,6 +18,7 @@ namespace YA.UserWorker.Infrastructure.Authentication
 {
     /// <summary>
     /// Сервис управления поставщиком аутентификации Auth0. Ограничение - 1000 запросов в месяц.
+    /// https://auth0.com/docs/api/management/v2
     /// </summary>
     public class Auth0AuthProviderManager : IAuthProviderManager
     {
@@ -104,6 +107,63 @@ namespace YA.UserWorker.Infrastructure.Authentication
 
                 _log.LogInformation("{UserId} has been updated with tenant {TenantId}", userId, tenantId);
             }
+        }
+
+        /// <summary>
+        /// Получить текущий идентификатор арендатора для пользователя.
+        /// </summary>
+        /// <param name="userId">Идентификатор пользователя (sub).</param>
+        /// <param name="cancellationToken">Токен отмены.</param>
+        public async Task<Guid> GetUserTenantAsync(string userId, CancellationToken cancellationToken)
+        {
+            Guid result = Guid.Empty;
+
+            string managementToken = await GetManagementTokenAsync(cancellationToken);
+
+            using (HttpRequestMessage getRequest = new(HttpMethod.Get, $"{_secrets.OauthManagementApiUrl}/users/{userId}"))
+            using (HttpClient client = _httpClientFactory.CreateClient())
+            {
+                client.DefaultRequestHeaders.Authorization =
+                    new AuthenticationHeaderValue("Bearer", managementToken);
+                string correlationId = _runtimeCtx.GetCorrelationId().ToString();
+                client.DefaultRequestHeaders.Add("x-correlation-id", correlationId);
+
+                HttpResponseMessage getUserResponse = await client.SendAsync(getRequest, cancellationToken);
+
+                if (!getUserResponse.IsSuccessStatusCode)
+                {
+                    throw new InvalidOperationException($"Cannot get tenant for user {userId}, status code: {getUserResponse.StatusCode}");
+                }
+
+                try
+                {
+                    using (Stream responseStream = await getUserResponse.Content.ReadAsStreamAsync(cancellationToken))
+                    {
+                        Auth0User user = await JsonSerializer
+                            .DeserializeAsync<Auth0User>(responseStream, new JsonSerializerOptions { PropertyNameCaseInsensitive = true }, cancellationToken);
+
+                        if (user != null)
+                        {
+                            if (Guid.TryParse(user.app_metadata.Tid, out Guid tid))
+                            {
+                                result = tid;
+                            }
+                        }
+                        else
+                        {
+                            _log.LogWarning("No user available.");
+                        }
+
+                        _log.LogInformation("Tenant for user {UserID} has been retrieved", userId);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _log.LogError(ex, "Error getting tenant for {UserID}", userId);
+                }
+            }
+
+            return result;
         }
 
         /// <summary>

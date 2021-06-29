@@ -45,7 +45,7 @@ namespace YA.UserWorker.Application.Features.Memberships.Commands
                 YaMembershipAccessType accessType = command.AccessType;
 
                 Membership existingMembership = await _dbContext
-                    .GetMembershipAsync(e => e.TenantID == tenantId && e.UserID == userId, cancellationToken);
+                    .GetMembershipWithUserAsync(e => e.TenantID == tenantId && e.UserID == userId, cancellationToken);
 
                 if (existingMembership != null)
                 {

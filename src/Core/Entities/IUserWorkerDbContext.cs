@@ -44,7 +44,7 @@ namespace YA.UserWorker.Core.Entities
         void DeleteInvitation(YaInvitation item);
 
         Task CreateMembershipAsync(Membership item, CancellationToken cancellationToken);
-        Task<Membership> GetMembershipAsync(Expression<Func<Membership, bool>> predicate, CancellationToken cancellationToken);
+        Task<Membership> GetMembershipWithUserAsync(Expression<Func<Membership, bool>> predicate, CancellationToken cancellationToken);
         void DeleteMembership(Membership item);
 
         Task CreateClientInfoAsync(YaClientInfo item, CancellationToken cancellationToken);

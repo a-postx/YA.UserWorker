@@ -153,6 +153,11 @@ namespace YA.UserWorker
                                 || (c.Type == YaClaimNames.tenantaccesstype && c.Value == "ReadWrite")
                                 || (c.Type == YaClaimNames.tenantaccesstype && c.Value == "ReadOnly")));
                     });
+                    options.AddPolicy(YaPolicyNames.NonAnonymous, policy =>
+                    {
+                        policy.RequireAssertion(context =>
+                            context.User.Identity.IsAuthenticated);
+                    });
                 });
 
             services.AddHttpClient();

@@ -11,12 +11,14 @@ namespace YA.UserWorker.Application.Features.Memberships.Commands
 {
     public class DeleteMembershipCommand : IRequest<ICommandResult<EmptyCommandResult>>
     {
-        public DeleteMembershipCommand(Guid id)
+        public DeleteMembershipCommand(Guid id, Guid tenantId)
         {
             Id = id;
+            TenantId = tenantId;
         }
 
         public Guid Id { get; protected set; }
+        public Guid TenantId { get; protected set; }
 
         public class DeleteMembershipHandler : IRequestHandler<DeleteMembershipCommand, ICommandResult<EmptyCommandResult>>
         {
@@ -33,15 +35,20 @@ namespace YA.UserWorker.Application.Features.Memberships.Commands
             public async Task<ICommandResult<EmptyCommandResult>> Handle(DeleteMembershipCommand command, CancellationToken cancellationToken)
             {
                 Guid membershipId = command.Id;
+                Guid tenantId = command.TenantId;
 
                 if (membershipId == Guid.Empty)
                 {
                     return new CommandResult<EmptyCommandResult>(CommandStatus.BadRequest, null);
                 }
 
-                //доделать: нет автофильтра по арендатору
+                if (tenantId == Guid.Empty)
+                {
+                    return new CommandResult<EmptyCommandResult>(CommandStatus.BadRequest, null);
+                }
+
                 Membership yaMembership = await _dbContext
-                    .GetMembershipAsync(e => e.MembershipID == membershipId, cancellationToken);
+                    .GetMembershipWithUserAsync(e => e.MembershipID == membershipId && e.TenantID == tenantId, cancellationToken);
 
                 if (yaMembership == null)
                 {

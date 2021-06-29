@@ -51,31 +51,40 @@ namespace YA.UserWorker.Application.ActionHandlers.Users
                 case CommandStatus.NotFound:
                     return new NotFoundResult();
                 case CommandStatus.Ok:
-                    if (result.Data.Tenants.Where(e => e.TenantID == targetTenantId).Any())
-                    {
-                        Membership membership = result.Data.Memberships.Where(e => e.TenantID == targetTenantId).FirstOrDefault();
+                    break;
+            }
 
-                        if (membership is not null)
-                        {
-                            await _authProviderManager
-                                .SetTenantAsync(authId + "|" + userId, targetTenantId, membership.AccessType, cancellationToken);
+            if (result.Data is null)
+            {
+                return new BadRequestResult();
+            }
 
-                            _log.LogInformation("User {UserId} has updated with tenant {TenantId}", userId, targetTenantId);
+            User user = result.Data;
 
-                            _actionCtx.ActionContext.HttpContext
-                                .Response.Headers.Add(HeaderNames.LastModified, result.Data.LastModifiedDateTime.ToString("R", CultureInfo.InvariantCulture));
+            if (user.Tenants.Where(e => e.TenantID == targetTenantId).Any())
+            {
+                Membership membership = user.Memberships.Where(e => e.TenantID == targetTenantId).FirstOrDefault();
 
-                            return new OkResult();
-                        }
-                        else
-                        {
-                            return new NotFoundResult();
-                        }
-                    }
-                    else
-                    {
-                        return new NotFoundResult();
-                    }
+                if (membership is not null)
+                {
+                    await _authProviderManager
+                        .SetTenantAsync(authId + "|" + userId, targetTenantId, membership.AccessType, cancellationToken);
+
+                    _log.LogInformation("User {UserId} has updated with tenant {TenantId}", userId, targetTenantId);
+
+                    _actionCtx.ActionContext.HttpContext
+                        .Response.Headers.Add(HeaderNames.LastModified, user.LastModifiedDateTime.ToString("R", CultureInfo.InvariantCulture));
+
+                    return new OkResult();
+                }
+                else
+                {
+                    return new BadRequestResult();
+                }
+            }
+            else
+            {
+                return new BadRequestResult();
             }
         }
     }

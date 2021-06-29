@@ -12,12 +12,14 @@ namespace YA.UserWorker.Application.Features.Invitations.Commands
 {
     public class DeleteInvitationCommand : IRequest<ICommandResult<EmptyCommandResult>>
     {
-        public DeleteInvitationCommand(Guid id)
+        public DeleteInvitationCommand(Guid id, Guid tenantId)
         {
             Id = id;
+            TenantId = tenantId;
         }
 
         public Guid Id { get; protected set; }
+        public Guid TenantId { get; protected set; }
 
         public class DeleteInviteHandler : IRequestHandler<DeleteInvitationCommand, ICommandResult<EmptyCommandResult>>
         {
@@ -39,14 +41,21 @@ namespace YA.UserWorker.Application.Features.Invitations.Commands
 
             public async Task<ICommandResult<EmptyCommandResult>> Handle(DeleteInvitationCommand command, CancellationToken cancellationToken)
             {
-                Guid inviteId = command.Id;
+                Guid invitationId = command.Id;
+                Guid tenantId = command.TenantId;
 
-                if (inviteId == Guid.Empty)
+                if (invitationId == Guid.Empty)
                 {
                     return new CommandResult<EmptyCommandResult>(CommandStatus.BadRequest, null);
                 }
 
-                YaInvitation yaInvite = await _dbContext.GetInvitationAsync(e => e.YaInvitationID == inviteId, cancellationToken);
+                if (tenantId == Guid.Empty)
+                {
+                    return new CommandResult<EmptyCommandResult>(CommandStatus.BadRequest, null);
+                }
+
+                YaInvitation yaInvite = await _dbContext
+                    .GetInvitationAsync(e => e.YaInvitationID == invitationId && e.TenantId == tenantId, cancellationToken);
 
                 if (yaInvite == null)
                 {

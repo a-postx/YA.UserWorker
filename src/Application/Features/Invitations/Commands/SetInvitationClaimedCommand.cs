@@ -52,7 +52,7 @@ namespace YA.UserWorker.Application.Features.Invitations.Commands
                 }
 
                 YaInvitation invitation = await _dbContext.GetInvitationAsync(e => e.YaInvitationID == invitationId, cancellationToken);
-                Membership membership = await _dbContext.GetMembershipAsync(e => e.MembershipID == resultMembershipId, cancellationToken);
+                Membership membership = await _dbContext.GetMembershipWithUserAsync(e => e.MembershipID == resultMembershipId, cancellationToken);
 
                 if (invitation == null)
                 {

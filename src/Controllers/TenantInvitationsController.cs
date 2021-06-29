@@ -72,6 +72,7 @@ namespace YA.UserWorker.Controllers
         /// </summary>
         /// <returns>Ответ 200 OK.</returns>
         [HttpOptions("{invitationId}", Name = RouteNames.OptionsInvitation)]
+        [AllowAnonymous]
         [SwaggerResponse(StatusCodes.Status200OK, "Доступные HTTP методы.")]
         public IActionResult OptionsInvitation()
         {
@@ -95,6 +96,7 @@ namespace YA.UserWorker.Controllers
         /// или 409 Конфликт если запрос является дубликатом.</returns>
         [HttpGet("{invitationId}", Name = RouteNames.GetInvitation)]
         [HttpHead("{invitationId}", Name = RouteNames.HeadInvitation)]
+        [AllowAnonymous]
         [SwaggerResponse(StatusCodes.Status200OK, "Приглашение с указанным идентификатором.", typeof(InvitationVm))]
         [SwaggerResponse(StatusCodes.Status304NotModified, "Приглашение не изменено с даты в заголовке If-Modified-Since.")]
         [SwaggerResponse(StatusCodes.Status404NotFound, "Приглашение не найдено.")]
