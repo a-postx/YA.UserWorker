@@ -13,6 +13,7 @@ namespace YA.UserWorker.Application.Models.ViewModels
         public MembershipAccessType AccessType { get; set; }
         public bool Claimed { get; set; }
         public DateTime? ExpirationDate { get; set; }
+        public TenantInvitationStatus Status { get; set; }
         public DateTime CreatedDateTime { get; set; }
     }
 }

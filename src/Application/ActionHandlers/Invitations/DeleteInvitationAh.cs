@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.Logging;
 using YA.UserWorker.Application.Enums;
 using YA.UserWorker.Application.Features;
-using YA.UserWorker.Application.Features.Invitations.Commands;
+using YA.UserWorker.Application.Features.TenantInvitations.Commands;
 using YA.UserWorker.Application.Interfaces;
 
 namespace YA.UserWorker.Application.ActionHandlers.Invitations

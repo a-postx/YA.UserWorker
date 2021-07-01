@@ -7,7 +7,7 @@ using YA.UserWorker.Application.Enums;
 using YA.UserWorker.Application.Interfaces;
 using YA.UserWorker.Core.Entities;
 
-namespace YA.UserWorker.Application.Features.Invitations.Queries
+namespace YA.UserWorker.Application.Features.TenantInvitations.Queries
 {
     public class GetInvitationCommand : IRequest<ICommandResult<YaInvitation>>
     {

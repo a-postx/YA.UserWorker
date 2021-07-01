@@ -6,5 +6,7 @@ namespace YA.UserWorker.Constants
 
         public const string MessageBusPublishQueuePrefix = "userworker";
         public const string PricingTierQueueName = MessageBusPublishQueuePrefix + ".pricingtier";
+
+        public const string TenantInvitationSentQueueName = MessageBusPublishQueuePrefix + ".tenant.invitation.sent";
     }
 }

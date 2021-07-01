@@ -71,7 +71,7 @@ namespace YA.UserWorker.Controllers
         }
 
         /// <summary>
-        /// Создать пользователя для текущего токена доступа.
+        /// Создать пользователя с необходимоыми сущностями для текущего токена доступа.
         /// </summary>
         /// <param name="handler">Обработчик.</param>
         /// <param name="registrationInfo">Регистрационная информация.</param>

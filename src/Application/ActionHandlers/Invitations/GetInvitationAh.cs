@@ -9,7 +9,7 @@ using System;
 using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
-using YA.UserWorker.Application.Features.Invitations.Queries;
+using YA.UserWorker.Application.Features.TenantInvitations.Queries;
 using YA.UserWorker.Application.Enums;
 using YA.UserWorker.Application.Interfaces;
 using YA.UserWorker.Application.Models.ViewModels;

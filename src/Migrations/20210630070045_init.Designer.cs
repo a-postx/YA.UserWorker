@@ -10,7 +10,7 @@ using YA.UserWorker.Infrastructure.Data;
 namespace YA.UserWorker.Migrations
 {
     [DbContext(typeof(UserWorkerDbContext))]
-    [Migration("20210629020413_init")]
+    [Migration("20210630070045_init")]
     partial class init
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -197,7 +197,7 @@ namespace YA.UserWorker.Migrations
                             TenantID = new Guid("00000000-0000-0000-0000-000000000001"),
                             IsReadOnly = false,
                             Name = "Системный",
-                            PricingTierActivatedDateTime = new DateTime(2021, 6, 29, 2, 4, 12, 194, DateTimeKind.Utc).AddTicks(8006),
+                            PricingTierActivatedDateTime = new DateTime(2021, 6, 30, 7, 0, 44, 596, DateTimeKind.Utc).AddTicks(3430),
                             PricingTierActivatedUntilDateTime = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             PricingTierId = new Guid("00000000-0000-0000-0000-000000000001"),
                             Status = 1,
@@ -208,8 +208,8 @@ namespace YA.UserWorker.Migrations
                             TenantID = new Guid("00000000-0000-0000-0000-000000000002"),
                             IsReadOnly = false,
                             Name = "Уважаемый",
-                            PricingTierActivatedDateTime = new DateTime(2021, 6, 29, 2, 4, 12, 194, DateTimeKind.Utc).AddTicks(9880),
-                            PricingTierActivatedUntilDateTime = new DateTime(2021, 7, 29, 2, 4, 12, 194, DateTimeKind.Utc).AddTicks(9887),
+                            PricingTierActivatedDateTime = new DateTime(2021, 6, 30, 7, 0, 44, 596, DateTimeKind.Utc).AddTicks(4720),
+                            PricingTierActivatedUntilDateTime = new DateTime(2021, 7, 30, 7, 0, 44, 596, DateTimeKind.Utc).AddTicks(4727),
                             PricingTierId = new Guid("00000000-0000-0000-0000-000000000013"),
                             Status = 1,
                             Type = 1
@@ -281,22 +281,22 @@ namespace YA.UserWorker.Migrations
                         {
                             UserID = new Guid("00000000-0000-0000-0000-000000000012"),
                             AuthProvider = "auth0",
-                            CreatedDateTime = new DateTime(2021, 6, 29, 2, 4, 12, 195, DateTimeKind.Utc).AddTicks(1198),
+                            CreatedDateTime = new DateTime(2021, 6, 30, 7, 0, 44, 596, DateTimeKind.Utc).AddTicks(5688),
                             Email = "admin@email.com",
                             ExternalId = "lahblah",
                             IsDeleted = false,
-                            LastModifiedDateTime = new DateTime(2021, 6, 29, 2, 4, 12, 195, DateTimeKind.Utc).AddTicks(1206),
+                            LastModifiedDateTime = new DateTime(2021, 6, 30, 7, 0, 44, 596, DateTimeKind.Utc).AddTicks(5694),
                             Name = "Серый кардинал"
                         },
                         new
                         {
                             UserID = new Guid("00000000-0000-0000-0000-000000000014"),
                             AuthProvider = "auth0",
-                            CreatedDateTime = new DateTime(2021, 6, 29, 2, 4, 12, 195, DateTimeKind.Utc).AddTicks(2880),
+                            CreatedDateTime = new DateTime(2021, 6, 30, 7, 0, 44, 596, DateTimeKind.Utc).AddTicks(6907),
                             Email = "user@email.com",
                             ExternalId = "userLahblah",
                             IsDeleted = false,
-                            LastModifiedDateTime = new DateTime(2021, 6, 29, 2, 4, 12, 195, DateTimeKind.Utc).AddTicks(2887),
+                            LastModifiedDateTime = new DateTime(2021, 6, 30, 7, 0, 44, 596, DateTimeKind.Utc).AddTicks(6913),
                             Name = "Мышиный король"
                         });
                 });
@@ -432,6 +432,9 @@ namespace YA.UserWorker.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
                         .HasDefaultValueSql("GETUTCDATE()");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
 
                     b.Property<Guid>("TenantId")
                         .HasColumnType("uniqueidentifier");

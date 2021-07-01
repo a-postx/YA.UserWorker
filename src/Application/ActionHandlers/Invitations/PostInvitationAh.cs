@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
 using YA.UserWorker.Application.Enums;
-using YA.UserWorker.Application.Features.Invitations.Commands;
+using YA.UserWorker.Application.Features.TenantInvitations.Commands;
 using YA.UserWorker.Application.Interfaces;
 using YA.UserWorker.Application.Models.SaveModels;
 using YA.UserWorker.Application.Models.ViewModels;
@@ -50,9 +50,9 @@ namespace YA.UserWorker.Application.ActionHandlers.Invitations
                     _actionCtx.ActionContext.HttpContext
                         .Response.Headers.Add(HeaderNames.LastModified, result.Data.LastModifiedDateTime.ToString("R", CultureInfo.InvariantCulture));
 
-                    InvitationVm inviteVm = _mapper.Map<InvitationVm>(result.Data);
+                    InvitationVm invitationVm = _mapper.Map<InvitationVm>(result.Data);
 
-                    return new CreatedAtRouteResult(RouteNames.PostTenantInvitation, new { }, inviteVm);
+                    return new CreatedAtRouteResult(RouteNames.PostTenantInvitation, new { }, invitationVm);
             }
         }
     }

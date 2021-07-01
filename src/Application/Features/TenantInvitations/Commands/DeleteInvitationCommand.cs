@@ -8,7 +8,7 @@ using YA.UserWorker.Application.Enums;
 using YA.UserWorker.Application.Interfaces;
 using YA.UserWorker.Core.Entities;
 
-namespace YA.UserWorker.Application.Features.Invitations.Commands
+namespace YA.UserWorker.Application.Features.TenantInvitations.Commands
 {
     public class DeleteInvitationCommand : IRequest<ICommandResult<EmptyCommandResult>>
     {

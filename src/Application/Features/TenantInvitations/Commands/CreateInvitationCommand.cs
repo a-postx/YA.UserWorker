@@ -9,7 +9,7 @@ using YA.UserWorker.Application.Interfaces;
 using YA.UserWorker.Application.Models.Dto;
 using YA.UserWorker.Core.Entities;
 
-namespace YA.UserWorker.Application.Features.Invitations.Commands
+namespace YA.UserWorker.Application.Features.TenantInvitations.Commands
 {
     public class CreateInvitationCommand : IRequest<ICommandResult<YaInvitation>>
     {
@@ -59,15 +59,16 @@ namespace YA.UserWorker.Application.Features.Invitations.Commands
                     AccessType = (YaMembershipAccessType)accessType,
                     InvitedBy = inviterEmail,
                     TenantId = tenantId,
-                    ExpirationDate = DateTime.UtcNow.AddMonths(1)
+                    ExpirationDate = DateTime.UtcNow.AddMonths(1),
+                    Status = YaTenantInvitationStatus.New
                 };
                 
                 await _dbContext.CreateInvitationAsync(yaInvite, cancellationToken);
 
                 await _dbContext.ApplyChangesAsync(cancellationToken);
 
-                //InviteTm inviteTm = _mapper.Map<InviteTm>(yaInvite);
-                //await _messageBus.InviteCreatedV1Async(yaInvite.YaInviteID, inviteTm, cancellationToken);
+                InvitationTm invitationTm = _mapper.Map<InvitationTm>(yaInvite);
+                await _messageBus.TenantInvitationCreatedV1Async(invitationTm, cancellationToken);
 
                 return new CommandResult<YaInvitation>(CommandStatus.Ok, yaInvite);
             }

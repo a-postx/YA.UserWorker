@@ -31,6 +31,8 @@ namespace YA.UserWorker.Infrastructure.Data.Configurations
                 .IsRequired();
             modelBuilder.Property(p => p.AccessType)
                 .IsRequired();
+            modelBuilder.Property(p => p.Status)
+                .IsRequired();
             modelBuilder.Property(p => p.ExpirationDate)
                 .HasConversion(v => v, v => DateTime.SpecifyKind(v.Value, DateTimeKind.Utc));
             modelBuilder.Property(p => p.Claimed)

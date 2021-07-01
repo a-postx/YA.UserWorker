@@ -368,6 +368,19 @@ namespace YA.UserWorker.Extensions
 
                         e.ConfigureConsumer<GetPricingTierConsumer>(context);
                     });
+
+                    cfg.ReceiveEndpoint(MbQueueNames.TenantInvitationSentQueueName, e =>
+                    {
+                        e.UseConcurrencyLimit(1);
+                        e.UseMessageRetry(x =>
+                        {
+                            x.Handle<OperationCanceledException>();
+                            x.Interval(2, 500);
+                        });
+                        e.UseMbContextFilter();
+
+                        e.ConfigureConsumer<TenantInvitationSentConsumer>(context);
+                    });
                 });
 
                 options.AddConsumers(Assembly.GetExecutingAssembly());

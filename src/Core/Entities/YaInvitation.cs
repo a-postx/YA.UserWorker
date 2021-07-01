@@ -2,6 +2,13 @@ using System;
 
 namespace YA.UserWorker.Core.Entities
 {
+    public enum YaTenantInvitationStatus
+    {
+        Unknown = 0,
+        New = 1,
+        Sent = 2
+    }
+
     public class YaInvitation : IRowVersionedEntity, IAuditedEntityBase
     {
         public Guid TenantId { get; set; }
@@ -11,12 +18,18 @@ namespace YA.UserWorker.Core.Entities
         public string Email { get; set; }
         public YaMembershipAccessType AccessType { get; set; }
         public DateTime? ExpirationDate { get; set; }
+        public YaTenantInvitationStatus Status { get; set; }
         public bool Claimed { get; set; }
         public DateTime? ClaimedAt { get; set; }
         public Guid? CreatedMembershipId { get; set; }
         public DateTime CreatedDateTime { get; set; }
         public DateTime LastModifiedDateTime { get; set; }
         public byte[] tstamp { get; set; }
+
+        public void SetStatus(YaTenantInvitationStatus newStatus)
+        {
+            Status = newStatus;
+        }
 
         public void SetClaimed(Guid createdMembershipId)
         {

@@ -45,5 +45,18 @@ namespace YA.UserWorker.Infrastructure.Messaging
             await _publishEndpoint
                 .Publish<ITenantUpdatedV1>(new TenantUpdatedV1(_runtimeCtx.GetCorrelationId(), tenantId, tenantTm), cancellationToken);
         }
+
+
+        public async Task TenantInvitationCreatedV1Async(InvitationTm invitationTm, CancellationToken cancellationToken)
+        {
+            await _publishEndpoint
+                .Publish<ITenantInvitationCreatedV1>(new TenantInvitationCreatedV1(_runtimeCtx.GetCorrelationId(), _runtimeCtx.GetTenantId(), invitationTm), cancellationToken);
+        }
+
+        public async Task TenantInvitationUpdatedV1Async(InvitationTm invitationTm, CancellationToken cancellationToken)
+        {
+            await _publishEndpoint
+                .Publish<ITenantInvitationUpdatedV1>(new TenantInvitationUpdatedV1(_runtimeCtx.GetCorrelationId(), _runtimeCtx.GetTenantId(), invitationTm), cancellationToken);
+        }
     }
 }
