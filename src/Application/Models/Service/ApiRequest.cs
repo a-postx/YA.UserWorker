@@ -11,16 +11,16 @@ namespace YA.UserWorker.Application.Models.Service
     {
         private ApiRequest() { }
 
-        public ApiRequest(Guid clientRequestId)
+        public ApiRequest(Guid requestId)
         {
-            if (clientRequestId == Guid.Empty)
+            if (requestId == Guid.Empty)
             {
-                throw new ArgumentException("Client request ID cannot be empty", nameof(clientRequestId));
+                throw new ArgumentException("Request ID cannot be empty", nameof(requestId));
             }
 
-            ApiRequestID = clientRequestId;
+            ApiRequestID = requestId;
 
-            CacheKey = $"idempotency_keys:{clientRequestId}";
+            CacheKey = $"idempotency_keys:{requestId}";
             AbsoluteExpiration = new TimeSpan(24, 0, 0);
         }
 

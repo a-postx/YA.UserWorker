@@ -226,7 +226,7 @@ namespace YA.UserWorker.Application.Middlewares.ResourceFilters
                 }
             }
 
-            throw new ClientRequestIdNotFoundException("Cannot obtain idempotency key: no http context.");
+            throw new IdempotencyKeyNotFoundException("Cannot obtain idempotency key: no http context.");
         }
     }
 }

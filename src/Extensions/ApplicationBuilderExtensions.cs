@@ -146,10 +146,10 @@ namespace YA.UserWorker.Extensions
         /// <summary>
         /// Добавляет прослойку логирования идентификатора клиентского запроса
         /// </summary>
-        public static IApplicationBuilder UseClientRequestContextLogging(this IApplicationBuilder application)
+        public static IApplicationBuilder UseIdempotencyContextLogging(this IApplicationBuilder application)
         {
             return application
-                .UseMiddleware<ClientRequestContextLogger>();
+                .UseMiddleware<IdempotencyKeyContextLogger>();
         }
     }
 }

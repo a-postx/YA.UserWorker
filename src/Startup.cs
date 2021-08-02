@@ -190,7 +190,7 @@ namespace YA.UserWorker
 
             if (idempotencyOptions.IdempotencyFilterEnabled.HasValue && idempotencyOptions.IdempotencyFilterEnabled.Value)
             {
-                application.UseClientRequestContextLogging();
+                application.UseIdempotencyContextLogging();
             }
 
             application

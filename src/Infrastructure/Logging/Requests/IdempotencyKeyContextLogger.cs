@@ -11,11 +11,11 @@ using YA.UserWorker.Options;
 namespace YA.UserWorker.Infrastructure.Logging.Requests
 {
     /// <summary>
-    /// Прослойка логирования контекста запроса с клиента. 
+    /// Прослойка логирования контекста идемпотентности запроса.
     /// </summary>
-    public class ClientRequestContextLogger
+    public class IdempotencyKeyContextLogger
     {
-        public ClientRequestContextLogger(RequestDelegate next)
+        public IdempotencyKeyContextLogger(RequestDelegate next)
         {
             _next = next ?? throw new ArgumentNullException(nameof(next));
         }
@@ -28,10 +28,9 @@ namespace YA.UserWorker.Infrastructure.Logging.Requests
         {
             HttpContext context = httpContext ?? throw new ArgumentNullException(nameof(httpContext));
             
-            if (context.Request.Headers
-                    .TryGetValue(options.Value.IdempotencyHeader, out StringValues clientRequestIdValue))
+            if (context.Request.Headers.TryGetValue(options.Value.IdempotencyHeader, out StringValues idempotencyKeyValue))
             {
-                using (logger.BeginScopeWith(("ClientRequestId", clientRequestIdValue.First())))
+                using (logger.BeginScopeWith(("IdempotencyKey", idempotencyKeyValue.First())))
                 {
                     await _next(context);
                 }
