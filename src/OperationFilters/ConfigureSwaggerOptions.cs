@@ -57,7 +57,7 @@ namespace YA.UserWorker.OperationFilters
 
             if (_idempotencyOptions.IdempotencyFilterEnabled.HasValue && _idempotencyOptions.IdempotencyFilterEnabled.Value)
             {
-                options.OperationFilter<ClientRequestIdOperationFilter>(_idempotencyOptions.ClientRequestIdHeader);
+                options.OperationFilter<IdempotencyKeyOperationFilter>(_idempotencyOptions.IdempotencyHeader);
             }
 
             options.OperationFilter<ContentTypeOperationFilter>(true);

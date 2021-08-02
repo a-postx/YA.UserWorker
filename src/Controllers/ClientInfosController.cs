@@ -6,7 +6,6 @@ using Microsoft.Net.Http.Headers;
 using Swashbuckle.AspNetCore.Annotations;
 using System.Threading;
 using System.Threading.Tasks;
-using YA.UserWorker.Application.Middlewares.ResourceFilters;
 using YA.UserWorker.Application.ActionHandlers.ClientInfos;
 using YA.UserWorker.Application.Models.SaveModels;
 using YA.UserWorker.Application.Models.ViewModels;
@@ -22,7 +21,6 @@ namespace YA.UserWorker.Controllers
     [ApiVersion(ApiVersionName.V1)]
     [Authorize]
     [NoCache]
-    [ServiceFilter(typeof(IdempotencyFilterAttribute))]
     [SwaggerResponse(StatusCodes.Status500InternalServerError, SwaggerResponseDescriptions.Code500, typeof(ProblemDetails))]
     public class ClientInfosController : ControllerBase
     {

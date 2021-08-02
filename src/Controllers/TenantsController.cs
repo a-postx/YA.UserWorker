@@ -26,7 +26,6 @@ namespace YA.UserWorker.Controllers
     [ApiVersion(ApiVersionName.V1)]
     [Authorize]
     [NoCache]
-    [ServiceFilter(typeof(IdempotencyFilterAttribute))]
     [SwaggerResponse(StatusCodes.Status500InternalServerError, SwaggerResponseDescriptions.Code500, typeof(ProblemDetails))]
     public class TenantsController : ControllerBase
     {
@@ -171,6 +170,7 @@ namespace YA.UserWorker.Controllers
         /// или 409 Конфликт если запрос является дубликатом.</returns>
         [HttpPatch("", Name = RouteNames.PatchTenant)]
         [Authorize(Policy = YaPolicyNames.Admin)]
+        [ServiceFilter(typeof(IdempotencyFilterAttribute))]
         [SwaggerResponse(StatusCodes.Status200OK, "Модель изменённого арендатора.", typeof(TenantVm))]
         [SwaggerResponse(StatusCodes.Status400BadRequest, "Патч-документ неверен.", typeof(ProblemDetails))]
         [SwaggerResponse(StatusCodes.Status404NotFound, "Арендатор не найден.")]
@@ -198,6 +198,7 @@ namespace YA.UserWorker.Controllers
         /// или 409 Конфликт если запрос является дубликатом.</returns>
         [HttpPatch("{tenantId}", Name = RouteNames.PatchTenantById)]
         [Authorize(Policy = "MustBeAdministrator")]
+        [ServiceFilter(typeof(IdempotencyFilterAttribute))]
         [SwaggerResponse(StatusCodes.Status200OK, "Арендатор обновлён", typeof(TenantVm))]
         [SwaggerResponse(StatusCodes.Status400BadRequest, "Патч-документ неверен.", typeof(ProblemDetails))]
         [SwaggerResponse(StatusCodes.Status404NotFound, "Арендатор с указанным идентификатором не найден.")]

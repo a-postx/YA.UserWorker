@@ -24,7 +24,6 @@ namespace YA.UserWorker.Controllers
     [ApiVersion(ApiVersionName.V1)]
     [Authorize]
     [NoCache]
-    [ServiceFilter(typeof(IdempotencyFilterAttribute))]
     [SwaggerResponse(StatusCodes.Status500InternalServerError, SwaggerResponseDescriptions.Code500, typeof(ProblemDetails))]
     public class TenantInvitationsController : ControllerBase
     {
@@ -54,6 +53,7 @@ namespace YA.UserWorker.Controllers
         /// 409 Конфликт если запрос является дубликатом</returns>
         [HttpPost("", Name = RouteNames.PostTenantInvitation)]
         [Authorize(Policy = YaPolicyNames.Owner)]
+        [ServiceFilter(typeof(IdempotencyFilterAttribute))]
         [SwaggerResponse(StatusCodes.Status201Created, "Модель созданного приглашения.", typeof(InvitationVm))]
         [SwaggerResponse(StatusCodes.Status400BadRequest, "Недопустимый запрос.", typeof(ProblemDetails))]
         [SwaggerResponse(StatusCodes.Status406NotAcceptable, "Недопустимый тип MIME в заголовке Accept.", typeof(ProblemDetails))]

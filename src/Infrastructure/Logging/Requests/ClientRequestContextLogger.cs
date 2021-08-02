@@ -29,7 +29,7 @@ namespace YA.UserWorker.Infrastructure.Logging.Requests
             HttpContext context = httpContext ?? throw new ArgumentNullException(nameof(httpContext));
             
             if (context.Request.Headers
-                    .TryGetValue(options.Value.ClientRequestIdHeader, out StringValues clientRequestIdValue))
+                    .TryGetValue(options.Value.IdempotencyHeader, out StringValues clientRequestIdValue))
             {
                 using (logger.BeginScopeWith(("ClientRequestId", clientRequestIdValue.First())))
                 {

@@ -25,7 +25,6 @@ namespace YA.UserWorker.Controllers
     [ApiVersion(ApiVersionName.V1)]
     [Authorize]
     [NoCache]
-    [ServiceFilter(typeof(IdempotencyFilterAttribute))]
     [SwaggerResponse(StatusCodes.Status500InternalServerError, SwaggerResponseDescriptions.Code500, typeof(ProblemDetails))]
     public class UsersController : ControllerBase
     {
@@ -71,7 +70,7 @@ namespace YA.UserWorker.Controllers
         }
 
         /// <summary>
-        /// Создать пользователя с необходимоыми сущностями для текущего токена доступа.
+        /// Создать пользователя с необходимыми сущностями для текущего токена доступа.
         /// </summary>
         /// <param name="handler">Обработчик.</param>
         /// <param name="registrationInfo">Регистрационная информация.</param>
@@ -81,6 +80,7 @@ namespace YA.UserWorker.Controllers
         /// 409 Конфликт если запрос является дубликатом
         /// или 422 Неперевариваемая Сущность если такой пользователь уже существует.</returns>
         [HttpPost("", Name = RouteNames.PostUser)]
+        [ServiceFilter(typeof(IdempotencyFilterAttribute))]
         [SwaggerResponse(StatusCodes.Status201Created, "Модель созданного пользователя.", typeof(UserVm))]
         [SwaggerResponse(StatusCodes.Status400BadRequest, "Недопустимый запрос.", typeof(ProblemDetails))]
         [SwaggerResponse(StatusCodes.Status406NotAcceptable, "Недопустимый тип MIME в заголовке Accept.", typeof(ProblemDetails))]
@@ -107,6 +107,7 @@ namespace YA.UserWorker.Controllers
         /// 409 Конфликт если запрос является дубликатом</returns>
         [HttpPost("switchtenant", Name = RouteNames.SwitchUserTenant)]
         [Authorize(Policy = YaPolicyNames.NonAnonymous)]
+        [ServiceFilter(typeof(IdempotencyFilterAttribute))]
         [SwaggerResponse(StatusCodes.Status200OK, "Арендатор переключен.")]
         [SwaggerResponse(StatusCodes.Status404NotFound, "Арендатор или пользователь не найдены.")]
         [SwaggerResponse(StatusCodes.Status400BadRequest, "Недопустимый запрос.", typeof(ProblemDetails))]
@@ -132,6 +133,7 @@ namespace YA.UserWorker.Controllers
         /// 404 Не Найдено если текущий пользователь не был найден
         /// или 409 Конфликт если запрос является дубликатом.</returns>
         [HttpPatch("", Name = RouteNames.PatchUser)]
+        [ServiceFilter(typeof(IdempotencyFilterAttribute))]
         [SwaggerResponse(StatusCodes.Status200OK, "Модель изменённого пользователя.", typeof(UserVm))]
         [SwaggerResponse(StatusCodes.Status400BadRequest, "Патч-документ неверен.", typeof(ProblemDetails))]
         [SwaggerResponse(StatusCodes.Status404NotFound, "Пользователь не найден.")]

@@ -23,7 +23,6 @@ namespace YA.UserWorker.Controllers
     [ApiVersion(ApiVersionName.V1)]
     [Authorize]
     [NoCache]
-    [ServiceFilter(typeof(IdempotencyFilterAttribute))]
     [SwaggerResponse(StatusCodes.Status500InternalServerError, SwaggerResponseDescriptions.Code500, typeof(ProblemDetails))]
     public class TenantMembershipsController : ControllerBase
     {
@@ -52,6 +51,7 @@ namespace YA.UserWorker.Controllers
         /// 400 Недопустимый Запрос если запрос неправильно оформлен,
         /// 409 Конфликт если запрос является дубликатом</returns>
         [HttpPost("", Name = RouteNames.PostTenantMembership)]
+        [ServiceFilter(typeof(IdempotencyFilterAttribute))]
         [SwaggerResponse(StatusCodes.Status201Created, "Модель созданного членства.", typeof(MembershipVm))]
         [SwaggerResponse(StatusCodes.Status400BadRequest, "Недопустимый запрос.", typeof(ProblemDetails))]
         [SwaggerResponse(StatusCodes.Status406NotAcceptable, "Недопустимый тип MIME в заголовке Accept.", typeof(ProblemDetails))]

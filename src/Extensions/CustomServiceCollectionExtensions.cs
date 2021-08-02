@@ -332,8 +332,6 @@ namespace YA.UserWorker.Extensions
                     cfg.ConnectSendAuditObservers(auditStore, c => c.Exclude(typeof(IUserWorkerTestRequestV1), typeof(IUserWorkerTestResponseV1)));
                     cfg.ConnectConsumeAuditObserver(auditStore, c => c.Exclude(typeof(IUserWorkerTestRequestV1), typeof(IUserWorkerTestResponseV1)));
 
-                    cfg.UseHealthCheck(context);
-
                     cfg.UseSerilogMessagePropertiesEnricher();
                     cfg.UsePrometheusMetrics();
 

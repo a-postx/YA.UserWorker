@@ -52,12 +52,12 @@ namespace YA.UserWorker.Application.Middlewares.ResourceFilters
         {
             if (_idempotencyOptions.IdempotencyFilterEnabled.HasValue && _idempotencyOptions.IdempotencyFilterEnabled.Value)
             {
-                Guid requestId = GetClientRequestId();
+                Guid idempotencyKey = GetIdempotencyKeyHeaderValue();
 
-                if (requestId == Guid.Empty)
+                if (idempotencyKey == Guid.Empty)
                 {
                     ProblemDetails problemDetails = _pdFactory.CreateProblemDetails(context.HttpContext, StatusCodes.Status400BadRequest,
-                                $"Запрос не содержит заголовка {_idempotencyOptions.ClientRequestIdHeader} или значение в нём неверно.",
+                                $"Запрос не содержит заголовка {_idempotencyOptions.IdempotencyHeader} или значение в нём неверно.",
                                 null, null, context.HttpContext.Request.Path);
 
                     context.Result = new BadRequestObjectResult(problemDetails);
@@ -70,7 +70,7 @@ namespace YA.UserWorker.Application.Middlewares.ResourceFilters
 
                 using (CancellationTokenSource cts = new CancellationTokenSource(Timeouts.ApiRequestFilterMs))
                 {
-                    (bool requestCreated, ApiRequest request) = await CheckAndGetOrCreateRequestAsync(requestId, method, path, query);
+                    (bool requestCreated, ApiRequest request) = await CheckAndGetOrCreateRequestAsync(idempotencyKey, method, path, query);
 
                     if (!requestCreated)
                     {
@@ -173,9 +173,9 @@ namespace YA.UserWorker.Application.Middlewares.ResourceFilters
             }
         }
 
-        private async Task<(bool created, ApiRequest request)> CheckAndGetOrCreateRequestAsync(Guid clientRequestId, string method, string path, string query)
+        private async Task<(bool created, ApiRequest request)> CheckAndGetOrCreateRequestAsync(Guid idempotencyId, string method, string path, string query)
         {
-            string key = $"idempotency_keys:{clientRequestId}";
+            string key = $"idempotency_keys:{idempotencyId}";
 
             bool apiRequestIsCached = await _cacheService.ApiRequestExist(key);
 
@@ -187,7 +187,7 @@ namespace YA.UserWorker.Application.Middlewares.ResourceFilters
             }
             else
             {
-                ApiRequest apiRequest = new ApiRequest(clientRequestId);
+                ApiRequest apiRequest = new ApiRequest(idempotencyId);
 
                 apiRequest.SetMethod(method);
                 apiRequest.SetPath(path);
@@ -204,16 +204,16 @@ namespace YA.UserWorker.Application.Middlewares.ResourceFilters
             await _cacheService.UpdateApiRequestAsync(request);
         }
 
-        private Guid GetClientRequestId()
+        private Guid GetIdempotencyKeyHeaderValue()
         {
             if (_httpCtx.HttpContext != null)
             {
                 if (_httpCtx.HttpContext.Request.Headers
-                    .TryGetValue(_idempotencyOptions.ClientRequestIdHeader, out StringValues clientRequestIdValue))
+                    .TryGetValue(_idempotencyOptions.IdempotencyHeader, out StringValues idempotencyKeyValue))
                 {
-                    if (Guid.TryParse(clientRequestIdValue, out Guid clientRequestId))
+                    if (Guid.TryParse(idempotencyKeyValue, out Guid idempotencyKey))
                     {
-                        return clientRequestId;
+                        return idempotencyKey;
                     }
                     else
                     {
@@ -226,7 +226,7 @@ namespace YA.UserWorker.Application.Middlewares.ResourceFilters
                 }
             }
 
-            throw new ClientRequestIdNotFoundException("Cannot obtain client request ID: no http context.");
+            throw new ClientRequestIdNotFoundException("Cannot obtain idempotency key: no http context.");
         }
     }
 }

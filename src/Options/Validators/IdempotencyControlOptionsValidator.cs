@@ -14,9 +14,9 @@ namespace YA.UserWorker.Options.Validators
                 failures.Add($"{nameof(options.IdempotencyFilterEnabled)} option is not found.");
             }
 
-            if (string.IsNullOrWhiteSpace(options.ClientRequestIdHeader))
+            if (string.IsNullOrWhiteSpace(options.IdempotencyHeader))
             {
-                failures.Add($"{nameof(options.ClientRequestIdHeader)} option is not found.");
+                failures.Add($"{nameof(options.IdempotencyHeader)} option is not found.");
             }
 
             if (failures.Count > 0)
