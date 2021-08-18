@@ -26,6 +26,7 @@ using YA.UserWorker.Infrastructure.Health;
 using YA.UserWorker.Infrastructure.Authentication;
 using YA.UserWorker.Infrastructure.Caching;
 using YA.UserWorker.Options;
+using MicroElements.Swashbuckle.FluentValidation.AspNetCore;
 //using Elastic.Apm.NetCoreAll;
 
 namespace YA.UserWorker
@@ -88,6 +89,7 @@ namespace YA.UserWorker
                 .AddCustomResponseCompression(_config)
                 .AddCustomHealthChecks(secrets)
                 .AddCustomSwagger()
+                .AddFluentValidationRulesToSwagger()
                 .AddHttpContextAccessor()
 
                 .AddSingleton<IActionContextAccessor, ActionContextAccessor>()

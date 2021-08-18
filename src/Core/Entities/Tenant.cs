@@ -19,7 +19,7 @@ namespace YA.UserWorker.Core.Entities
     /// Арендатор - базовая сущность, обозначающая определённое рабочее пространство. Является внешним ключём
     /// у всех создаваемых пользователями сущностей.
     /// </summary>
-    public class Tenant : IRowVersionedEntity, IAuditedEntityBase
+    public class Tenant : IRowVersionedEntity, IUserAuditedEntity, IAuditedEntityBase
     {
         public Guid TenantID { get; set; }
         public YaTenantType Type { get; set; }
@@ -34,6 +34,8 @@ namespace YA.UserWorker.Core.Entities
         public virtual ICollection<YaInvitation> Invitations { get; set; }
         public DateTime CreatedDateTime { get; set; }
         public DateTime LastModifiedDateTime { get; set; }
+        public string CreatedBy { get; set; }
+        public string LastModifiedBy { get; set; }
         public byte[] tstamp { get; set; }
     }
 }

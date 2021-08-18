@@ -8,5 +8,6 @@ namespace YA.UserWorker.Application.Models.Dto
         public Guid TenantId { get; set; }
         public TenantType Type { get; set; }
         public TenantStatus Status { get; set; }
+        public PricingTierTm PricingTier { get; set; }
     }
 }

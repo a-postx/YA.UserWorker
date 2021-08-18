@@ -12,7 +12,6 @@ namespace YA.UserWorker.Migrations
                 columns: table => new
                 {
                     YaClientInfoID = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Username = table.Column<string>(type: "nvarchar(320)", maxLength: 320, nullable: true),
                     ClientVersion = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
                     IpAddress = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
                     CountryName = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
@@ -44,8 +43,11 @@ namespace YA.UserWorker.Migrations
                     HasTrial = table.Column<bool>(type: "bit", nullable: false),
                     TrialPeriod = table.Column<long>(type: "bigint", nullable: true),
                     MaxUsers = table.Column<int>(type: "int", nullable: false),
+                    MaxVkPeriodicParsingTasks = table.Column<int>(type: "int", nullable: false),
                     CreatedDateTime = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETUTCDATE()"),
                     LastModifiedDateTime = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETUTCDATE()"),
+                    CreatedBy = table.Column<string>(type: "nvarchar(64)", maxLength: 64, nullable: true),
+                    LastModifiedBy = table.Column<string>(type: "nvarchar(64)", maxLength: 64, nullable: true),
                     tstamp = table.Column<byte[]>(type: "rowversion", rowVersion: true, nullable: true)
                 },
                 constraints: table =>
@@ -89,6 +91,8 @@ namespace YA.UserWorker.Migrations
                     IsReadOnly = table.Column<bool>(type: "bit", nullable: false),
                     CreatedDateTime = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETUTCDATE()"),
                     LastModifiedDateTime = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETUTCDATE()"),
+                    CreatedBy = table.Column<string>(type: "nvarchar(64)", maxLength: 64, nullable: true),
+                    LastModifiedBy = table.Column<string>(type: "nvarchar(64)", maxLength: 64, nullable: true),
                     tstamp = table.Column<byte[]>(type: "rowversion", rowVersion: true, nullable: true)
                 },
                 constraints: table =>
@@ -117,6 +121,8 @@ namespace YA.UserWorker.Migrations
                     CreatedMembershipId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     CreatedDateTime = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETUTCDATE()"),
                     LastModifiedDateTime = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETUTCDATE()"),
+                    CreatedBy = table.Column<string>(type: "nvarchar(64)", maxLength: 64, nullable: true),
+                    LastModifiedBy = table.Column<string>(type: "nvarchar(64)", maxLength: 64, nullable: true),
                     tstamp = table.Column<byte[]>(type: "rowversion", rowVersion: true, nullable: true)
                 },
                 constraints: table =>
@@ -141,6 +147,8 @@ namespace YA.UserWorker.Migrations
                     IsDeleted = table.Column<bool>(type: "bit", nullable: false),
                     CreatedDateTime = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETUTCDATE()"),
                     LastModifiedDateTime = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETUTCDATE()"),
+                    CreatedBy = table.Column<string>(type: "nvarchar(64)", maxLength: 64, nullable: true),
+                    LastModifiedBy = table.Column<string>(type: "nvarchar(64)", maxLength: 64, nullable: true),
                     tstamp = table.Column<byte[]>(type: "rowversion", rowVersion: true, nullable: true)
                 },
                 constraints: table =>
@@ -162,11 +170,11 @@ namespace YA.UserWorker.Migrations
 
             migrationBuilder.InsertData(
                 table: "PricingTiers",
-                columns: new[] { "PricingTierID", "Description", "HasTrial", "MaxUsers", "Title", "TrialPeriod" },
+                columns: new[] { "PricingTierID", "CreatedBy", "Description", "HasTrial", "LastModifiedBy", "MaxUsers", "MaxVkPeriodicParsingTasks", "Title", "TrialPeriod" },
                 values: new object[,]
                 {
-                    { new Guid("00000000-0000-0000-0000-000000000001"), "Бесплатно для всех.", false, 1, "Бесплатный", null },
-                    { new Guid("00000000-0000-0000-0000-000000000013"), "За денежки", true, 1, "Платный", 12960000000000L }
+                    { new Guid("00000000-0000-0000-0000-000000000001"), null, "Бесплатно для всех.", false, null, 1, 1, "Бесплатный", null },
+                    { new Guid("00000000-0000-0000-0000-000000000013"), null, "За денежки", true, null, 1, 1, "Платный", 12960000000000L }
                 });
 
             migrationBuilder.InsertData(
@@ -174,24 +182,24 @@ namespace YA.UserWorker.Migrations
                 columns: new[] { "UserID", "AuthProvider", "CreatedDateTime", "Email", "ExternalId", "IsDeleted", "LastModifiedDateTime", "Name", "Nickname", "Picture", "Settings_ShowGettingStarted" },
                 values: new object[,]
                 {
-                    { new Guid("00000000-0000-0000-0000-000000000012"), "auth0", new DateTime(2021, 6, 30, 7, 0, 44, 596, DateTimeKind.Utc).AddTicks(5688), "admin@email.com", "lahblah", false, new DateTime(2021, 6, 30, 7, 0, 44, 596, DateTimeKind.Utc).AddTicks(5694), "Серый кардинал", null, null, true },
-                    { new Guid("00000000-0000-0000-0000-000000000014"), "auth0", new DateTime(2021, 6, 30, 7, 0, 44, 596, DateTimeKind.Utc).AddTicks(6907), "user@email.com", "userLahblah", false, new DateTime(2021, 6, 30, 7, 0, 44, 596, DateTimeKind.Utc).AddTicks(6913), "Мышиный король", null, null, true }
+                    { new Guid("00000000-0000-0000-0000-000000000012"), "auth0", new DateTime(2021, 8, 18, 5, 33, 47, 468, DateTimeKind.Utc).AddTicks(3300), "admin@email.com", "lahblah", false, new DateTime(2021, 8, 18, 5, 33, 47, 468, DateTimeKind.Utc).AddTicks(3306), "Серый кардинал", null, null, true },
+                    { new Guid("00000000-0000-0000-0000-000000000014"), "auth0", new DateTime(2021, 8, 18, 5, 33, 47, 468, DateTimeKind.Utc).AddTicks(4535), "user@email.com", "userLahblah", false, new DateTime(2021, 8, 18, 5, 33, 47, 468, DateTimeKind.Utc).AddTicks(4541), "Мышиный король", null, null, true }
                 });
 
             migrationBuilder.InsertData(
                 table: "Tenants",
-                columns: new[] { "TenantID", "IsReadOnly", "Name", "PricingTierActivatedDateTime", "PricingTierActivatedUntilDateTime", "PricingTierId", "Status", "Type" },
-                values: new object[] { new Guid("00000000-0000-0000-0000-000000000001"), false, "Системный", new DateTime(2021, 6, 30, 7, 0, 44, 596, DateTimeKind.Utc).AddTicks(3430), new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new Guid("00000000-0000-0000-0000-000000000001"), 1, 0 });
+                columns: new[] { "TenantID", "CreatedBy", "IsReadOnly", "LastModifiedBy", "Name", "PricingTierActivatedDateTime", "PricingTierActivatedUntilDateTime", "PricingTierId", "Status", "Type" },
+                values: new object[] { new Guid("00000000-0000-0000-0000-000000000001"), null, false, null, "Системный", new DateTime(2021, 8, 18, 5, 33, 47, 468, DateTimeKind.Utc).AddTicks(725), new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new Guid("00000000-0000-0000-0000-000000000001"), 1, 0 });
 
             migrationBuilder.InsertData(
                 table: "Tenants",
-                columns: new[] { "TenantID", "IsReadOnly", "Name", "PricingTierActivatedDateTime", "PricingTierActivatedUntilDateTime", "PricingTierId", "Status", "Type" },
-                values: new object[] { new Guid("00000000-0000-0000-0000-000000000002"), false, "Уважаемый", new DateTime(2021, 6, 30, 7, 0, 44, 596, DateTimeKind.Utc).AddTicks(4720), new DateTime(2021, 7, 30, 7, 0, 44, 596, DateTimeKind.Utc).AddTicks(4727), new Guid("00000000-0000-0000-0000-000000000013"), 1, 1 });
+                columns: new[] { "TenantID", "CreatedBy", "IsReadOnly", "LastModifiedBy", "Name", "PricingTierActivatedDateTime", "PricingTierActivatedUntilDateTime", "PricingTierId", "Status", "Type" },
+                values: new object[] { new Guid("00000000-0000-0000-0000-000000000002"), null, false, null, "Уважаемый", new DateTime(2021, 8, 18, 5, 33, 47, 468, DateTimeKind.Utc).AddTicks(2300), new DateTime(2021, 9, 17, 5, 33, 47, 468, DateTimeKind.Utc).AddTicks(2307), new Guid("00000000-0000-0000-0000-000000000013"), 1, 1 });
 
             migrationBuilder.InsertData(
                 table: "Memberships",
-                columns: new[] { "MembershipID", "AccessType", "IsDeleted", "TenantID", "UserID" },
-                values: new object[] { new Guid("00000000-0000-0000-0000-000000000015"), 8, false, new Guid("00000000-0000-0000-0000-000000000002"), new Guid("00000000-0000-0000-0000-000000000014") });
+                columns: new[] { "MembershipID", "AccessType", "CreatedBy", "IsDeleted", "LastModifiedBy", "TenantID", "UserID" },
+                values: new object[] { new Guid("00000000-0000-0000-0000-000000000015"), 8, null, false, null, new Guid("00000000-0000-0000-0000-000000000002"), new Guid("00000000-0000-0000-0000-000000000014") });
 
             migrationBuilder.CreateIndex(
                 name: "IX_Invitations_TenantId",

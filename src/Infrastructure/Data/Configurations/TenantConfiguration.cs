@@ -24,6 +24,10 @@ namespace YA.UserWorker.Infrastructure.Data.Configurations
                 .HasConversion(v => v, v => DateTime.SpecifyKind(v, DateTimeKind.Utc));
             modelBuilder.Property(p => p.PricingTierActivatedUntilDateTime)
                 .HasConversion(v => v, v => DateTime.SpecifyKind(v, DateTimeKind.Utc));
+            modelBuilder.Property(p => p.CreatedBy)
+                .HasMaxLength(64);
+            modelBuilder.Property(p => p.LastModifiedBy)
+                .HasMaxLength(64);
             modelBuilder.Property(p => p.tstamp).IsRowVersion();
 
             modelBuilder

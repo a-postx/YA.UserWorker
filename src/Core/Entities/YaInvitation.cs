@@ -9,7 +9,7 @@ namespace YA.UserWorker.Core.Entities
         Sent = 2
     }
 
-    public class YaInvitation : IRowVersionedEntity, IAuditedEntityBase
+    public class YaInvitation : IRowVersionedEntity, IUserAuditedEntity, IAuditedEntityBase
     {
         public Guid TenantId { get; set; }
         public virtual Tenant Tenant { get; set; }
@@ -24,6 +24,8 @@ namespace YA.UserWorker.Core.Entities
         public Guid? CreatedMembershipId { get; set; }
         public DateTime CreatedDateTime { get; set; }
         public DateTime LastModifiedDateTime { get; set; }
+        public string CreatedBy { get; set; }
+        public string LastModifiedBy { get; set; }
         public byte[] tstamp { get; set; }
 
         public void SetStatus(YaTenantInvitationStatus newStatus)

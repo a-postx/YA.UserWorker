@@ -25,14 +25,15 @@ namespace YA.UserWorker.Infrastructure.Data
     /// </summary>
     public class UserWorkerDbContext : DbContext, IUserWorkerDbContext
     {
-        public UserWorkerDbContext(DbContextOptions options, IRuntimeContextAccessor runtimeContext) : base(options)
+        public UserWorkerDbContext(DbContextOptions options, IRuntimeContextAccessor runtimeCtx) : base(options)
         {
-            if (runtimeContext == null)
+            if (runtimeCtx == null)
             {
-                throw new ArgumentNullException(nameof(runtimeContext));
+                throw new ArgumentNullException(nameof(runtimeCtx));
             }
 
-            _tenantId = runtimeContext.GetTenantId();
+            _tenantId = runtimeCtx.GetTenantId();
+            _userId = runtimeCtx.GetUserId();
         }
 
         public DbSet<Tenant> Tenants { get; set; }
@@ -43,6 +44,8 @@ namespace YA.UserWorker.Infrastructure.Data
         public DbSet<YaClientInfo> ClientInfos { get; set; }
 
         private readonly Guid _tenantId;
+        private readonly string _userId;
+
         private IDbContextTransaction _currentTransaction;
 
         public IDbContextTransaction CurrentTransaction
@@ -237,6 +240,13 @@ namespace YA.UserWorker.Infrastructure.Data
                 .Include(e => e.Memberships)
                     .ThenInclude(c => c.User)
                 .Include(e => e.Invitations)
+                .SingleOrDefaultAsync(e => e.TenantID == tenantId, cancellationToken);
+        }
+
+        public async Task<Tenant> GetTenantWithPricingTierAsync(Guid tenantId, CancellationToken cancellationToken)
+        {
+            return await Set<Tenant>()
+                .Include(nameof(PricingTier))
                 .SingleOrDefaultAsync(e => e.TenantID == tenantId, cancellationToken);
         }
 
@@ -454,29 +464,48 @@ namespace YA.UserWorker.Infrastructure.Data
             }
         }
 
-        private static void SetCreationAuditProperties(object entityAsObj)
+        private void SetCreationAuditProperties(object entityAsObj)
         {
             if (entityAsObj is IAuditedEntityBase)
             {
                 IAuditedEntityBase auditedEntity = entityAsObj.As<IAuditedEntityBase>();
                 auditedEntity.LastModifiedDateTime = DateTime.UtcNow;
             }
+
+            if (entityAsObj is IUserAuditedEntity)
+            {
+                IUserAuditedEntity userAuditedEntity = entityAsObj.As<IUserAuditedEntity>();
+                userAuditedEntity.CreatedBy = _userId;
+            }
         }
 
-        private static void SetModificationAuditProperties(object entityAsObj)
+        private void SetModificationAuditProperties(object entityAsObj)
         {
+            if (entityAsObj is IAuditedEntityBase)
+            {
+                IAuditedEntityBase auditedEntity = entityAsObj.As<IAuditedEntityBase>();
+                auditedEntity.LastModifiedDateTime = DateTime.UtcNow;
+            }
+
+            if (entityAsObj is IUserAuditedEntity)
+            {
+                IUserAuditedEntity userAuditedEntity = entityAsObj.As<IUserAuditedEntity>();
+                userAuditedEntity.LastModifiedBy = _userId;
+            }
+        }
+
+        private void SetDeletionAuditProperties(object entityAsObj)
+        {
+            // модифицируем для мягко удалённых сущностей
             if (entityAsObj is IAuditedEntityBase)
             {
                 entityAsObj.As<IAuditedEntityBase>().LastModifiedDateTime = DateTime.UtcNow;
             }
-        }
 
-        private static void SetDeletionAuditProperties(object entityAsObj)
-        {
-            if (entityAsObj is IAuditedEntityBase)
+            if (entityAsObj is IUserAuditedEntity)
             {
-                // модифицируем для мягко удалённых сущностей
-                entityAsObj.As<IAuditedEntityBase>().LastModifiedDateTime = DateTime.UtcNow;
+                IUserAuditedEntity userAuditedEntity = entityAsObj.As<IUserAuditedEntity>();
+                userAuditedEntity.LastModifiedBy = _userId;
             }
         }
 

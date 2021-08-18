@@ -16,5 +16,15 @@ namespace YA.UserWorker.Application.Models.ViewModels
         /// Название тарифного плана.
         /// </summary>
         public string Title { get; set; }
+
+        /// <summary>
+        /// Ограничение максимального количества пользователей.
+        /// </summary>
+        public int MaxUsers { get; set; }
+
+        /// <summary>
+        /// Ограничение максимального количества периодических задач парсинга.
+        /// </summary>
+        public int MaxVkPeriodicParsingTasks { get; set; }
     }
 }

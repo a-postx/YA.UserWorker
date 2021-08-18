@@ -15,7 +15,7 @@ namespace YA.UserWorker.Core.Entities
     /// <summary>
     /// Членство в арендаторе. Сущность не реализует ITenantEntity поскольку используется при регистрации пользователя.
     /// </summary>
-    public class Membership : IAuditedEntityBase, IRowVersionedEntity, ISoftDeleteEntity
+    public class Membership : IUserAuditedEntity, IAuditedEntityBase, IRowVersionedEntity, ISoftDeleteEntity
     {
         public Guid MembershipID { get; set; }
         public Guid UserID { get; set; }
@@ -26,6 +26,8 @@ namespace YA.UserWorker.Core.Entities
         public bool IsDeleted { get; set; }
         public DateTime CreatedDateTime { get; set; }
         public DateTime LastModifiedDateTime { get; set; }
+        public string CreatedBy { get; set; }
+        public string LastModifiedBy { get; set; }
         public byte[] tstamp { get; set; }
     }
 }

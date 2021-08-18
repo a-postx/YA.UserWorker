@@ -6,7 +6,7 @@ using YA.UserWorker.Core.Entities;
 
 namespace YA.UserWorker.Infrastructure.Data.Configurations
 {
-    public class YaInviteConfiguration : IEntityTypeConfiguration<YaInvitation>
+    public class YaInvitationConfiguration : IEntityTypeConfiguration<YaInvitation>
     {
         public void Configure(EntityTypeBuilder<YaInvitation> modelBuilder)
         {
@@ -21,6 +21,10 @@ namespace YA.UserWorker.Infrastructure.Data.Configurations
                 .HasDefaultValueSql(General.DefaultSqlModelDateTimeFunction)
                 .ValueGeneratedOnAdd()
                 .HasConversion(v => v, v => DateTime.SpecifyKind(v, DateTimeKind.Utc));
+            modelBuilder.Property(p => p.CreatedBy)
+                .HasMaxLength(64);
+            modelBuilder.Property(p => p.LastModifiedBy)
+                .HasMaxLength(64);
             modelBuilder.Property(p => p.tstamp).IsRowVersion();
 
             modelBuilder.Property(p => p.Email)

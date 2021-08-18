@@ -34,6 +34,7 @@ namespace YA.UserWorker.Infrastructure.Data.Configurations
                 .ValueGeneratedOnAdd()
                 .HasConversion(v => v, v => DateTime.SpecifyKind(v, DateTimeKind.Utc));
             modelBuilder.Property(p => p.tstamp).IsRowVersion();
+
             modelBuilder.Property(p => p.Name)
                 .HasMaxLength(64)
                 .IsRequired();

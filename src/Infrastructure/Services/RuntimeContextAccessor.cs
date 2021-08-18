@@ -81,6 +81,15 @@ namespace YA.UserWorker.Infrastructure.Services
             return (userProvider, userExternalId);
         }
 
+        public string GetUserId()
+        {
+            //миграция БД исполняется не от запроса, поэтому контекста нет.
+            //надо сделать обязательным, если делать миграцию через скрипты
+            string result = _httpCtx.HttpContext?.User?.GetClaimValue<string>(YaClaimNames.uid);
+
+            return result;
+        }
+
         public Guid GetTenantId()
         {
             MbMessageContext mbMessageContext = MbMessageContextProvider.Current;

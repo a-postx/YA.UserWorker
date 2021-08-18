@@ -48,7 +48,6 @@ namespace YA.UserWorker.OperationFilters
 
             options.DescribeAllParametersInCamelCase();
             options.EnableAnnotations();
-            options.AddFluentValidationRules();
 
             // Add the XML comment file for this assembly, so its contents can be displayed.
             options.IncludeXmlCommentsIfExists(assembly);

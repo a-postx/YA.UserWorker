@@ -19,7 +19,8 @@ namespace YA.UserWorker.Infrastructure.Data
                     Title = "Бесплатный",
                     Description = "Бесплатно для всех.",
                     HasTrial = false,
-                    MaxUsers = 1
+                    MaxUsers = 1,
+                    MaxVkPeriodicParsingTasks = 1
                 },
                 new PricingTier
                 {
@@ -28,7 +29,8 @@ namespace YA.UserWorker.Infrastructure.Data
                     Description = "За денежки",
                     HasTrial = true,
                     TrialPeriod = TimeSpan.FromDays(15),
-                    MaxUsers = 1
+                    MaxUsers = 1,
+                    MaxVkPeriodicParsingTasks = 1
                 }
             );
 

@@ -10,7 +10,7 @@ using YA.UserWorker.Infrastructure.Data;
 namespace YA.UserWorker.Migrations
 {
     [DbContext(typeof(UserWorkerDbContext))]
-    [Migration("20210630070045_init")]
+    [Migration("20210818053348_init")]
     partial class init
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -18,7 +18,7 @@ namespace YA.UserWorker.Migrations
 #pragma warning disable 612, 618
             modelBuilder
                 .HasAnnotation("Relational:MaxIdentifierLength", 128)
-                .HasAnnotation("ProductVersion", "5.0.7")
+                .HasAnnotation("ProductVersion", "5.0.9")
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
             modelBuilder.Entity("YA.UserWorker.Core.Entities.Membership", b =>
@@ -30,6 +30,10 @@ namespace YA.UserWorker.Migrations
                     b.Property<int>("AccessType")
                         .HasColumnType("int");
 
+                    b.Property<string>("CreatedBy")
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
                     b.Property<DateTime>("CreatedDateTime")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
@@ -37,6 +41,10 @@ namespace YA.UserWorker.Migrations
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
+
+                    b.Property<string>("LastModifiedBy")
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
 
                     b.Property<DateTime>("LastModifiedDateTime")
                         .ValueGeneratedOnAdd()
@@ -79,6 +87,10 @@ namespace YA.UserWorker.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<string>("CreatedBy")
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
                     b.Property<DateTime>("CreatedDateTime")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
@@ -92,12 +104,19 @@ namespace YA.UserWorker.Migrations
                     b.Property<bool>("HasTrial")
                         .HasColumnType("bit");
 
+                    b.Property<string>("LastModifiedBy")
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
                     b.Property<DateTime>("LastModifiedDateTime")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
                         .HasDefaultValueSql("GETUTCDATE()");
 
                     b.Property<int>("MaxUsers")
+                        .HasColumnType("int");
+
+                    b.Property<int>("MaxVkPeriodicParsingTasks")
                         .HasColumnType("int");
 
                     b.Property<string>("Title")
@@ -126,6 +145,7 @@ namespace YA.UserWorker.Migrations
                             HasTrial = false,
                             LastModifiedDateTime = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             MaxUsers = 1,
+                            MaxVkPeriodicParsingTasks = 1,
                             Title = "Бесплатный"
                         },
                         new
@@ -136,6 +156,7 @@ namespace YA.UserWorker.Migrations
                             HasTrial = true,
                             LastModifiedDateTime = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             MaxUsers = 1,
+                            MaxVkPeriodicParsingTasks = 1,
                             Title = "Платный",
                             TrialPeriod = 12960000000000L
                         });
@@ -147,6 +168,10 @@ namespace YA.UserWorker.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<string>("CreatedBy")
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
                     b.Property<DateTime>("CreatedDateTime")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
@@ -154,6 +179,10 @@ namespace YA.UserWorker.Migrations
 
                     b.Property<bool>("IsReadOnly")
                         .HasColumnType("bit");
+
+                    b.Property<string>("LastModifiedBy")
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
 
                     b.Property<DateTime>("LastModifiedDateTime")
                         .ValueGeneratedOnAdd()
@@ -197,7 +226,7 @@ namespace YA.UserWorker.Migrations
                             TenantID = new Guid("00000000-0000-0000-0000-000000000001"),
                             IsReadOnly = false,
                             Name = "Системный",
-                            PricingTierActivatedDateTime = new DateTime(2021, 6, 30, 7, 0, 44, 596, DateTimeKind.Utc).AddTicks(3430),
+                            PricingTierActivatedDateTime = new DateTime(2021, 8, 18, 5, 33, 47, 468, DateTimeKind.Utc).AddTicks(725),
                             PricingTierActivatedUntilDateTime = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             PricingTierId = new Guid("00000000-0000-0000-0000-000000000001"),
                             Status = 1,
@@ -208,8 +237,8 @@ namespace YA.UserWorker.Migrations
                             TenantID = new Guid("00000000-0000-0000-0000-000000000002"),
                             IsReadOnly = false,
                             Name = "Уважаемый",
-                            PricingTierActivatedDateTime = new DateTime(2021, 6, 30, 7, 0, 44, 596, DateTimeKind.Utc).AddTicks(4720),
-                            PricingTierActivatedUntilDateTime = new DateTime(2021, 7, 30, 7, 0, 44, 596, DateTimeKind.Utc).AddTicks(4727),
+                            PricingTierActivatedDateTime = new DateTime(2021, 8, 18, 5, 33, 47, 468, DateTimeKind.Utc).AddTicks(2300),
+                            PricingTierActivatedUntilDateTime = new DateTime(2021, 9, 17, 5, 33, 47, 468, DateTimeKind.Utc).AddTicks(2307),
                             PricingTierId = new Guid("00000000-0000-0000-0000-000000000013"),
                             Status = 1,
                             Type = 1
@@ -281,22 +310,22 @@ namespace YA.UserWorker.Migrations
                         {
                             UserID = new Guid("00000000-0000-0000-0000-000000000012"),
                             AuthProvider = "auth0",
-                            CreatedDateTime = new DateTime(2021, 6, 30, 7, 0, 44, 596, DateTimeKind.Utc).AddTicks(5688),
+                            CreatedDateTime = new DateTime(2021, 8, 18, 5, 33, 47, 468, DateTimeKind.Utc).AddTicks(3300),
                             Email = "admin@email.com",
                             ExternalId = "lahblah",
                             IsDeleted = false,
-                            LastModifiedDateTime = new DateTime(2021, 6, 30, 7, 0, 44, 596, DateTimeKind.Utc).AddTicks(5694),
+                            LastModifiedDateTime = new DateTime(2021, 8, 18, 5, 33, 47, 468, DateTimeKind.Utc).AddTicks(3306),
                             Name = "Серый кардинал"
                         },
                         new
                         {
                             UserID = new Guid("00000000-0000-0000-0000-000000000014"),
                             AuthProvider = "auth0",
-                            CreatedDateTime = new DateTime(2021, 6, 30, 7, 0, 44, 596, DateTimeKind.Utc).AddTicks(6907),
+                            CreatedDateTime = new DateTime(2021, 8, 18, 5, 33, 47, 468, DateTimeKind.Utc).AddTicks(4535),
                             Email = "user@email.com",
                             ExternalId = "userLahblah",
                             IsDeleted = false,
-                            LastModifiedDateTime = new DateTime(2021, 6, 30, 7, 0, 44, 596, DateTimeKind.Utc).AddTicks(6913),
+                            LastModifiedDateTime = new DateTime(2021, 8, 18, 5, 33, 47, 468, DateTimeKind.Utc).AddTicks(4541),
                             Name = "Мышиный король"
                         });
                 });
@@ -370,11 +399,6 @@ namespace YA.UserWorker.Migrations
                     b.Property<long>("Timestamp")
                         .HasColumnType("bigint");
 
-                    b.Property<string>("Username")
-                        .HasMaxLength(320)
-                        .IsUnicode(true)
-                        .HasColumnType("nvarchar(320)");
-
                     b.Property<string>("ViewportSize")
                         .HasMaxLength(50)
                         .IsUnicode(true)
@@ -407,6 +431,10 @@ namespace YA.UserWorker.Migrations
                     b.Property<DateTime?>("ClaimedAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("CreatedBy")
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
                     b.Property<DateTime>("CreatedDateTime")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
@@ -427,6 +455,10 @@ namespace YA.UserWorker.Migrations
                         .IsRequired()
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("LastModifiedBy")
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
 
                     b.Property<DateTime>("LastModifiedDateTime")
                         .ValueGeneratedOnAdd()

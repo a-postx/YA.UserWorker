@@ -28,6 +28,7 @@ namespace YA.UserWorker.Core.Entities
         Task<Tenant> GetTenantAsync(Guid tenantId, CancellationToken cancellationToken);
         Task<Tenant> GetTenantAsync(Expression<Func<Tenant, bool>> predicate, CancellationToken cancellationToken);
         Task<Tenant> GetTenantWithAllRelativesAsync(Guid tenantId, CancellationToken cancellationToken);
+        Task<Tenant> GetTenantWithPricingTierAsync(Guid tenantId, CancellationToken cancellationToken);
         void UpdateTenant(Tenant item);
         void DeleteTenant(Tenant item);
 

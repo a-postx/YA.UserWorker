@@ -215,7 +215,7 @@ namespace YA.UserWorker.Extensions
                 .AddFluentValidation(fv =>
                 {
                     fv.RegisterValidatorsFromAssemblyContaining<Startup>();
-                    fv.RunDefaultMvcValidationAfterFluentValidationExecutes = false;
+                    fv.DisableDataAnnotationsValidation = true;
                     fv.ImplicitlyValidateChildProperties = true;
                     fv.LocalizationEnabled = true;
                     fv.ValidatorOptions.LanguageManager.Culture = new CultureInfo("ru");

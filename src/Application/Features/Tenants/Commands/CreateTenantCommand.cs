@@ -66,7 +66,11 @@ namespace YA.UserWorker.Application.Features.Tenants.Commands
                 await _dbContext.CreateTenantAsync(tenant, cancellationToken);
                 await _dbContext.ApplyChangesAsync(cancellationToken);
 
-                await _messageBus.TenantCreatedV1Async(tenant.TenantID, _mapper.Map<TenantTm>(tenant), cancellationToken);
+                Tenant tenantWithPt = await _dbContext.GetTenantWithPricingTierAsync(tenant.TenantID, cancellationToken);
+
+                TenantTm tenantTm = _mapper.Map<TenantTm>(tenantWithPt);
+
+                await _messageBus.TenantCreatedV1Async(tenantTm.TenantId, tenantTm, cancellationToken);
 
                 return new CommandResult<Tenant>(CommandStatus.Ok, tenant);
             }

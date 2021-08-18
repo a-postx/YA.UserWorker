@@ -23,9 +23,6 @@ namespace YA.UserWorker.Infrastructure.Data.Configurations
 
             modelBuilder.Property(p => p.tstamp).IsRowVersion();
 
-            modelBuilder.Property(p => p.Username)
-                .IsUnicode()
-                .HasMaxLength(320);
             modelBuilder.Property(p => p.IpAddress)
                 .IsUnicode()
                 .HasMaxLength(50);
