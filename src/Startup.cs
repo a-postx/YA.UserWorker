@@ -206,14 +206,13 @@ namespace YA.UserWorker
                 })
                 .UseNetworkContextLogging()
 
-                .UseResponseCaching()
-                .UseResponseCompression()
-
                 .UseHttpContextLogging()
                 .UseCustomExceptionHandler()
 
                 .UseRouting()
                 .UseCors(CorsPolicyNames.AllowAny)
+                .UseResponseCaching()
+                .UseResponseCompression()
                 .UseStaticFilesWithCacheControl()
                 //временно убираем для сокращения объёма журналов
                 ////.UseRouteParamsLogging()
