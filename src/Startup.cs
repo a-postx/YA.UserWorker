@@ -211,7 +211,7 @@ namespace YA.UserWorker
                 .UseRouting()
                 .UseCors(CorsPolicyNames.AllowAny)
                 .UseResponseCaching()
-                .UseResponseCompression()
+                ////.UseResponseCompression() //перенесена на шлюз
                 .UseHttpContextLogging()
                 .UseStaticFilesWithCacheControl()
                 //временно убираем для сокращения объёма журналов
