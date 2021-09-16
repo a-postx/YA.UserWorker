@@ -86,7 +86,7 @@ namespace YA.UserWorker
                 .AddCustomCors()
                 .AddCustomRouting()
                 .AddResponseCaching()
-                .AddCustomResponseCompression(_config)
+                ////.AddCustomResponseCompression(_config)
                 .AddCustomHealthChecks(secrets)
                 .AddCustomSwagger()
                 .AddFluentValidationRulesToSwagger()
