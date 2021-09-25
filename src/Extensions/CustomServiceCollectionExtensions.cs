@@ -102,8 +102,7 @@ namespace YA.UserWorker.Extensions
                     options.ConfigurationOptions = config;
                 });
 
-            services.AddSingleton<IConnectionMultiplexer>(sp => ConnectionMultiplexer.Connect(config));
-            services.AddScoped<IApiRequestDistributedCache, ApiRequestRedisCache>();
+            ////services.AddSingleton<IConnectionMultiplexer>(sp => ConnectionMultiplexer.Connect(config));
 
             return services;
         }
@@ -138,7 +137,7 @@ namespace YA.UserWorker.Extensions
             services.AddSingleton<IValidateOptions<AwsOptions>, AwsOptionsValidator>();
             services.AddSingleton<IValidateOptions<OauthOptions>, OauthOptionsValidator>();
             services.AddSingleton<IValidateOptions<GeneralOptions>, GeneralOptionsValidator>();
-            services.AddSingleton<IValidateOptions<IdempotencyControlOptions>, IdempotencyControlOptionsValidator>();
+            services.AddSingleton<IValidateOptions<IdempotencyOptions>, IdempotencyControlOptionsValidator>();
 
             services.AddSingleton<IValidateOptions<UserWorkerSecrets>, UserWorkerSecretsValidator>();
             services.AddSingleton<IValidateOptions<AppSecrets>, AppSecretsValidator>();
@@ -153,7 +152,7 @@ namespace YA.UserWorker.Extensions
                 .Configure<KestrelServerOptions>(configuration.GetSection(nameof(ApplicationOptions.Kestrel)), o => o.BindNonPublicProperties = false)
                 .Configure<OauthOptions>(configuration.GetSection(nameof(ApplicationOptions.OAuth)), o => o.BindNonPublicProperties = false)
                 .Configure<GeneralOptions>(configuration.GetSection(nameof(ApplicationOptions.General)), o => o.BindNonPublicProperties = false)
-                .Configure<IdempotencyControlOptions>(configuration.GetSection(nameof(ApplicationOptions.IdempotencyControl)), o => o.BindNonPublicProperties = false);
+                .Configure<IdempotencyOptions>(configuration.GetSection(nameof(ApplicationOptions.IdempotencyControl)), o => o.BindNonPublicProperties = false);
 
             services
                 .Configure<UserWorkerSecrets>(configuration.GetSection($"{nameof(AppSecrets)}:{nameof(AppSecrets.UserWorker)}"), o => o.BindNonPublicProperties = false)
@@ -174,7 +173,7 @@ namespace YA.UserWorker.Extensions
                 ApplicationOptions applicationOptions = services.BuildServiceProvider().GetService<IOptions<ApplicationOptions>>().Value;
                 OauthOptions oauthOptions = services.BuildServiceProvider().GetService<IOptions<OauthOptions>>().Value;
                 GeneralOptions generalOptions = services.BuildServiceProvider().GetService<IOptions<GeneralOptions>>().Value;
-                IdempotencyControlOptions idempotencyOptions = services.BuildServiceProvider().GetService<IOptions<IdempotencyControlOptions>>().Value;
+                IdempotencyOptions idempotencyOptions = services.BuildServiceProvider().GetService<IOptions<IdempotencyOptions>>().Value;
 
                 AppSecrets appSecrets = services.BuildServiceProvider().GetService<IOptions<AppSecrets>>().Value;
                 UserWorkerSecrets userWorkerSecrets = services.BuildServiceProvider().GetService<IOptions<UserWorkerSecrets>>().Value;

@@ -18,7 +18,7 @@ namespace YA.UserWorker.OperationFilters
     {
         public ConfigureSwaggerOptions(IApiVersionDescriptionProvider provider,
             IOptions<AppSecrets> secretOptions,
-            IOptions<IdempotencyControlOptions> idempotencyOptions)
+            IOptions<IdempotencyOptions> idempotencyOptions)
         {
             _provider = provider;
             _secrets = secretOptions.Value;
@@ -27,7 +27,7 @@ namespace YA.UserWorker.OperationFilters
 
         private readonly IApiVersionDescriptionProvider _provider;
         private readonly AppSecrets _secrets;
-        private readonly IdempotencyControlOptions _idempotencyOptions;
+        private readonly IdempotencyOptions _idempotencyOptions;
 
         public void Configure(SwaggerGenOptions options)
         {

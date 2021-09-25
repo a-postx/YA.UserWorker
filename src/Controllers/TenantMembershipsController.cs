@@ -2,6 +2,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Delobytes.AspNetCore.Filters;
+using Delobytes.AspNetCore.Idempotency;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -9,7 +10,6 @@ using Microsoft.Net.Http.Headers;
 using Swashbuckle.AspNetCore.Annotations;
 using YA.Common.Constants;
 using YA.UserWorker.Application.ActionHandlers.Memberships;
-using YA.UserWorker.Application.Middlewares.ResourceFilters;
 using YA.UserWorker.Application.Models.ViewModels;
 using YA.UserWorker.Constants;
 

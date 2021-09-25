@@ -5,7 +5,7 @@ namespace YA.UserWorker.Application.Enums
     [Flags]
     public enum MembershipAccessType
     {
-        Unknown = 0,
+        None = 0,
         ReadOnly = 1,
         ReadWrite = 2,
         Admin = 4,

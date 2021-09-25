@@ -147,7 +147,7 @@ namespace YA.UserWorker.Application.ActionHandlers.Users
             YaInvitation userInvitation = null;
             Tenant userTenant = null;
             Membership userMembership = null;
-            YaMembershipAccessType accessType = YaMembershipAccessType.Unknown;
+            YaMembershipAccessType accessType = YaMembershipAccessType.None;
 
             bool inviteToExistingTenant = regInfo.JoinTeamToken.HasValue && regInfo.JoinTeamToken.Value != Guid.Empty;
 
@@ -204,7 +204,7 @@ namespace YA.UserWorker.Application.ActionHandlers.Users
                 accessType = YaMembershipAccessType.Owner;
             }
 
-            if (accessType == YaMembershipAccessType.Unknown)
+            if (accessType == YaMembershipAccessType.None)
             {
                 throw new InvalidOperationException("Unknown tenant access type");
             }

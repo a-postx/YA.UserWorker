@@ -3,9 +3,9 @@ using Microsoft.Extensions.Options;
 
 namespace YA.UserWorker.Options.Validators
 {
-    public class IdempotencyControlOptionsValidator : IValidateOptions<IdempotencyControlOptions>
+    public class IdempotencyControlOptionsValidator : IValidateOptions<IdempotencyOptions>
     {
-        public ValidateOptionsResult Validate(string name, IdempotencyControlOptions options)
+        public ValidateOptionsResult Validate(string name, IdempotencyOptions options)
         {
             List<string> failures = new List<string>();
 

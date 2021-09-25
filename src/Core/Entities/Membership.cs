@@ -5,7 +5,7 @@ namespace YA.UserWorker.Core.Entities
     [Flags]
     public enum YaMembershipAccessType
     {
-        Unknown = 0,
+        None = 0,
         ReadOnly = 1,
         ReadWrite = 2,
         Admin = 4,

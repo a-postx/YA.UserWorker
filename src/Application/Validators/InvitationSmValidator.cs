@@ -9,7 +9,7 @@ namespace YA.UserWorker.Application.Validators
         public InvitationSmValidator()
         {
             RuleFor(e => e.Email).NotEmpty();
-            RuleFor(e => e.AccessType).IsInEnum().NotEqual(MembershipAccessType.Unknown);
+            RuleFor(e => e.AccessType).IsInEnum().NotEqual(MembershipAccessType.None);
             RuleFor(e => e.InvitedBy).NotEmpty();
         }
     }

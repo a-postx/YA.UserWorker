@@ -38,7 +38,7 @@ namespace YA.UserWorker.Options
         public GeneralOptions General { get; set; }
 
         [Required]
-        public IdempotencyControlOptions IdempotencyControl { get; set; }
+        public IdempotencyOptions IdempotencyControl { get; set; }
 
         [Required]
         public OauthOptions OAuth { get; set; }

@@ -14,7 +14,6 @@ using System.Linq;
 using System.Reflection;
 using YA.Common.Constants;
 using YA.UserWorker.Application.Middlewares;
-using YA.UserWorker.Infrastructure.Logging.Requests;
 using YA.UserWorker.Options;
 
 namespace YA.UserWorker.Extensions
@@ -106,24 +105,6 @@ namespace YA.UserWorker.Extensions
         }
 
         /// <summary>
-        /// Добавляет прослойку логирования сетевого контекста
-        /// </summary>
-        public static IApplicationBuilder UseNetworkContextLogging(this IApplicationBuilder application)
-        {
-            return application
-                .UseMiddleware<NetworkContextLogger>();
-        }
-
-        /// <summary>
-        /// Добавляет прослойку логирования контекста HTTP
-        /// </summary>
-        public static IApplicationBuilder UseHttpContextLogging(this IApplicationBuilder application)
-        {
-            return application
-                .UseMiddleware<HttpContextLogger>();
-        }
-
-        /// <summary>
         /// Добавляет прослойку перехвата исключения в HTTP-контексте. Выводит детали проблемы с дополнительным контекстом.
         /// Внимание! При отключении этой прослойки все необработанные исключения станут уходить в контекст MVC,
         /// перестанут выдавать <see cref="ProblemDetails"/> и логироваться в событии завершения запроса.
@@ -132,24 +113,6 @@ namespace YA.UserWorker.Extensions
         {
             return application
                 .UseMiddleware<HttpExceptionHandler>();
-        }
-
-        /// <summary>
-        /// Добавляет прослойку логирования аутентификационного контекста
-        /// </summary>
-        public static IApplicationBuilder UseAuthenticationContextLogging(this IApplicationBuilder application)
-        {
-            return application
-                .UseMiddleware<AuthenticationContextLogger>();
-        }
-
-        /// <summary>
-        /// Добавляет прослойку логирования идентификатора клиентского запроса
-        /// </summary>
-        public static IApplicationBuilder UseIdempotencyContextLogging(this IApplicationBuilder application)
-        {
-            return application
-                .UseMiddleware<IdempotencyKeyContextLogger>();
         }
     }
 }

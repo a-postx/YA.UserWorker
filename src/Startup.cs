@@ -19,14 +19,14 @@ using Microsoft.IdentityModel.Protocols;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Prometheus;
 using YA.Common.Constants;
-using YA.UserWorker.Application.Interfaces;
-using YA.UserWorker.Application.Middlewares.ResourceFilters;
 using YA.UserWorker.Extensions;
 using YA.UserWorker.Infrastructure.Health;
 using YA.UserWorker.Infrastructure.Authentication;
-using YA.UserWorker.Infrastructure.Caching;
 using YA.UserWorker.Options;
 using MicroElements.Swashbuckle.FluentValidation.AspNetCore;
+using Delobytes.AspNetCore.Logging;
+using Delobytes.AspNetCore.Idempotency;
+using System.Collections.Generic;
 //using Elastic.Apm.NetCoreAll;
 
 namespace YA.UserWorker
@@ -63,7 +63,8 @@ namespace YA.UserWorker
 
             AppSecrets secrets = _config.GetSection(nameof(AppSecrets)).Get<AppSecrets>();
             GeneralOptions generalOptions = _config.GetSection(nameof(ApplicationOptions.General)).Get<GeneralOptions>();
-            IdempotencyControlOptions idempotencyOptions = _config.GetSection(nameof(ApplicationOptions.IdempotencyControl)).Get<IdempotencyControlOptions>();
+            IdempotencyOptions idempotencyOptions = _config
+                .GetSection(nameof(ApplicationOptions.IdempotencyControl)).Get<IdempotencyOptions>();
 
             AWSOptions awsOptions = _config.GetAWSOptions();
             services.AddDefaultAWSOptions(awsOptions);
@@ -110,12 +111,35 @@ namespace YA.UserWorker
                 o.AddScheme<YaAuthenticationHandler>("YaScheme", "Authentication scheme that use claims extracted from JWT token.");
             });
 
+            services.AddClaimsLogging();
+
+            services.AddIdempotencyContextLogging(options =>
+            {
+                options.IdempotencyLogAttribute = "IdempotencyKey";
+            });
+
+            services.AddHttpContextLogging(options =>
+            {
+                options.LogRequestBody = true;
+                options.LogResponseBody = true;
+                options.MaxBodyLength = generalOptions.MaxLogFieldLength;
+                options.SkipPaths = new List<PathString> { "/metrics" };
+            });
+
             services
                 .AddControllers()
                     .AddCustomJsonOptions(_webHostEnvironment)
                     ////.AddXmlDataContractSerializerFormatters()
                     .AddCustomMvcOptions(_config)
                     .AddCustomModelValidation();
+
+            //есть зависимость от настроек MVC и IDistributedCache
+            services.AddIdempotencyControl(options =>
+            {
+                options.Enabled = idempotencyOptions.IdempotencyFilterEnabled ?? false;
+                options.HeaderRequired = true;
+                options.IdempotencyHeader = idempotencyOptions.IdempotencyHeader;
+            });
 
             services.AddCustomProblemDetails();
 
@@ -176,10 +200,6 @@ namespace YA.UserWorker
             services.AddCustomDatabase(secrets, _webHostEnvironment);
 
             services.AddCustomMessageBus(secrets);
-
-            services.AddScoped<IdempotencyFilterAttribute>();
-            services.AddScoped<IApiRequestDistributedCache, ApiRequestRedisCache>();
-            services.AddSingleton<IApiRequestMemoryCache, ApiRequestMemoryCache>();
         }
 
         /// <summary>
@@ -188,9 +208,10 @@ namespace YA.UserWorker
         public void Configure(IApplicationBuilder application)
         {
             OauthOptions oauthOptions = _config.GetSection(nameof(ApplicationOptions.OAuth)).Get<OauthOptions>();
-            IdempotencyControlOptions idempotencyOptions = _config.GetSection(nameof(ApplicationOptions.IdempotencyControl)).Get<IdempotencyControlOptions>();
+            IdempotencyControlOptions idempotencyOptions = _config
+                .GetSection(nameof(ApplicationOptions.IdempotencyControl)).Get<IdempotencyControlOptions>();
 
-            if (idempotencyOptions.IdempotencyFilterEnabled.HasValue && idempotencyOptions.IdempotencyFilterEnabled.Value)
+            if (idempotencyOptions.Enabled)
             {
                 application.UseIdempotencyContextLogging();
             }
@@ -204,7 +225,7 @@ namespace YA.UserWorker
                 {
                     ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedHost | ForwardedHeaders.XForwardedProto
                 })
-                .UseNetworkContextLogging()
+                .UseNetworkLogging()
 
                 .UseCustomExceptionHandler()
 
@@ -222,7 +243,7 @@ namespace YA.UserWorker
                 .UseHttpMetrics()
 
                 .UseAuthentication()
-                .UseAuthenticationContextLogging()
+                .UseClaimsLogging()
                 .UseAuthorization()
 
                 .UseEndpoints(endpoints =>
