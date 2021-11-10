@@ -1,23 +1,20 @@
-using System;
+namespace YA.UserWorker.Application.Models.ViewModels;
 
-namespace YA.UserWorker.Application.Models.ViewModels
+/// <summary>
+/// Пользователь приложения, визуальная модель.
+/// </summary>
+public class MembershipUserVm
 {
     /// <summary>
-    /// Пользователь приложения, визуальная модель.
+    /// Уникальный идентификатор.
     /// </summary>
-    public class MembershipUserVm
-    {
-        /// <summary>
-        /// Уникальный идентификатор.
-        /// </summary>
-        public Guid UserID { get; set; }
-        /// <summary>
-        /// Имя пользователя.
-        /// </summary>
-        public string Name { get; set; }
-        /// <summary>
-        /// Электропочта.
-        /// </summary>
-        public string Email { get; set; }
-    }
+    public Guid UserID { get; set; }
+    /// <summary>
+    /// Имя пользователя.
+    /// </summary>
+    public string Name { get; set; }
+    /// <summary>
+    /// Электропочта.
+    /// </summary>
+    public string Email { get; set; }
 }

@@ -1,4 +1,3 @@
-using System;
 using FluentValidation.AspNetCore;
 using FluentValidation.Results;
 using Microsoft.AspNetCore.Http;
@@ -9,142 +8,141 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using YA.UserWorker.Application.Interfaces;
 
-namespace YA.UserWorker.Application.Services
+namespace YA.UserWorker.Application.Services;
+
+/// <summary>
+/// Обработчик стандартного вывода деталей проблемы HTTP-запроса
+/// </summary>
+public class YaProblemDetailsFactory : ProblemDetailsFactory, IProblemDetailsFactory
 {
-    /// <summary>
-	/// Обработчик стандартного вывода деталей проблемы HTTP-запроса
-	/// </summary>
-	public class YaProblemDetailsFactory : ProblemDetailsFactory, IProblemDetailsFactory
+    /// <inheritdoc />
+    public YaProblemDetailsFactory(IOptions<ApiBehaviorOptions> options)
     {
-        /// <inheritdoc />
-        public YaProblemDetailsFactory(IOptions<ApiBehaviorOptions> options)
+        _options = options?.Value ?? throw new ArgumentNullException(nameof(options));
+    }
+
+    private readonly ApiBehaviorOptions _options;
+
+    /// <inheritdoc />
+    public override ProblemDetails CreateProblemDetails(
+        HttpContext httpContext,
+        int? statusCode = null,
+        string title = null,
+        string type = null,
+        string detail = null,
+        string instance = null)
+    {
+        if (httpContext is null)
         {
-            _options = options?.Value ?? throw new ArgumentNullException(nameof(options));
+            throw new ArgumentNullException(nameof(httpContext));
         }
 
-        private readonly ApiBehaviorOptions _options;
+        statusCode ??= StatusCodes.Status500InternalServerError;
 
-        /// <inheritdoc />
-        public override ProblemDetails CreateProblemDetails(
-            HttpContext httpContext,
-            int? statusCode = null,
-            string title = null,
-            string type = null,
-            string detail = null,
-            string instance = null)
+        ProblemDetails problemDetails = new ProblemDetails
         {
-            if (httpContext is null)
-            {
-                throw new ArgumentNullException(nameof(httpContext));
-            }
+            Status = statusCode,
+            Title = title,
+            Type = type,
+            Detail = detail,
+            Instance = instance,
+        };
 
-            statusCode ??= StatusCodes.Status500InternalServerError;
+        ApplyProblemDetailsDefaults(problemDetails, statusCode.Value);
+        EnrichProblemDetailsWithContext(httpContext, problemDetails);
 
-            ProblemDetails problemDetails = new ProblemDetails
-            {
-                Status = statusCode,
-                Title = title,
-                Type = type,
-                Detail = detail,
-                Instance = instance,
-            };
+        return problemDetails;
+    }
 
-            ApplyProblemDetailsDefaults(problemDetails, statusCode.Value);
-            EnrichProblemDetailsWithContext(httpContext, problemDetails);
-
-            return problemDetails;
+    /// <inheritdoc />
+    public override ValidationProblemDetails CreateValidationProblemDetails(HttpContext httpContext,
+        ModelStateDictionary modelStateDictionary,
+        int? statusCode = null,
+        string title = null,
+        string type = null,
+        string detail = null,
+        string instance = null)
+    {
+        if (httpContext is null)
+        {
+            throw new ArgumentNullException(nameof(httpContext));
         }
 
-        /// <inheritdoc />
-        public override ValidationProblemDetails CreateValidationProblemDetails(HttpContext httpContext,
-            ModelStateDictionary modelStateDictionary,
-            int? statusCode = null,
-            string title = null,
-            string type = null,
-            string detail = null,
-            string instance = null)
+        if (modelStateDictionary is null)
         {
-            if (httpContext is null)
-            {
-                throw new ArgumentNullException(nameof(httpContext));
-            }
-
-            if (modelStateDictionary is null)
-            {
-                throw new ArgumentNullException(nameof(modelStateDictionary));
-            }
-
-            statusCode ??= StatusCodes.Status400BadRequest;
-            title ??= "Произошла ошибка валидации данных модели.";
-            detail ??= "Обратитесь к свойству errors за дополнительной информацией.";
-            instance ??= httpContext.Request.Path;
-            type ??= "https://tools.ietf.org/html/rfc7231#section-6.5.1";
-
-            ValidationProblemDetails problemDetails = new ValidationProblemDetails(modelStateDictionary)
-            {
-                Title = title,
-                Status = statusCode,
-                Detail = detail,
-                Instance = instance,
-                Type = type
-            };
-
-            ApplyProblemDetailsDefaults(problemDetails, statusCode.Value);
-            EnrichProblemDetailsWithContext(httpContext, problemDetails);
-
-            return problemDetails;
+            throw new ArgumentNullException(nameof(modelStateDictionary));
         }
 
-        public ValidationProblemDetails CreateValidationProblemDetails(HttpContext httpContext,
-            ValidationResult validationResult,
-            int? statusCode = null,
-            string title = null,
-            string type = null,
-            string detail = null,
-            string instance = null)
+        statusCode ??= StatusCodes.Status400BadRequest;
+        title ??= "Произошла ошибка валидации данных модели.";
+        detail ??= "Обратитесь к свойству errors за дополнительной информацией.";
+        instance ??= httpContext.Request.Path;
+        type ??= "https://tools.ietf.org/html/rfc7231#section-6.5.1";
+
+        ValidationProblemDetails problemDetails = new ValidationProblemDetails(modelStateDictionary)
         {
-            if (httpContext is null)
-            {
-                throw new ArgumentNullException(nameof(httpContext));
-            }
+            Title = title,
+            Status = statusCode,
+            Detail = detail,
+            Instance = instance,
+            Type = type
+        };
 
-            if (validationResult is null)
-            {
-                throw new ArgumentNullException(nameof(validationResult));
-            }
+        ApplyProblemDetailsDefaults(problemDetails, statusCode.Value);
+        EnrichProblemDetailsWithContext(httpContext, problemDetails);
 
-            IActionContextAccessor actionCtx = httpContext.RequestServices.GetRequiredService<IActionContextAccessor>();
+        return problemDetails;
+    }
 
-            validationResult.AddToModelState(actionCtx.ActionContext.ModelState, "");
-            return CreateValidationProblemDetails(httpContext, actionCtx.ActionContext.ModelState, statusCode, title, type, detail, instance);
+    public ValidationProblemDetails CreateValidationProblemDetails(HttpContext httpContext,
+        ValidationResult validationResult,
+        int? statusCode = null,
+        string title = null,
+        string type = null,
+        string detail = null,
+        string instance = null)
+    {
+        if (httpContext is null)
+        {
+            throw new ArgumentNullException(nameof(httpContext));
         }
 
-        private void ApplyProblemDetailsDefaults(ProblemDetails problemDetails, int statusCode)
+        if (validationResult is null)
         {
-            problemDetails.Status ??= statusCode;
-
-            if (_options.ClientErrorMapping.TryGetValue(statusCode, out ClientErrorData clientErrorData))
-            {
-                problemDetails.Title ??= clientErrorData.Title;
-                problemDetails.Type ??= clientErrorData.Link;
-            }
+            throw new ArgumentNullException(nameof(validationResult));
         }
 
-        private void EnrichProblemDetailsWithContext(HttpContext context, ProblemDetails problemDetails)
+        IActionContextAccessor actionCtx = httpContext.RequestServices.GetRequiredService<IActionContextAccessor>();
+
+        validationResult.AddToModelState(actionCtx.ActionContext.ModelState, "");
+        return CreateValidationProblemDetails(httpContext, actionCtx.ActionContext.ModelState, statusCode, title, type, detail, instance);
+    }
+
+    private void ApplyProblemDetailsDefaults(ProblemDetails problemDetails, int statusCode)
+    {
+        problemDetails.Status ??= statusCode;
+
+        if (_options.ClientErrorMapping.TryGetValue(statusCode, out ClientErrorData clientErrorData))
         {
-            IRuntimeContextAccessor runtimeCtx = context.RequestServices.GetRequiredService<IRuntimeContextAccessor>();
-            Guid correlationId = runtimeCtx.GetCorrelationId();
-            string traceId = runtimeCtx.GetTraceId();
+            problemDetails.Title ??= clientErrorData.Title;
+            problemDetails.Type ??= clientErrorData.Link;
+        }
+    }
 
-            if (correlationId != Guid.Empty)
-            {
-                problemDetails.Extensions.Add("correlationId", correlationId);
-            }
+    private void EnrichProblemDetailsWithContext(HttpContext context, ProblemDetails problemDetails)
+    {
+        IRuntimeContextAccessor runtimeCtx = context.RequestServices.GetRequiredService<IRuntimeContextAccessor>();
+        Guid correlationId = runtimeCtx.GetCorrelationId();
+        string traceId = runtimeCtx.GetTraceId();
 
-            if (!string.IsNullOrEmpty(traceId))
-            {
-                problemDetails.Extensions.Add("traceId", traceId);
-            }
+        if (correlationId != Guid.Empty)
+        {
+            problemDetails.Extensions.Add("correlationId", correlationId);
+        }
+
+        if (!string.IsNullOrEmpty(traceId))
+        {
+            problemDetails.Extensions.Add("traceId", traceId);
         }
     }
 }

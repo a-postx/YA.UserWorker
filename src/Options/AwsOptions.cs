@@ -1,8 +1,7 @@
-namespace YA.UserWorker.Options
+namespace YA.UserWorker.Options;
+
+public class AwsOptions
 {
-    public class AwsOptions
-    {
-        public string Region { get; set; }
-        public string Profile { get; set; }
-    }
+    public string Region { get; set; }
+    public string Profile { get; set; }
 }

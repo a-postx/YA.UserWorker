@@ -1,19 +1,16 @@
-using System;
+namespace YA.UserWorker.Application.Exceptions;
 
-namespace YA.UserWorker.Application.Exceptions
+public class CorrelationIdNotFoundException : Exception
 {
-    public class CorrelationIdNotFoundException : Exception
+    public CorrelationIdNotFoundException()
     {
-        public CorrelationIdNotFoundException()
-        {
-        }
+    }
 
-        public CorrelationIdNotFoundException(string message) : base(message)
-        {
-        }
+    public CorrelationIdNotFoundException(string message) : base(message)
+    {
+    }
 
-        public CorrelationIdNotFoundException(string message, Exception innerException) : base(message, innerException)
-        {
-        }
+    public CorrelationIdNotFoundException(string message, Exception innerException) : base(message, innerException)
+    {
     }
 }

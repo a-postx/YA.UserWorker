@@ -1,22 +1,19 @@
-﻿using System;
-using System.Threading.Tasks;
 using MassTransit;
 
-namespace YA.UserWorker.Infrastructure.Messaging.Test
+namespace YA.UserWorker.Infrastructure.Messaging.Test;
+
+public class TestRequestConsumer : IConsumer<IUserWorkerTestRequestV1>
 {
-    public class TestRequestConsumer : IConsumer<IUserWorkerTestRequestV1>
+    public TestRequestConsumer()
     {
-        public TestRequestConsumer()
-        {
 
-        }
+    }
 
-        public async Task Consume(ConsumeContext<IUserWorkerTestRequestV1> context)
+    public async Task Consume(ConsumeContext<IUserWorkerTestRequestV1> context)
+    {
+        await context.RespondAsync<IUserWorkerTestResponseV1>(new
         {
-            await context.RespondAsync<IUserWorkerTestResponseV1>(new
-            {
-                GotIt = context.Message.Timestamp
-            });
-        }
+            GotIt = context.Message.Timestamp
+        });
     }
 }

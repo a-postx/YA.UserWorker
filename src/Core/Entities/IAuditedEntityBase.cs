@@ -1,10 +1,7 @@
-﻿using System;
+namespace YA.UserWorker.Core.Entities;
 
-namespace YA.UserWorker.Core.Entities
+public interface IAuditedEntityBase
 {
-    public interface IAuditedEntityBase
-    {
-        DateTime CreatedDateTime { get; set; }
-        DateTime LastModifiedDateTime { get; set; }
-    }
+    DateTime CreatedDateTime { get; set; }
+    DateTime LastModifiedDateTime { get; set; }
 }

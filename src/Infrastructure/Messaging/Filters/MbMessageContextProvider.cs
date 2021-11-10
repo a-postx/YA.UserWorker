@@ -1,45 +1,43 @@
-﻿using GreenPipes;
+using GreenPipes;
 using MassTransit;
 using MbEvents;
-using System;
 
-namespace YA.UserWorker.Infrastructure.Messaging.Filters
+namespace YA.UserWorker.Infrastructure.Messaging.Filters;
+
+/// <summary>
+/// Provides tenant context from message bus message.
+/// </summary>
+internal static class MbMessageContextProvider
 {
-    /// <summary>
-    /// Provides tenant context from message bus message.
-    /// </summary>
-    internal static class MbMessageContextProvider
+    public static MbMessageContext Current => GetData();
+
+    private static MbMessageContext GetData()
     {
-        public static MbMessageContext Current => GetData();
+        MbMessageContext mbMessageContext = new MbMessageContext();
 
-        private static MbMessageContext GetData()
+        PipeContext current = MbMessageContextStackWrapper.Current;
+
+        ConsumeContext<CorrelatedBy<Guid>> correlationIdContext = current?.GetPayload<ConsumeContext<CorrelatedBy<Guid>>>();
+
+        if (correlationIdContext != null)
         {
-            MbMessageContext mbMessageContext = new MbMessageContext();
+            mbMessageContext.CorrelationId = correlationIdContext.Message.CorrelationId;
+        }
 
-            PipeContext current = MbMessageContextStackWrapper.Current;
+        ConsumeContext<ITenantIdMbMessage> tenantIdContext = current?.GetPayload<ConsumeContext<ITenantIdMbMessage>>();
 
-            ConsumeContext<CorrelatedBy<Guid>> correlationIdContext = current?.GetPayload<ConsumeContext<CorrelatedBy<Guid>>>();
+        if (tenantIdContext != null)
+        {
+            mbMessageContext.TenantId = tenantIdContext.Message.TenantId;
+        }
 
-            if (correlationIdContext != null)
-            {
-                mbMessageContext.CorrelationId = correlationIdContext.Message.CorrelationId;
-            }
-
-            ConsumeContext<ITenantIdMbMessage> tenantIdContext = current?.GetPayload<ConsumeContext<ITenantIdMbMessage>>();
-
-            if (tenantIdContext != null)
-            {
-                mbMessageContext.TenantId = tenantIdContext.Message.TenantId;
-            }
-
-            if (mbMessageContext.CorrelationId != Guid.Empty || mbMessageContext.TenantId != Guid.Empty)
-            {
-                return mbMessageContext;
-            }
-            else
-            {
-                return null;
-            }
+        if (mbMessageContext.CorrelationId != Guid.Empty || mbMessageContext.TenantId != Guid.Empty)
+        {
+            return mbMessageContext;
+        }
+        else
+        {
+            return null;
         }
     }
 }

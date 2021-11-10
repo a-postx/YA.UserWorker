@@ -1,10 +1,9 @@
-namespace YA.UserWorker.Application.Enums
+namespace YA.UserWorker.Application.Enums;
+
+public enum LogType
 {
-    public enum LogType
-    {
-        Unknown = 0,
-        ApiRequest = 1,
-        MessageBusMessage = 2,
-        MetricRequest = 3
-    }
+    Unknown = 0,
+    ApiRequest = 1,
+    MessageBusMessage = 2,
+    MetricRequest = 3
 }

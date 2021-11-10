@@ -1,19 +1,16 @@
-using System;
+namespace YA.UserWorker.Application.Exceptions;
 
-namespace YA.UserWorker.Application.Exceptions
+public class TenantIdNotFoundException : Exception
 {
-    public class TenantIdNotFoundException : Exception
+    public TenantIdNotFoundException()
     {
-        public TenantIdNotFoundException()
-        {
-        }
+    }
 
-        public TenantIdNotFoundException(string message) : base(message)
-        {
-        }
+    public TenantIdNotFoundException(string message) : base(message)
+    {
+    }
 
-        public TenantIdNotFoundException(string message, Exception innerException) : base(message, innerException)
-        {
-        }
+    public TenantIdNotFoundException(string message, Exception innerException) : base(message, innerException)
+    {
     }
 }

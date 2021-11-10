@@ -1,13 +1,10 @@
-﻿using System;
+namespace YA.UserWorker.Infrastructure.Messaging.Filters;
 
-namespace YA.UserWorker.Infrastructure.Messaging.Filters
+/// <summary>
+/// Модель контекста исполнения сообщения шины данных
+/// </summary>
+internal class MbMessageContext
 {
-    /// <summary>
-    /// Модель контекста исполнения сообщения шины данных
-    /// </summary>
-    internal class MbMessageContext
-    {
-        internal Guid CorrelationId { get; set; }
-        internal Guid TenantId { get; set; }
-    }
+    internal Guid CorrelationId { get; set; }
+    internal Guid TenantId { get; set; }
 }

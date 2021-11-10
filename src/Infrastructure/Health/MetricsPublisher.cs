@@ -1,75 +1,68 @@
-using System;
-using System.Linq;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
-using Microsoft.Extensions.Logging;
 using YA.UserWorker.Extensions;
 
-namespace YA.UserWorker.Infrastructure.Health
+namespace YA.UserWorker.Infrastructure.Health;
+
+/// <summary>
+/// Публикатор для регулярной засылки метрик в ЕЛК.
+/// </summary>
+public class MetricsPublisher : IHealthCheckPublisher
 {
-    /// <summary>
-    /// Публикатор для регулярной засылки метрик в ЕЛК.
-    /// </summary>
-    public class MetricsPublisher : IHealthCheckPublisher
+    public MetricsPublisher(ILogger<MetricsPublisher> logger)
     {
-        public MetricsPublisher(ILogger<MetricsPublisher> logger)
+        _log = logger ?? throw new ArgumentNullException(nameof(logger));
+    }
+
+    private readonly ILogger<MetricsPublisher> _log;
+
+    public Task PublishAsync(HealthReport report, CancellationToken cancellationToken)
+    {
+        Dictionary<string, object> metrics = new Dictionary<string, object>();
+
+        DateTimeOffset currentDateTime = DateTimeOffset.UtcNow;
+
+        metrics.Add("TDay", currentDateTime.ToString("MM-dd", CultureInfo.InvariantCulture));
+        metrics.Add("THour", currentDateTime.ToString("HH", CultureInfo.InvariantCulture));
+        metrics.Add("TMin", currentDateTime.ToString("mm", CultureInfo.InvariantCulture));
+
+        foreach (KeyValuePair<string, HealthReportEntry> healthEntry in report.Entries)
         {
-            _log = logger ?? throw new ArgumentNullException(nameof(logger));
+            if (healthEntry.Value.Tags.Contains("metric"))
+            {
+                metrics.Add(healthEntry.Key + "MSec", healthEntry.Value.Duration.TotalMilliseconds);
+            }
         }
 
-        private readonly ILogger<MetricsPublisher> _log;
-
-        public Task PublishAsync(HealthReport report, CancellationToken cancellationToken)
+        if (report.Entries.TryGetValue(HealthCheckNames.Memory, out HealthReportEntry memoryEntry))
         {
-            Dictionary<string, object> metrics = new Dictionary<string, object>();
-
-            DateTimeOffset currentDateTime = DateTimeOffset.UtcNow;
-
-            metrics.Add("TDay", currentDateTime.ToString("MM-dd", CultureInfo.InvariantCulture));
-            metrics.Add("THour", currentDateTime.ToString("HH", CultureInfo.InvariantCulture));
-            metrics.Add("TMin", currentDateTime.ToString("mm", CultureInfo.InvariantCulture));
-
-            foreach (KeyValuePair<string, HealthReportEntry> healthEntry in report.Entries)
+            foreach (KeyValuePair<string, object> item in memoryEntry.Data)
             {
-                if (healthEntry.Value.Tags.Contains("metric"))
-                {
-                    metrics.Add(healthEntry.Key + "MSec", healthEntry.Value.Duration.TotalMilliseconds);
-                }
+                metrics.Add(item.Key, item.Value);
             }
+        }
 
-            if (report.Entries.TryGetValue(HealthCheckNames.Memory, out HealthReportEntry memoryEntry))
-            {
-                foreach (KeyValuePair<string, object> item in memoryEntry.Data)
-                {
-                    metrics.Add(item.Key, item.Value);
-                }
-            }
+        (string, object)[] metricsArray = new (string, object)[metrics.Count + 2];
 
-            (string, object)[] metricsArray = new (string, object)[metrics.Count + 2];
+        int i = 0;
 
-            int i = 0;
-
-            foreach (KeyValuePair<string, object> metric in metrics)
-            {
-                metricsArray.SetValue((metric.Key, metric.Value), i);
-                i++;
-            }
+        foreach (KeyValuePair<string, object> metric in metrics)
+        {
+            metricsArray.SetValue((metric.Key, metric.Value), i);
+            i++;
+        }
 #pragma warning disable IDE0004 // Приведение необходимо
-            metricsArray.SetValue(("HealthCheckResult", (object)report.Status), i++);
-            metricsArray.SetValue(("HealthCheckTotalDurationMSec", (object)report.TotalDuration.TotalMilliseconds), i++);
+        metricsArray.SetValue(("HealthCheckResult", (object)report.Status), i++);
+        metricsArray.SetValue(("HealthCheckTotalDurationMSec", (object)report.TotalDuration.TotalMilliseconds), i++);
 #pragma warning restore IDE0004
 
-            using (_log.BeginScopeWith(metricsArray))
-            {
-                _log.LogInformation("Metrics published.");
-            }
-
-            cancellationToken.ThrowIfCancellationRequested();
-
-            return Task.CompletedTask;
+        using (_log.BeginScopeWith(metricsArray))
+        {
+            _log.LogInformation("Metrics published.");
         }
+
+        cancellationToken.ThrowIfCancellationRequested();
+
+        return Task.CompletedTask;
     }
 }

@@ -1,16 +1,13 @@
-using System.Collections.Generic;
+namespace YA.UserWorker.Core;
 
-namespace YA.UserWorker.Core
+public class PaginatedResult<T> where T : class
 {
-    public class PaginatedResult<T> where T : class
+    public PaginatedResult(int totalCount, ICollection<T> items)
     {
-        public PaginatedResult(int totalCount, ICollection<T> items)
-        {
-            TotalCount = totalCount;
-            Items = items;
-        }
-
-        public int TotalCount { get; private set; }
-        public ICollection<T> Items { get; private set; }
+        TotalCount = totalCount;
+        Items = items;
     }
+
+    public int TotalCount { get; private set; }
+    public ICollection<T> Items { get; private set; }
 }

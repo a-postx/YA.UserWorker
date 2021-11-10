@@ -1,10 +1,7 @@
-using System;
+namespace YA.UserWorker.Core.Entities;
 
-namespace YA.UserWorker.Core.Entities
+public interface ITenantEntity
 {
-    public interface ITenantEntity
-    {
-        Guid TenantId { get; set; }
-        Tenant Tenant { get; set; }
-    }
+    Guid TenantId { get; set; }
+    Tenant Tenant { get; set; }
 }

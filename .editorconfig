@@ -75,6 +75,9 @@ dotnet_diagnostic.CA1031.severity = suggestion
 # CA1822: Mark members as static
 dotnet_diagnostic.CA1822.severity = suggestion
 
+# CA1848: Use the LoggerMessage delegates
+dotnet_diagnostic.CA1848.severity = none
+
 # CA1717: Only FlagsAttribute enums should have plural names
 dotnet_diagnostic.CA1717.severity = warning
 
@@ -126,7 +129,7 @@ dotnet_diagnostic.VSTHRD200.severity = suggestion
 # https://docs.microsoft.com/visualstudio/ide/editorconfig-language-conventions#net-code-style-settings
 
 # CA1725: Parameter names should match base declaration
-dotnet_diagnostic.CA1725.severity = suggestion 
+dotnet_diagnostic.CA1725.severity = suggestion
 
 # CA1027: Mark enums with FlagsAttribute
 dotnet_diagnostic.CA1027.severity = warning

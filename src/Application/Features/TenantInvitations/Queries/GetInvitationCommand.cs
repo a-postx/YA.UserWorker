@@ -1,53 +1,48 @@
 using MediatR;
-using Microsoft.Extensions.Logging;
-using System;
-using System.Threading;
-using System.Threading.Tasks;
 using YA.UserWorker.Application.Enums;
 using YA.UserWorker.Application.Interfaces;
 using YA.UserWorker.Core.Entities;
 
-namespace YA.UserWorker.Application.Features.TenantInvitations.Queries
+namespace YA.UserWorker.Application.Features.TenantInvitations.Queries;
+
+public class GetInvitationCommand : IRequest<ICommandResult<YaInvitation>>
 {
-    public class GetInvitationCommand : IRequest<ICommandResult<YaInvitation>>
+    public GetInvitationCommand(Guid id)
     {
-        public GetInvitationCommand(Guid id)
+        Id = id;
+    }
+
+    public Guid Id { get; protected set; }
+
+    public class GetInviteHandler : IRequestHandler<GetInvitationCommand, ICommandResult<YaInvitation>>
+    {
+        public GetInviteHandler(ILogger<GetInviteHandler> logger,
+            IUserWorkerDbContext dbContext)
         {
-            Id = id;
+            _log = logger ?? throw new ArgumentNullException(nameof(logger));
+            _dbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
         }
 
-        public Guid Id { get; protected set; }
+        private readonly ILogger<GetInviteHandler> _log;
+        private readonly IUserWorkerDbContext _dbContext;
 
-        public class GetInviteHandler : IRequestHandler<GetInvitationCommand, ICommandResult<YaInvitation>>
+        public async Task<ICommandResult<YaInvitation>> Handle(GetInvitationCommand command, CancellationToken cancellationToken)
         {
-            public GetInviteHandler(ILogger<GetInviteHandler> logger,
-                IUserWorkerDbContext dbContext)
+            Guid inviteId = command.Id;
+
+            if (inviteId == Guid.Empty)
             {
-                _log = logger ?? throw new ArgumentNullException(nameof(logger));
-                _dbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
+                return new CommandResult<YaInvitation>(CommandStatus.BadRequest, null);
             }
 
-            private readonly ILogger<GetInviteHandler> _log;
-            private readonly IUserWorkerDbContext _dbContext;
+            YaInvitation invite = await _dbContext.GetInvitationAsync(e => e.YaInvitationID == inviteId, cancellationToken);
 
-            public async Task<ICommandResult<YaInvitation>> Handle(GetInvitationCommand command, CancellationToken cancellationToken)
+            if (invite == null)
             {
-                Guid inviteId = command.Id;
-
-                if (inviteId == Guid.Empty)
-                {
-                    return new CommandResult<YaInvitation>(CommandStatus.BadRequest, null);
-                }
-
-                YaInvitation invite = await _dbContext.GetInvitationAsync(e => e.YaInvitationID == inviteId, cancellationToken);
-
-                if (invite == null)
-                {
-                    return new CommandResult<YaInvitation>(CommandStatus.NotFound, null);
-                }
-
-                return new CommandResult<YaInvitation>(CommandStatus.Ok, invite);
+                return new CommandResult<YaInvitation>(CommandStatus.NotFound, null);
             }
+
+            return new CommandResult<YaInvitation>(CommandStatus.Ok, invite);
         }
     }
 }

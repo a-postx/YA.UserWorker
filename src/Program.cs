@@ -1,3 +1,10 @@
+global using System;
+global using System.Linq;
+global using System.Collections.Generic;
+global using System.Threading;
+global using System.Threading.Tasks;
+global using Microsoft.Extensions.Logging;
+
 using Amazon;
 using Amazon.Extensions.NETCore.Setup;
 using Amazon.Runtime;
@@ -8,7 +15,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 using Newtonsoft.Json;
@@ -23,14 +29,10 @@ using Serilog.Extensions.Hosting;
 using Serilog.Formatting.Elasticsearch;
 using Serilog.Sinks.Elasticsearch;
 using Serilog.Sinks.Logz.Io;
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using System.Runtime.InteropServices;
-using System.Threading;
-using System.Threading.Tasks;
 using YA.UserWorker.Application.Interfaces;
 using YA.UserWorker.Constants;
 using YA.UserWorker.Extensions;
@@ -38,397 +40,396 @@ using YA.UserWorker.Infrastructure.Data;
 using YA.UserWorker.Options;
 
 [assembly: CLSCompliant(false)]
-namespace YA.UserWorker
+namespace YA.UserWorker;
+
+internal enum OsPlatforms
 {
-    internal enum OsPlatforms
+    Unknown = 0,
+    Windows = 1,
+    Linux = 2,
+    OSX = 4
+}
+
+public static class Program
+{
+    internal static readonly string AppName = Assembly.GetEntryAssembly()?.GetName().Name;
+    internal static readonly Version AppVersion = Assembly.GetEntryAssembly()?.GetName().Version;
+    internal static readonly string RootPath = Path.GetDirectoryName(typeof(Program).Assembly.Location);
+
+    internal static RuntimeCountry Country { get; private set; }        
+    internal static OsPlatforms OsPlatform { get; private set; }
+
+    public static async Task<int> Main(string[] args)
     {
-        Unknown = 0,
-        Windows = 1,
-        Linux = 2,
-        OSX = 4
-    }
+        Console.OutputEncoding = System.Text.Encoding.UTF8;
+        Activity.DefaultIdFormat = ActivityIdFormat.W3C;
 
-    public static class Program
-    {
-        internal static readonly string AppName = Assembly.GetEntryAssembly()?.GetName().Name;
-        internal static readonly Version AppVersion = Assembly.GetEntryAssembly()?.GetName().Version;
-        internal static readonly string RootPath = Path.GetDirectoryName(typeof(Program).Assembly.Location);
+        Log.Logger = CreateBootstrapLogger();
 
-        internal static RuntimeCountry Country { get; private set; }        
-        internal static OsPlatforms OsPlatform { get; private set; }
+        IDisposable dotNetRuntimeStats = null;
+        IHostEnvironment hostEnvironment = null;
 
-        public static async Task<int> Main(string[] args)
+        try
         {
-            Console.OutputEncoding = System.Text.Encoding.UTF8;
-            Activity.DefaultIdFormat = ActivityIdFormat.W3C;
+            Log.Information("Building Host...");
 
-            Log.Logger = CreateBootstrapLogger();
+            OsPlatform = GetOs();
 
-            IDisposable dotNetRuntimeStats = null;
-            IHostEnvironment hostEnvironment = null;
+            IHost host = CreateHostBuilder(args).Build();
 
+            Log.Information("Host built successfully.");
+
+            hostEnvironment = host.Services.GetRequiredService<IHostEnvironment>();
+            Log.Information("Hosting environment is {EnvironmentName}", hostEnvironment.EnvironmentName);
+
+            //!!! автомиграция основной БД - норм для разработки, но на проде делать через скрипты !!!
             try
             {
-                Log.Information("Building Host...");
-
-                OsPlatform = GetOs();
-
-                IHost host = CreateHostBuilder(args).Build();
-
-                Log.Information("Host built successfully.");
-
-                hostEnvironment = host.Services.GetRequiredService<IHostEnvironment>();
-                Log.Information("Hosting environment is {EnvironmentName}", hostEnvironment.EnvironmentName);
-
-                //!!! автомиграция основной БД - норм для разработки, но на проде делать через скрипты !!!
-                try
+                using (IServiceScope scope = host.Services.CreateScope())
                 {
-                    using (IServiceScope scope = host.Services.CreateScope())
+                    UserWorkerDbContext dbContext = scope.ServiceProvider.GetService<UserWorkerDbContext>();
+
+                    using (CancellationTokenSource cts = new CancellationTokenSource(120000))
                     {
-                        UserWorkerDbContext dbContext = scope.ServiceProvider.GetService<UserWorkerDbContext>();
-
-                        using (CancellationTokenSource cts = new CancellationTokenSource(120000))
+                        if (dbContext.Database.GetPendingMigrations().GetEnumerator().MoveNext())
                         {
-                            if (dbContext.Database.GetPendingMigrations().GetEnumerator().MoveNext())
-                            {
-                                Log.Information("Applying database migrations...");
+                            Log.Information("Applying database migrations...");
 
-                                await dbContext.Database.MigrateAsync(cts.Token);
+                            await dbContext.Database.MigrateAsync(cts.Token);
 
-                                Log.Information("Database migrations applied successfully.");
-                            }
-                            else
-                            {
-                                Log.Information("No database migrations needed.");
-                            }
+                            Log.Information("Database migrations applied successfully.");
+                        }
+                        else
+                        {
+                            Log.Information("No database migrations needed.");
                         }
                     }
                 }
-                catch (Exception ex)
-                {
-                    Log.Error(ex, "Error applying database migration");
-                    return 1;
-                }
-
-                string coreCLR = ((AssemblyInformationalVersionAttribute[])typeof(object).Assembly.GetCustomAttributes(typeof(AssemblyInformationalVersionAttribute), false))[0].InformationalVersion;
-                string coreFX = ((AssemblyInformationalVersionAttribute[])typeof(Uri).Assembly.GetCustomAttributes(typeof(AssemblyInformationalVersionAttribute), false))[0].InformationalVersion;
-
-                Log.Information("Application.Name: {AppName}\n Application.Version: {AppVersion}\n " +
-                    "Environment.Version: {EnvVersion}\n RuntimeInformation.FrameworkDescription: {RuntimeInfo}\n " +
-                    "CoreCLR Build: {CoreClrBuild}\n CoreCLR Hash: {CoreClrHash}\n " +
-                    "CoreFX Build: {CoreFxBuild}\n CoreFX Hash: {CoreFxHash}\n " +
-                    "Environment.OSVersion {OsVersion}\n RuntimeInformation.OSDescription: {OsDescr}\n " +
-                    "RuntimeInformation.OSArchitecture: {OsArch}\n Environment.ProcessorCount: {CpuCount}",
-                    AppName, AppVersion, Environment.Version, RuntimeInformation.FrameworkDescription, coreCLR.Split('+')[0],
-                    coreCLR.Split('+')[1], coreFX.Split('+')[0], coreFX.Split('+')[1], Environment.OSVersion,
-                    RuntimeInformation.OSDescription, RuntimeInformation.OSArchitecture, Environment.ProcessorCount);
-
-                ThreadPool.SetMinThreads(100, 100); //согласно лучшим практикам азуровского редиса
-                ThreadPool.GetMinThreads(out int minWorkerThreads, out int minIOThreads);
-                Log.Information("Min worker threads: {WorkerThreads}, min IO threads: {IoThreads}", minWorkerThreads, minIOThreads);
-
-                IRuntimeGeoDataService geoService = host.Services.GetService<IRuntimeGeoDataService>();
-                using (CancellationTokenSource cts = new CancellationTokenSource(TimeSpan.FromSeconds(10)))
-                {
-                    Country = await geoService.GetCountryCodeAsync(cts.Token);
-                }
-
-                IHostApplicationLifetime hostLifetime = host.Services.GetService<IHostApplicationLifetime>();
-                hostLifetime.ApplicationStopping.Register(() =>
-                {
-                    host.Services.GetRequiredService<ILogger<Startup>>().LogInformation("Shutdown has been initiated.");
-                });
-
-                IConfiguration configuration = host.Services.GetRequiredService<IConfiguration>();
-                //вызывается дважды при изменениях на файловой системе https://github.com/dotnet/aspnetcore/issues/2542
-                ChangeToken.OnChange(configuration.GetReloadToken, () =>
-                {
-                    host.Services.GetRequiredService<ILogger<Startup>>().LogInformation("Options or secrets has been modified.");
-                });
-
-                dotNetRuntimeStats = DotNetRuntimeStatsBuilder.Default().StartCollecting();
-
-                await host.RunAsync().ConfigureAwait(false);
-
-                Log.Information("{AppName} has stopped.", AppName);
-                return 0;
             }
-#pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception ex)
-#pragma warning restore CA1031 // Do not catch general exception types
             {
-                Log.Fatal(ex, "{AppName} terminated unexpectedly in {Environment} mode.", AppName, hostEnvironment?.EnvironmentName);
+                Log.Error(ex, "Error applying database migration");
                 return 1;
             }
-            finally
+
+            string coreCLR = ((AssemblyInformationalVersionAttribute[])typeof(object).Assembly.GetCustomAttributes(typeof(AssemblyInformationalVersionAttribute), false))[0].InformationalVersion;
+            string coreFX = ((AssemblyInformationalVersionAttribute[])typeof(Uri).Assembly.GetCustomAttributes(typeof(AssemblyInformationalVersionAttribute), false))[0].InformationalVersion;
+
+            Log.Information("Application.Name: {AppName}\n Application.Version: {AppVersion}\n " +
+                "Environment.Version: {EnvVersion}\n RuntimeInformation.FrameworkDescription: {RuntimeInfo}\n " +
+                "CoreCLR Build: {CoreClrBuild}\n CoreCLR Hash: {CoreClrHash}\n " +
+                "CoreFX Build: {CoreFxBuild}\n CoreFX Hash: {CoreFxHash}\n " +
+                "Environment.OSVersion {OsVersion}\n RuntimeInformation.OSDescription: {OsDescr}\n " +
+                "RuntimeInformation.OSArchitecture: {OsArch}\n Environment.ProcessorCount: {CpuCount}",
+                AppName, AppVersion, Environment.Version, RuntimeInformation.FrameworkDescription, coreCLR.Split('+')[0],
+                coreCLR.Split('+')[1], coreFX.Split('+')[0], coreFX.Split('+')[1], Environment.OSVersion,
+                RuntimeInformation.OSDescription, RuntimeInformation.OSArchitecture, Environment.ProcessorCount);
+
+            ThreadPool.SetMinThreads(100, 100); //согласно лучшим практикам азуровского редиса
+            ThreadPool.GetMinThreads(out int minWorkerThreads, out int minIOThreads);
+            Log.Information("Min worker threads: {WorkerThreads}, min IO threads: {IoThreads}", minWorkerThreads, minIOThreads);
+
+            IRuntimeGeoDataService geoService = host.Services.GetService<IRuntimeGeoDataService>();
+            using (CancellationTokenSource cts = new CancellationTokenSource(TimeSpan.FromSeconds(10)))
             {
-                dotNetRuntimeStats?.Dispose();
-                Log.CloseAndFlush();
+                Country = await geoService.GetCountryCodeAsync(cts.Token);
             }
-        }
 
-        private static IHostBuilder CreateHostBuilder(string[] args)
-        {
-            IHostBuilder hostBuilder = new HostBuilder().UseContentRoot(Directory.GetCurrentDirectory());
-            hostBuilder
-                .ConfigureHostConfiguration(
-                    configurationBuilder => configurationBuilder
-                        .AddEnvironmentVariables(prefix: "DOTNET_")
-                        .AddIf(
-                            args != null,
-                            x => x.AddCommandLine(args)))
-                .ConfigureAppConfiguration((hostingContext, config) =>
-                    AddConfiguration(config, hostingContext.HostingEnvironment, args))
-                .UseSerilog(ConfigureReloadableLogger)
-                .UseDefaultServiceProvider(
-                    (context, options) =>
-                    {
-                        bool isDevelopment = context.HostingEnvironment.IsDevelopment();
-                        options.ValidateScopes = isDevelopment;
-                        options.ValidateOnBuild = isDevelopment;
-                    })
-                .ConfigureWebHost(ConfigureWebHostBuilder);
-
-            return hostBuilder;
-        }
-
-        private static void ConfigureWebHostBuilder(IWebHostBuilder webHostBuilder)
-        {
-            webHostBuilder
-                .UseKestrel(
-                    (builderContext, options) =>
-                    {
-                        options.AddServerHeader = false;
-
-                        options.Configure(builderContext.Configuration.GetSection(nameof(ApplicationOptions.Kestrel)));
-                        ConfigureKestrelServerLimits(builderContext, options);
-                    })
-                //<##AzureAppServicesIntegration
-                .UseAzureAppServices()
-                .UseSetting("detailedErrors", "true")
-                .CaptureStartupErrors(true)
-                //AzureAppServicesIntegration##>
-
-                // Used for IIS and IIS Express for in-process hosting. Use UseIISIntegration for out-of-process hosting.
-                .UseIIS()
-                .UseShutdownTimeout(TimeSpan.FromSeconds(Timeouts.WebHostShutdownTimeoutSec))
-                .UseStartup<Startup>();
-        }
-
-        private static IConfigurationBuilder AddConfiguration(IConfigurationBuilder configurationBuilder, IHostEnvironment hostingEnvironment, string[] args)
-        {
-            configurationBuilder
-                .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
-                .AddJsonFile($"appsettings.{hostingEnvironment.EnvironmentName}.json", optional: false, reloadOnChange: true)
-                .AddEnvironmentVariables();
-
-            IConfigurationRoot tempConfig = new ConfigurationBuilder()
-                .AddJsonFile("appsettings.json")
-                .Build();
-
-            string accessKey = Environment.GetEnvironmentVariable("AWS_ACCESS_KEY_ID");
-            string secretKey = Environment.GetEnvironmentVariable("AWS_SECRET_ACCESS_KEY");
-
-            AWSCredentials credentials = new BasicAWSCredentials(accessKey, secretKey);
-            AWSOptions awsOptions = new AWSOptions()
+            IHostApplicationLifetime hostLifetime = host.Services.GetService<IHostApplicationLifetime>();
+            hostLifetime.ApplicationStopping.Register(() =>
             {
-                Credentials = credentials,
-                Region = RegionEndpoint.GetBySystemName(tempConfig.GetValue<string>("AWS:Region"))
-            };
-
-            string awsSharedParameterStorePath = $"/{hostingEnvironment.EnvironmentName.ToLowerInvariant()}";
-
-            configurationBuilder.AddSystemsManager(config =>
-            {
-                config.AwsOptions = awsOptions;
-                config.Optional = false;
-                config.Path = awsSharedParameterStorePath;
-                config.ReloadAfter = TimeSpan.FromDays(1);
-                config.OnLoadException += exceptionContext =>
-                {
-                    //log
-                };
+                host.Services.GetRequiredService<ILogger<Startup>>().LogInformation("Shutdown has been initiated.");
             });
 
-            // Добавляем параметры командной строки, которые имеют наивысший приоритет.
-            configurationBuilder
-                .AddIf(
-                    args != null,
-                    x => x.AddCommandLine(args));
+            IConfiguration configuration = host.Services.GetRequiredService<IConfiguration>();
+            //вызывается дважды при изменениях на файловой системе https://github.com/dotnet/aspnetcore/issues/2542
+            ChangeToken.OnChange(configuration.GetReloadToken, () =>
+            {
+                host.Services.GetRequiredService<ILogger<Startup>>().LogInformation("Options or secrets has been modified.");
+            });
 
-            return configurationBuilder;
+            dotNetRuntimeStats = DotNetRuntimeStatsBuilder.Default().StartCollecting();
+
+            await host.RunAsync().ConfigureAwait(false);
+
+            Log.Information("{AppName} has stopped.", AppName);
+            return 0;
+        }
+#pragma warning disable CA1031 // Do not catch general exception types
+        catch (Exception ex)
+#pragma warning restore CA1031 // Do not catch general exception types
+        {
+            Log.Fatal(ex, "{AppName} terminated unexpectedly in {Environment} mode.", AppName, hostEnvironment?.EnvironmentName);
+            return 1;
+        }
+        finally
+        {
+            dotNetRuntimeStats?.Dispose();
+            Log.CloseAndFlush();
+        }
+    }
+
+    private static IHostBuilder CreateHostBuilder(string[] args)
+    {
+        IHostBuilder hostBuilder = new HostBuilder().UseContentRoot(Directory.GetCurrentDirectory());
+        hostBuilder
+            .ConfigureHostConfiguration(
+                configurationBuilder => configurationBuilder
+                    .AddEnvironmentVariables(prefix: "DOTNET_")
+                    .AddIf(
+                        args != null,
+                        x => x.AddCommandLine(args)))
+            .ConfigureAppConfiguration((hostingContext, config) =>
+                AddConfiguration(config, hostingContext.HostingEnvironment, args))
+            .UseSerilog(ConfigureReloadableLogger)
+            .UseDefaultServiceProvider(
+                (context, options) =>
+                {
+                    bool isDevelopment = context.HostingEnvironment.IsDevelopment();
+                    options.ValidateScopes = isDevelopment;
+                    options.ValidateOnBuild = isDevelopment;
+                })
+            .ConfigureWebHost(ConfigureWebHostBuilder);
+
+        return hostBuilder;
+    }
+
+    private static void ConfigureWebHostBuilder(IWebHostBuilder webHostBuilder)
+    {
+        webHostBuilder
+            .UseKestrel(
+                (builderContext, options) =>
+                {
+                    options.AddServerHeader = false;
+
+                    options.Configure(builderContext.Configuration.GetSection(nameof(ApplicationOptions.Kestrel)));
+                    ConfigureKestrelServerLimits(builderContext, options);
+                })
+            //<##AzureAppServicesIntegration
+            .UseAzureAppServices()
+            .UseSetting("detailedErrors", "true")
+            .CaptureStartupErrors(true)
+            //AzureAppServicesIntegration##>
+
+            // Used for IIS and IIS Express for in-process hosting. Use UseIISIntegration for out-of-process hosting.
+            .UseIIS()
+            .UseShutdownTimeout(TimeSpan.FromSeconds(Timeouts.WebHostShutdownTimeoutSec))
+            .UseStartup<Startup>();
+    }
+
+    private static IConfigurationBuilder AddConfiguration(IConfigurationBuilder configurationBuilder, IHostEnvironment hostingEnvironment, string[] args)
+    {
+        configurationBuilder
+            .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+            .AddJsonFile($"appsettings.{hostingEnvironment.EnvironmentName}.json", optional: false, reloadOnChange: true)
+            .AddEnvironmentVariables();
+
+        IConfigurationRoot tempConfig = new ConfigurationBuilder()
+            .AddJsonFile("appsettings.json")
+            .Build();
+
+        string accessKey = Environment.GetEnvironmentVariable("AWS_ACCESS_KEY_ID");
+        string secretKey = Environment.GetEnvironmentVariable("AWS_SECRET_ACCESS_KEY");
+
+        AWSCredentials credentials = new BasicAWSCredentials(accessKey, secretKey);
+        AWSOptions awsOptions = new AWSOptions()
+        {
+            Credentials = credentials,
+            Region = RegionEndpoint.GetBySystemName(tempConfig.GetValue<string>("AWS:Region"))
+        };
+
+        string awsSharedParameterStorePath = $"/{hostingEnvironment.EnvironmentName.ToLowerInvariant()}";
+
+        configurationBuilder.AddSystemsManager(config =>
+        {
+            config.AwsOptions = awsOptions;
+            config.Optional = false;
+            config.Path = awsSharedParameterStorePath;
+            config.ReloadAfter = TimeSpan.FromDays(1);
+            config.OnLoadException += exceptionContext =>
+            {
+                //log
+            };
+        });
+
+        // Добавляем параметры командной строки, которые имеют наивысший приоритет.
+        configurationBuilder
+            .AddIf(
+                args != null,
+                x => x.AddCommandLine(args));
+
+        return configurationBuilder;
+    }
+
+    /// <summary>
+    /// Creates a logger used during application initialization.
+    /// <see href="https://nblumhardt.com/2020/10/bootstrap-logger/"/>.
+    /// </summary>
+    /// <returns>A logger that can load a new configuration.</returns>
+    private static ReloadableLogger CreateBootstrapLogger()
+    {
+        return new LoggerConfiguration()
+            .WriteTo.Console()
+            .CreateBootstrapLogger();
+    }
+
+    /// <summary>
+    /// Добавляет расширенный логер с засылкой данных в удалённые системы
+    /// </summary>
+    private static void ConfigureReloadableLogger(HostBuilderContext context, IServiceProvider services, LoggerConfiguration loggerConfig)
+    {
+        IHostEnvironment hostEnv = services.GetRequiredService<IHostEnvironment>();
+        IConfiguration configuration = services.GetRequiredService<IConfiguration>();
+        AppSecrets secrets = services.GetRequiredService<IOptions<AppSecrets>>().Value;
+
+        loggerConfig
+            .ReadFrom.Configuration(configuration)
+            .Enrich.WithProperty("AppName", AppName)
+            .Enrich.WithProperty("Version", AppVersion.ToString())
+            .Enrich.WithProperty("NodeId", Node.Id)
+            .Enrich.WithProperty("ProcessId", Environment.ProcessId)
+            .Enrich.WithProperty("ProcessName", Process.GetCurrentProcess().ProcessName)
+            .Enrich.WithProperty("MachineName", Environment.MachineName)
+            .Enrich.WithProperty("EnvironmentName", hostEnv.EnvironmentName)
+            .Enrich.WithProperty("EnvironmentUserName", Environment.UserName)
+            .Enrich.WithProperty("OSPlatform", OsPlatform.ToString())
+            .Enrich.FromMassTransitMessage()
+            .Enrich.FromCustomMbMessageContext()
+            .Enrich.WithExceptionDetails(new DestructuringOptionsBuilder()
+                .WithDefaultDestructurers()
+                //speed up EF Core exception destructuring
+                .WithDestructurers(new[] { new DbUpdateExceptionDestructurer() }));
+
+        if (!string.IsNullOrEmpty(secrets.AppInsightsInstrumentationKey))
+        {
+            loggerConfig.WriteTo.ApplicationInsights(secrets.AppInsightsInstrumentationKey, TelemetryConverter.Traces, LogEventLevel.Debug);
         }
 
-        /// <summary>
-        /// Creates a logger used during application initialization.
-        /// <see href="https://nblumhardt.com/2020/10/bootstrap-logger/"/>.
-        /// </summary>
-        /// <returns>A logger that can load a new configuration.</returns>
-        private static ReloadableLogger CreateBootstrapLogger()
+        if (!string.IsNullOrEmpty(secrets.ElasticSearchUrl)
+            && !string.IsNullOrEmpty(secrets.ElasticSearchUser)
+            && !string.IsNullOrEmpty(secrets.ElasticSearchPassword))
         {
-            return new LoggerConfiguration()
-                .WriteTo.Console()
-                .CreateBootstrapLogger();
-        }
-
-        /// <summary>
-        /// Добавляет расширенный логер с засылкой данных в удалённые системы
-        /// </summary>
-        private static void ConfigureReloadableLogger(HostBuilderContext context, IServiceProvider services, LoggerConfiguration loggerConfig)
-        {
-            IHostEnvironment hostEnv = services.GetRequiredService<IHostEnvironment>();
-            IConfiguration configuration = services.GetRequiredService<IConfiguration>();
-            AppSecrets secrets = services.GetRequiredService<IOptions<AppSecrets>>().Value;
-
-            loggerConfig
-                .ReadFrom.Configuration(configuration)
-                .Enrich.WithProperty("AppName", AppName)
-                .Enrich.WithProperty("Version", AppVersion.ToString())
-                .Enrich.WithProperty("NodeId", Node.Id)
-                .Enrich.WithProperty("ProcessId", Environment.ProcessId)
-                .Enrich.WithProperty("ProcessName", Process.GetCurrentProcess().ProcessName)
-                .Enrich.WithProperty("MachineName", Environment.MachineName)
-                .Enrich.WithProperty("EnvironmentName", hostEnv.EnvironmentName)
-                .Enrich.WithProperty("EnvironmentUserName", Environment.UserName)
-                .Enrich.WithProperty("OSPlatform", OsPlatform.ToString())
-                .Enrich.FromMassTransitMessage()
-                .Enrich.FromCustomMbMessageContext()
-                .Enrich.WithExceptionDetails(new DestructuringOptionsBuilder()
-                    .WithDefaultDestructurers()
-                    //speed up EF Core exception destructuring
-                    .WithDestructurers(new[] { new DbUpdateExceptionDestructurer() }));
-
-            if (!string.IsNullOrEmpty(secrets.AppInsightsInstrumentationKey))
+            Dictionary<string, string> customIndexTemplateSettings = new Dictionary<string, string>
             {
-                loggerConfig.WriteTo.ApplicationInsights(secrets.AppInsightsInstrumentationKey, TelemetryConverter.Traces, LogEventLevel.Debug);
-            }
+                { "index.lifecycle.name", hostEnv.IsProduction() ? "ya-logs-prod-policy" : "ya-logs-dev-policy" },
+            };
 
-            if (!string.IsNullOrEmpty(secrets.ElasticSearchUrl)
-                && !string.IsNullOrEmpty(secrets.ElasticSearchUser)
-                && !string.IsNullOrEmpty(secrets.ElasticSearchPassword))
+            loggerConfig.WriteTo.Elasticsearch(new ElasticsearchSinkOptions(new Uri(secrets.ElasticSearchUrl))
             {
-                Dictionary<string, string> customIndexTemplateSettings = new Dictionary<string, string>
+                ModifyConnectionSettings = x => x.BasicAuthentication(secrets.ElasticSearchUser, secrets.ElasticSearchPassword),
+                BatchPostingLimit = 1000,
+                Period = TimeSpan.FromSeconds(10),
+                MinimumLogEventLevel = LogEventLevel.Information,
+                FailureCallback = e => Console.WriteLine("Unable to submit log event to ELK: " + e.MessageTemplate),
+                EmitEventFailure = EmitEventFailureHandling.RaiseCallback,
+                AutoRegisterTemplate = true,
+                AutoRegisterTemplateVersion = AutoRegisterTemplateVersion.ESv7,
+                OverwriteTemplate = false,
+                RegisterTemplateFailure = RegisterTemplateRecovery.IndexAnyway,
+                TemplateName = hostEnv.IsProduction() ? "ya-logs-prod-template" : "ya-logs-dev-template",
+                TemplateCustomSettings = customIndexTemplateSettings,
+                InlineFields = true,
+                IndexFormat = hostEnv.IsProduction() ? "ya-logs-prod-{0:yyyy.MM.dd}" : "ya-logs-dev-{0:yyyy.MM.dd}",
+                DeadLetterIndexName = hostEnv.IsProduction() ? "ya-prod-deadletter-{0:yyyy.MM.dd}" : "ya-dev-deadletter-{0:yyyy.MM.dd}",
+                CustomFormatter = new ExceptionAsObjectJsonFormatter(renderMessage: true, inlineFields: true),
+                BufferCleanPayload = (failingEvent, statuscode, exception) =>
                 {
-                    { "index.lifecycle.name", hostEnv.IsProduction() ? "ya-logs-prod-policy" : "ya-logs-dev-policy" },
-                };
-
-                loggerConfig.WriteTo.Elasticsearch(new ElasticsearchSinkOptions(new Uri(secrets.ElasticSearchUrl))
-                {
-                    ModifyConnectionSettings = x => x.BasicAuthentication(secrets.ElasticSearchUser, secrets.ElasticSearchPassword),
-                    BatchPostingLimit = 1000,
-                    Period = TimeSpan.FromSeconds(10),
-                    MinimumLogEventLevel = LogEventLevel.Information,
-                    FailureCallback = e => Console.WriteLine("Unable to submit log event to ELK: " + e.MessageTemplate),
-                    EmitEventFailure = EmitEventFailureHandling.RaiseCallback,
-                    AutoRegisterTemplate = true,
-                    AutoRegisterTemplateVersion = AutoRegisterTemplateVersion.ESv7,
-                    OverwriteTemplate = false,
-                    RegisterTemplateFailure = RegisterTemplateRecovery.IndexAnyway,
-                    TemplateName = hostEnv.IsProduction() ? "ya-logs-prod-template" : "ya-logs-dev-template",
-                    TemplateCustomSettings = customIndexTemplateSettings,
-                    InlineFields = true,
-                    IndexFormat = hostEnv.IsProduction() ? "ya-logs-prod-{0:yyyy.MM.dd}" : "ya-logs-dev-{0:yyyy.MM.dd}",
-                    DeadLetterIndexName = hostEnv.IsProduction() ? "ya-prod-deadletter-{0:yyyy.MM.dd}" : "ya-dev-deadletter-{0:yyyy.MM.dd}",
-                    CustomFormatter = new ExceptionAsObjectJsonFormatter(renderMessage: true, inlineFields: true),
-                    BufferCleanPayload = (failingEvent, statuscode, exception) =>
+                    dynamic e = JObject.Parse(failingEvent);
+                    return JsonConvert.SerializeObject(new Dictionary<string, object>()
                     {
-                        dynamic e = JObject.Parse(failingEvent);
-                        return JsonConvert.SerializeObject(new Dictionary<string, object>()
-                        {
-                            { "@timestamp", e["@timestamp"]},
-                            { "level", "Error"},
-                            { "message", "Error: " + e.message},
-                            { "messageTemplate", e.messageTemplate},
-                            { "failingStatusCode", statuscode},
-                            { "failingException", exception}
-                        });
-                    }
-                });
-            }
-
-            if (!string.IsNullOrEmpty(secrets.LogzioToken))
-            {
-                // EU logz.io sink
-                //loggerConfig.WriteTo.LogzIo(secrets.LogzioToken, null,
-                //    new LogzioOptions
-                //    {
-                //        DataCenterSubDomain = "listener-eu",
-                //        UseHttps = false,
-                //        RestrictedToMinimumLevel = LogEventLevel.Information,
-                //        Period = TimeSpan.FromSeconds(10),
-                //        BatchPostingLimit = 1000,
-                //        PropertyTransformationMap = null,
-                //        LowercaseLevel = false,
-                //        IncludeMessageTemplate = false,
-                //        BoostProperties = false
-                //    });
-
-                // US logz.io sink
-                //loggerConfig.WriteTo.Logzio(secrets.LogzioToken, 1000, TimeSpan.FromSeconds(10), null, LogEventLevel.Information);
-            }
-
-            if (string.IsNullOrEmpty(secrets.AppInsightsInstrumentationKey) && string.IsNullOrEmpty(secrets.LogzioToken))
-            {
-                Log.Warning("Sending logs to remote log managment systems is disabled.");
-            }
+                        { "@timestamp", e["@timestamp"]},
+                        { "level", "Error"},
+                        { "message", "Error: " + e.message},
+                        { "messageTemplate", e.messageTemplate},
+                        { "failingStatusCode", statuscode},
+                        { "failingException", exception}
+                    });
+                }
+            });
         }
 
-        /// <summary>
-        /// Configure Kestrel server limits from appsettings.json is not supported so we manually copy from config.
-        /// https://github.com/aspnet/KestrelHttpServer/issues/2216
-        /// </summary>
-        private static void ConfigureKestrelServerLimits(WebHostBuilderContext builderContext, KestrelServerOptions options)
+        if (!string.IsNullOrEmpty(secrets.LogzioToken))
         {
-            KestrelServerOptions source = new KestrelServerOptions();
-            builderContext.Configuration.GetSection(nameof(ApplicationOptions.Kestrel)).Bind(source);
+            // EU logz.io sink
+            //loggerConfig.WriteTo.LogzIo(secrets.LogzioToken, null,
+            //    new LogzioOptions
+            //    {
+            //        DataCenterSubDomain = "listener-eu",
+            //        UseHttps = false,
+            //        RestrictedToMinimumLevel = LogEventLevel.Information,
+            //        Period = TimeSpan.FromSeconds(10),
+            //        BatchPostingLimit = 1000,
+            //        PropertyTransformationMap = null,
+            //        LowercaseLevel = false,
+            //        IncludeMessageTemplate = false,
+            //        BoostProperties = false
+            //    });
 
-            KestrelServerLimits limits = options.Limits;
-            KestrelServerLimits sourceLimits = source.Limits;
-
-            Http2Limits http2 = limits.Http2;
-            Http2Limits sourceHttp2 = sourceLimits.Http2;
-
-            http2.HeaderTableSize = sourceHttp2.HeaderTableSize;
-            http2.InitialConnectionWindowSize = sourceHttp2.InitialConnectionWindowSize;
-            http2.InitialStreamWindowSize = sourceHttp2.InitialStreamWindowSize;
-            http2.MaxFrameSize = sourceHttp2.MaxFrameSize;
-            http2.MaxRequestHeaderFieldSize = sourceHttp2.MaxRequestHeaderFieldSize;
-            http2.MaxStreamsPerConnection = sourceHttp2.MaxStreamsPerConnection;
-
-            limits.KeepAliveTimeout = sourceLimits.KeepAliveTimeout;
-            limits.MaxConcurrentConnections = sourceLimits.MaxConcurrentConnections;
-            limits.MaxConcurrentUpgradedConnections = sourceLimits.MaxConcurrentUpgradedConnections;
-            limits.MaxRequestBodySize = sourceLimits.MaxRequestBodySize;
-            limits.MaxRequestBufferSize = sourceLimits.MaxRequestBufferSize;
-            //Azure App Service add > 20 headers
-            limits.MaxRequestHeaderCount = sourceLimits.MaxRequestHeaderCount;
-            limits.MaxRequestHeadersTotalSize = sourceLimits.MaxRequestHeadersTotalSize;
-            //https://github.com/aspnet/AspNetCore/issues/12614
-            limits.MaxRequestLineSize = sourceLimits.MaxRequestLineSize - 10;
-            limits.MaxResponseBufferSize = sourceLimits.MaxResponseBufferSize;
-            limits.MinRequestBodyDataRate = sourceLimits.MinRequestBodyDataRate;
-            limits.MinResponseDataRate = sourceLimits.MinResponseDataRate;
-            limits.RequestHeadersTimeout = sourceLimits.RequestHeadersTimeout;
+            // US logz.io sink
+            //loggerConfig.WriteTo.Logzio(secrets.LogzioToken, 1000, TimeSpan.FromSeconds(10), null, LogEventLevel.Information);
         }
 
-        private static OsPlatforms GetOs()
+        if (string.IsNullOrEmpty(secrets.AppInsightsInstrumentationKey) && string.IsNullOrEmpty(secrets.LogzioToken))
         {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                return OsPlatforms.Windows;
-            }
-            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-            {
-                return OsPlatforms.Linux;
-            }
-            else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-            {
-                return OsPlatforms.OSX;
-            }
-            else
-            {
-                return OsPlatforms.Unknown;
-            }
+            Log.Warning("Sending logs to remote log managment systems is disabled.");
+        }
+    }
+
+    /// <summary>
+    /// Configure Kestrel server limits from appsettings.json is not supported so we manually copy from config.
+    /// https://github.com/aspnet/KestrelHttpServer/issues/2216
+    /// </summary>
+    private static void ConfigureKestrelServerLimits(WebHostBuilderContext builderContext, KestrelServerOptions options)
+    {
+        KestrelServerOptions source = new KestrelServerOptions();
+        builderContext.Configuration.GetSection(nameof(ApplicationOptions.Kestrel)).Bind(source);
+
+        KestrelServerLimits limits = options.Limits;
+        KestrelServerLimits sourceLimits = source.Limits;
+
+        Http2Limits http2 = limits.Http2;
+        Http2Limits sourceHttp2 = sourceLimits.Http2;
+
+        http2.HeaderTableSize = sourceHttp2.HeaderTableSize;
+        http2.InitialConnectionWindowSize = sourceHttp2.InitialConnectionWindowSize;
+        http2.InitialStreamWindowSize = sourceHttp2.InitialStreamWindowSize;
+        http2.MaxFrameSize = sourceHttp2.MaxFrameSize;
+        http2.MaxRequestHeaderFieldSize = sourceHttp2.MaxRequestHeaderFieldSize;
+        http2.MaxStreamsPerConnection = sourceHttp2.MaxStreamsPerConnection;
+
+        limits.KeepAliveTimeout = sourceLimits.KeepAliveTimeout;
+        limits.MaxConcurrentConnections = sourceLimits.MaxConcurrentConnections;
+        limits.MaxConcurrentUpgradedConnections = sourceLimits.MaxConcurrentUpgradedConnections;
+        limits.MaxRequestBodySize = sourceLimits.MaxRequestBodySize;
+        limits.MaxRequestBufferSize = sourceLimits.MaxRequestBufferSize;
+        //Azure App Service add > 20 headers
+        limits.MaxRequestHeaderCount = sourceLimits.MaxRequestHeaderCount;
+        limits.MaxRequestHeadersTotalSize = sourceLimits.MaxRequestHeadersTotalSize;
+        //https://github.com/aspnet/AspNetCore/issues/12614
+        limits.MaxRequestLineSize = sourceLimits.MaxRequestLineSize - 10;
+        limits.MaxResponseBufferSize = sourceLimits.MaxResponseBufferSize;
+        limits.MinRequestBodyDataRate = sourceLimits.MinRequestBodyDataRate;
+        limits.MinResponseDataRate = sourceLimits.MinResponseDataRate;
+        limits.RequestHeadersTimeout = sourceLimits.RequestHeadersTimeout;
+    }
+
+    private static OsPlatforms GetOs()
+    {
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        {
+            return OsPlatforms.Windows;
+        }
+        else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+        {
+            return OsPlatforms.Linux;
+        }
+        else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+        {
+            return OsPlatforms.OSX;
+        }
+        else
+        {
+            return OsPlatforms.Unknown;
         }
     }
 }

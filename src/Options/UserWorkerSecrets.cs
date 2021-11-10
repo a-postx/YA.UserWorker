@@ -1,7 +1,6 @@
-namespace YA.UserWorker.Options
+namespace YA.UserWorker.Options;
+
+public class UserWorkerSecrets
 {
-    public class UserWorkerSecrets
-    {
-        public string ConnectionString { get; set; }
-    }
+    public string ConnectionString { get; set; }
 }

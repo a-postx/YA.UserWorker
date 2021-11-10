@@ -1,9 +1,6 @@
-using System;
+namespace YA.UserWorker.Infrastructure.Messaging.Test;
 
-namespace YA.UserWorker.Infrastructure.Messaging.Test
+public interface IUserWorkerTestResponseV1
 {
-    public interface IUserWorkerTestResponseV1
-    {
-        DateTime GotIt { get; }
-    }
+    DateTime GotIt { get; }
 }

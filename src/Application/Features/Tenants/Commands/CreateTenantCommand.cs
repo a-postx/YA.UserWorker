@@ -1,79 +1,74 @@
-using System;
-using System.Threading;
-using System.Threading.Tasks;
 using AutoMapper;
 using MediatR;
-using Microsoft.Extensions.Logging;
 using YA.UserWorker.Application.Enums;
 using YA.UserWorker.Application.Interfaces;
 using YA.UserWorker.Application.Models.Dto;
 using YA.UserWorker.Constants;
 using YA.UserWorker.Core.Entities;
 
-namespace YA.UserWorker.Application.Features.Tenants.Commands
+namespace YA.UserWorker.Application.Features.Tenants.Commands;
+
+public class CreateTenantCommand : IRequest<ICommandResult<Tenant>>
 {
-    public class CreateTenantCommand : IRequest<ICommandResult<Tenant>>
+    public CreateTenantCommand(string name)
     {
-        public CreateTenantCommand(string name)
+        Name = name;
+    }
+
+    public string Name { get; protected set; }
+
+    public class CreateTenantHandler : IRequestHandler<CreateTenantCommand, ICommandResult<Tenant>>
+    {
+        public CreateTenantHandler(ILogger<CreateTenantHandler> logger,
+            IMapper mapper,
+            IUserWorkerDbContext dbContext,
+            IMessageBus messageBus)
         {
-            Name = name;
+            _log = logger ?? throw new ArgumentNullException(nameof(logger));
+            _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
+            _dbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
+            _messageBus = messageBus ?? throw new ArgumentNullException(nameof(messageBus));
         }
 
-        public string Name { get; protected set; }
+        private readonly ILogger<CreateTenantHandler> _log;
+        private readonly IMapper _mapper;
+        private readonly IUserWorkerDbContext _dbContext;
+        private readonly IMessageBus _messageBus;
 
-        public class CreateTenantHandler : IRequestHandler<CreateTenantCommand, ICommandResult<Tenant>>
+        public async Task<ICommandResult<Tenant>> Handle(CreateTenantCommand command, CancellationToken cancellationToken)
         {
-            public CreateTenantHandler(ILogger<CreateTenantHandler> logger,
-                IMapper mapper,
-                IUserWorkerDbContext dbContext,
-                IMessageBus messageBus)
+            string name = command.Name;
+
+            //дописать: проверка если тенант такого пользователя уже был удалён
+            //User existingUser = await _dbContext.GetTenantAsync(authId, userId, cancellationToken);
+
+            //if (existingUser != null)
+            //{
+            //    return new CommandResult<User>(CommandStatus.UnprocessableEntity, null);
+            //}
+
+            Tenant tenant = new Tenant
             {
-                _log = logger ?? throw new ArgumentNullException(nameof(logger));
-                _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
-                _dbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
-                _messageBus = messageBus ?? throw new ArgumentNullException(nameof(messageBus));
-            }
+                Name = string.IsNullOrEmpty(name) ? "<неизвестный>" : name,
+                Status = YaTenantStatus.New,
+                Type = YaTenantType.Custom
+            };
 
-            private readonly ILogger<CreateTenantHandler> _log;
-            private readonly IMapper _mapper;
-            private readonly IUserWorkerDbContext _dbContext;
-            private readonly IMessageBus _messageBus;
+            Guid defaultPricingTierId = Guid.Parse(SeedData.SeedPricingTierId);
 
-            public async Task<ICommandResult<Tenant>> Handle(CreateTenantCommand command, CancellationToken cancellationToken)
-            {
-                string name = command.Name;
+            tenant.PricingTierId = defaultPricingTierId;
+            tenant.PricingTierActivatedDateTime = DateTime.UtcNow;
 
-                //дописать: проверка если тенант такого пользователя уже был удалён
-                //User existingUser = await _dbContext.GetTenantAsync(authId, userId, cancellationToken);
+            await _dbContext.CreateTenantAsync(tenant, cancellationToken);
+            await _dbContext.ApplyChangesAsync(cancellationToken);
 
-                //if (existingUser != null)
-                //{
-                //    return new CommandResult<User>(CommandStatus.UnprocessableEntity, null);
-                //}
+            Tenant tenantWithPt = await _dbContext.GetTenantWithPricingTierAsync(tenant.TenantID, cancellationToken);
 
-                Tenant tenant = new Tenant
-                {
-                    Name = string.IsNullOrEmpty(name) ? "<неизвестный>" : name,
-                    Status = YaTenantStatus.New,
-                    Type = YaTenantType.Custom
-                };
+            TenantTm tenantTm = _mapper.Map<TenantTm>(tenantWithPt);
 
-                Guid defaultPricingTierId = Guid.Parse(SeedData.SeedPricingTierId);
+            await _messageBus.TenantCreatedV1Async(tenantTm.TenantId, tenantTm, cancellationToken);
 
-                tenant.PricingTierId = defaultPricingTierId;
-                tenant.PricingTierActivatedDateTime = DateTime.UtcNow;
-
-                await _dbContext.CreateTenantAsync(tenant, cancellationToken);
-                await _dbContext.ApplyChangesAsync(cancellationToken);
-
-                Tenant tenantWithPt = await _dbContext.GetTenantWithPricingTierAsync(tenant.TenantID, cancellationToken);
-
-                TenantTm tenantTm = _mapper.Map<TenantTm>(tenantWithPt);
-
-                await _messageBus.TenantCreatedV1Async(tenantTm.TenantId, tenantTm, cancellationToken);
-
-                return new CommandResult<Tenant>(CommandStatus.Ok, tenant);
-            }
+            return new CommandResult<Tenant>(CommandStatus.Ok, tenant);
         }
     }
 }

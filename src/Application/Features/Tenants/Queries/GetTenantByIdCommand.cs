@@ -1,53 +1,48 @@
-﻿using MediatR;
-using Microsoft.Extensions.Logging;
-using System;
-using System.Threading;
-using System.Threading.Tasks;
+using MediatR;
 using YA.UserWorker.Application.Enums;
 using YA.UserWorker.Application.Interfaces;
 using YA.UserWorker.Core.Entities;
 
-namespace YA.UserWorker.Application.Features.Tenants.Queries
+namespace YA.UserWorker.Application.Features.Tenants.Queries;
+
+public class GetTenantByIdCommand : IRequest<ICommandResult<Tenant>>
 {
-    public class GetTenantByIdCommand : IRequest<ICommandResult<Tenant>>
+    public GetTenantByIdCommand(Guid id)
     {
-        public GetTenantByIdCommand(Guid id)
+        Id = id;
+    }
+
+    public Guid Id { get; protected set; }
+
+    public class GetTenantByIdHandler : IRequestHandler<GetTenantByIdCommand, ICommandResult<Tenant>>
+    {
+        public GetTenantByIdHandler(ILogger<GetTenantByIdHandler> logger,
+            IUserWorkerDbContext dbContext)
         {
-            Id = id;
+            _log = logger ?? throw new ArgumentNullException(nameof(logger));
+            _dbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
         }
 
-        public Guid Id { get; protected set; }
+        private readonly ILogger<GetTenantByIdHandler> _log;
+        private readonly IUserWorkerDbContext _dbContext;
 
-        public class GetTenantByIdHandler : IRequestHandler<GetTenantByIdCommand, ICommandResult<Tenant>>
+        public async Task<ICommandResult<Tenant>> Handle(GetTenantByIdCommand command, CancellationToken cancellationToken)
         {
-            public GetTenantByIdHandler(ILogger<GetTenantByIdHandler> logger,
-                IUserWorkerDbContext dbContext)
+            Guid tenantId = command.Id;
+
+            if (tenantId == Guid.Empty)
             {
-                _log = logger ?? throw new ArgumentNullException(nameof(logger));
-                _dbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
+                return new CommandResult<Tenant>(CommandStatus.BadRequest, null);
             }
 
-            private readonly ILogger<GetTenantByIdHandler> _log;
-            private readonly IUserWorkerDbContext _dbContext;
+            Tenant tenant = await _dbContext.GetTenantAsync(e => e.TenantID == tenantId, cancellationToken);
 
-            public async Task<ICommandResult<Tenant>> Handle(GetTenantByIdCommand command, CancellationToken cancellationToken)
+            if (tenant == null)
             {
-                Guid tenantId = command.Id;
-
-                if (tenantId == Guid.Empty)
-                {
-                    return new CommandResult<Tenant>(CommandStatus.BadRequest, null);
-                }
-
-                Tenant tenant = await _dbContext.GetTenantAsync(e => e.TenantID == tenantId, cancellationToken);
-
-                if (tenant == null)
-                {
-                    return new CommandResult<Tenant>(CommandStatus.NotFound, null);
-                }
-
-                return new CommandResult<Tenant>(CommandStatus.Ok, tenant);
+                return new CommandResult<Tenant>(CommandStatus.NotFound, null);
             }
+
+            return new CommandResult<Tenant>(CommandStatus.Ok, tenant);
         }
     }
 }

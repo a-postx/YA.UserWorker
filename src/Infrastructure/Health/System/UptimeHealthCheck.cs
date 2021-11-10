@@ -1,32 +1,27 @@
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 
-namespace YA.UserWorker.Infrastructure.Health.System
+namespace YA.UserWorker.Infrastructure.Health.System;
+
+/// <summary>
+/// Checks uptime value of the application.
+/// </summary>
+public class UptimeHealthCheck : IHealthCheck
 {
-    /// <summary>
-    /// Checks uptime value of the application.
-    /// </summary>
-    public class UptimeHealthCheck : IHealthCheck
+    public string Name => "uptime_check";
+
+    public Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken = new CancellationToken())
     {
-        public string Name => "uptime_check";
+        TimeSpan runtime = DateTime.UtcNow - Process.GetCurrentProcess().StartTime.ToUniversalTime();
+        int upTimeValue = (runtime.Days * 3600) + (runtime.Minutes * 60) + runtime.Seconds;
 
-        public Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken = new CancellationToken())
+        Dictionary<string, object> data = new Dictionary<string, object>
         {
-            TimeSpan runtime = DateTime.UtcNow - Process.GetCurrentProcess().StartTime.ToUniversalTime();
-            int upTimeValue = (runtime.Days * 3600) + (runtime.Minutes * 60) + runtime.Seconds;
+            { "Uptime, sec", upTimeValue }
+        };
 
-            Dictionary<string, object> data = new Dictionary<string, object>
-            {
-                { "Uptime, sec", upTimeValue }
-            };
+        HealthStatus status = HealthStatus.Healthy;
 
-            HealthStatus status = HealthStatus.Healthy;
-
-            return Task.FromResult(new HealthCheckResult(status, AppDomain.CurrentDomain.FriendlyName + " is running.", null, data));
-        }
+        return Task.FromResult(new HealthCheckResult(status, AppDomain.CurrentDomain.FriendlyName + " is running.", null, data));
     }
 }

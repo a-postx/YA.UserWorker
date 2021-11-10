@@ -1,8 +1,7 @@
-namespace YA.UserWorker.Application.Enums
+namespace YA.UserWorker.Application.Enums;
+
+public enum TenantType
 {
-    public enum TenantType
-    {
-        System = 0,
-        Custom = 1
-    }
+    System = 0,
+    Custom = 1
 }

@@ -1,13 +1,12 @@
-namespace YA.UserWorker.Application.Models.SaveModels
+namespace YA.UserWorker.Application.Models.SaveModels;
+
+/// <summary>
+/// Арендатор, модель сохранения.
+/// </summary>
+public class TenantSm
 {
     /// <summary>
-    /// Арендатор, модель сохранения.
+    /// Название арендатора.
     /// </summary>
-    public class TenantSm
-    {
-        /// <summary>
-        /// Название арендатора.
-        /// </summary>
-        public string Name { get; set; }
-    }
+    public string Name { get; set; }
 }

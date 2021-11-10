@@ -1,7 +1,6 @@
-﻿namespace YA.UserWorker.Core.Entities
+namespace YA.UserWorker.Core.Entities;
+
+public interface ISoftDeleteEntity
 {
-    public interface ISoftDeleteEntity
-    {
-        bool IsDeleted { get; set; }
-    }
+    bool IsDeleted { get; set; }
 }

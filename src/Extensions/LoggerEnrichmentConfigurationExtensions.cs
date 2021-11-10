@@ -1,28 +1,26 @@
-using System;
 using Serilog;
 using Serilog.Configuration;
 using YA.UserWorker.Infrastructure.Logging.Enrichers;
 
-namespace YA.UserWorker.Extensions
+namespace YA.UserWorker.Extensions;
+
+/// <summary>
+/// Provides various extension methods for configuring Serilog.
+/// </summary>
+public static class LoggerEnrichmentConfigurationExtensions
 {
     /// <summary>
-    /// Provides various extension methods for configuring Serilog.
+    /// Enriches the Serilog logging data with custom message bus event context information.
     /// </summary>
-    public static class LoggerEnrichmentConfigurationExtensions
+    /// <param name="configuration"></param>
+    /// <returns></returns>
+    public static LoggerConfiguration FromCustomMbMessageContext(this LoggerEnrichmentConfiguration configuration)
     {
-        /// <summary>
-        /// Enriches the Serilog logging data with custom message bus event context information.
-        /// </summary>
-        /// <param name="configuration"></param>
-        /// <returns></returns>
-        public static LoggerConfiguration FromCustomMbMessageContext(this LoggerEnrichmentConfiguration configuration)
+        if (configuration == null)
         {
-            if (configuration == null)
-            {
-                throw new ArgumentNullException(nameof(configuration));
-            }
-
-            return configuration.With<YaCustomMbEventEnricher>();
+            throw new ArgumentNullException(nameof(configuration));
         }
+
+        return configuration.With<YaCustomMbEventEnricher>();
     }
 }

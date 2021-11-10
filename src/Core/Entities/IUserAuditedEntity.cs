@@ -1,8 +1,7 @@
-namespace YA.UserWorker.Core.Entities
+namespace YA.UserWorker.Core.Entities;
+
+public interface IUserAuditedEntity
 {
-    public interface IUserAuditedEntity
-    {
-        string CreatedBy { get; set; }
-        string LastModifiedBy { get; set; }
-    }
+    string CreatedBy { get; set; }
+    string LastModifiedBy { get; set; }
 }

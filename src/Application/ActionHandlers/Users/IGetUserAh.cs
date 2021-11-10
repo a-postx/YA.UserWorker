@@ -1,9 +1,8 @@
 using Delobytes.AspNetCore;
 
-namespace YA.UserWorker.Application.ActionHandlers.Users
-{
-    public interface IGetUserAh : IAsyncCommand
-    {
+namespace YA.UserWorker.Application.ActionHandlers.Users;
 
-    }
+public interface IGetUserAh : IAsyncCommand
+{
+
 }

@@ -1,10 +1,8 @@
 using Delobytes.AspNetCore;
-using System;
 
-namespace YA.UserWorker.Application.ActionHandlers.Memberships
+namespace YA.UserWorker.Application.ActionHandlers.Memberships;
+
+public interface IDeleteMembershipAh : IAsyncCommand<Guid>
 {
-    public interface IDeleteMembershipAh : IAsyncCommand<Guid>
-    {
 
-    }
 }

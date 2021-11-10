@@ -1,7 +1,6 @@
-﻿namespace YA.UserWorker.Core.Entities
+namespace YA.UserWorker.Core.Entities;
+
+public interface IRowVersionedEntity
 {
-    public interface IRowVersionedEntity
-    {
-        byte[] tstamp { get; set; }
-    }
+    byte[] tstamp { get; set; }
 }

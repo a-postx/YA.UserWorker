@@ -1,13 +1,12 @@
 using FluentValidation;
 using YA.UserWorker.Application.Models.SaveModels;
 
-namespace YA.UserWorker.Application.Validators
+namespace YA.UserWorker.Application.Validators;
+
+public class AccessInfoSmValidator : AbstractValidator<UserRegistrationInfoSm>
 {
-    public class AccessInfoSmValidator : AbstractValidator<UserRegistrationInfoSm>
+    public AccessInfoSmValidator()
     {
-        public AccessInfoSmValidator()
-        {
-            RuleFor(e => e.AccessToken).NotEmpty();
-        }
+        RuleFor(e => e.AccessToken).NotEmpty();
     }
 }

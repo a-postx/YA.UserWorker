@@ -1,10 +1,8 @@
-﻿using Delobytes.AspNetCore;
-using System;
+using Delobytes.AspNetCore;
 
-namespace YA.UserWorker.Application.ActionHandlers.Tenants
+namespace YA.UserWorker.Application.ActionHandlers.Tenants;
+
+public interface IDeleteTenantAh : IAsyncCommand
 {
-    public interface IDeleteTenantAh : IAsyncCommand
-    {
 
-    }
 }

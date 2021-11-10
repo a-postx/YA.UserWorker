@@ -1,12 +1,10 @@
-namespace YA.UserWorker.Constants
+namespace YA.UserWorker.Constants;
+
+public static class MbQueueNames
 {
-    public static class MbQueueNames
-    {
-        internal static string PrivateServiceQueueName = "ya.userworker." + Node.Id;
+    internal static string PrivateServiceQueueName = "ya.userworker." + Node.Id;
 
-        public const string MessageBusPublishQueuePrefix = "userworker";
-        public const string PricingTierQueueName = MessageBusPublishQueuePrefix + ".pricingtier";
+    public const string MessageBusPublishQueuePrefix = "userworker";
 
-        public const string TenantInvitationSentQueueName = MessageBusPublishQueuePrefix + ".tenant.invitation.sent";
-    }
+    public const string TenantInvitationSentQueueName = MessageBusPublishQueuePrefix + ".tenant.invitation.sent";
 }

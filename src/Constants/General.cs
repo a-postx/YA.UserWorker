@@ -1,10 +1,9 @@
-namespace YA.UserWorker.Constants
+namespace YA.UserWorker.Constants;
+
+public static class General
 {
-    public static class General
-    {
-        /// <summary>
-        /// UTC kind conversion exist in EF Core so refactoring is needed in case of value change.
-        /// </summary>
-        public const string DefaultSqlModelDateTimeFunction = "GETUTCDATE()";
-    }
+    /// <summary>
+    /// UTC kind conversion exist in EF Core so refactoring is needed in case of value change.
+    /// </summary>
+    public const string DefaultSqlModelDateTimeFunction = "GETUTCDATE()";
 }

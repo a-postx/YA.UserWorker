@@ -1,8 +1,7 @@
-namespace YA.UserWorker.Options
+namespace YA.UserWorker.Options;
+
+public class IdempotencyOptions
 {
-    public class IdempotencyOptions
-    {
-        public bool? IdempotencyFilterEnabled { get; set; }
-        public string IdempotencyHeader { get; set; }
-    }
+    public bool? IdempotencyFilterEnabled { get; set; }
+    public string IdempotencyHeader { get; set; }
 }

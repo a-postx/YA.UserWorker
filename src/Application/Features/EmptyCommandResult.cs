@@ -1,6 +1,5 @@
-﻿namespace YA.UserWorker.Application.Features
+namespace YA.UserWorker.Application.Features;
+
+public class EmptyCommandResult
 {
-    public class EmptyCommandResult
-    {
-    }
 }

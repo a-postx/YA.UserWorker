@@ -1,7 +1,6 @@
-namespace YA.UserWorker.Core.Entities
+namespace YA.UserWorker.Core.Entities;
+
+public class UserSetting
 {
-    public class UserSetting
-    {
-        public bool ShowGettingStarted { get; set; }
-    }
+    public bool ShowGettingStarted { get; set; }
 }

@@ -1,8 +1,7 @@
-namespace YA.UserWorker.Infrastructure.Authentication.Dto
+namespace YA.UserWorker.Infrastructure.Authentication.Dto;
+
+public class AppMetadata
 {
-    public class AppMetadata
-    {
-        public string Tid { get; set; }
-        public string TenantAccessType { get; set; }
-    }
+    public string Tid { get; set; }
+    public string TenantAccessType { get; set; }
 }

@@ -1,10 +1,8 @@
 using Delobytes.AspNetCore;
-using System;
 
-namespace YA.UserWorker.Application.ActionHandlers.Invitations
+namespace YA.UserWorker.Application.ActionHandlers.Invitations;
+
+public interface IGetInvitationAh : IAsyncCommand<Guid>
 {
-    public interface IGetInvitationAh : IAsyncCommand<Guid>
-    {
 
-    }
 }

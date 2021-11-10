@@ -1,14 +1,11 @@
-using System;
+namespace YA.UserWorker.Application.Enums;
 
-namespace YA.UserWorker.Application.Enums
+[Flags]
+public enum MembershipAccessType
 {
-    [Flags]
-    public enum MembershipAccessType
-    {
-        None = 0,
-        ReadOnly = 1,
-        ReadWrite = 2,
-        Admin = 4,
-        Owner = 8
-    }
+    None = 0,
+    ReadOnly = 1,
+    ReadWrite = 2,
+    Admin = 4,
+    Owner = 8
 }

@@ -1,7 +1,6 @@
-﻿namespace YA.UserWorker.Constants
+namespace YA.UserWorker.Constants;
+
+public static class ApiVersionName
 {
-    public static class ApiVersionName
-    {
-        public const string V1 = "1.0";
-    }
+    public const string V1 = "1.0";
 }
