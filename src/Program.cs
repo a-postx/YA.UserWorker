@@ -33,11 +33,11 @@ using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using System.Runtime.InteropServices;
-using YA.UserWorker.Application.Interfaces;
-using YA.UserWorker.Constants;
-using YA.UserWorker.Extensions;
 using YA.UserWorker.Infrastructure.Data;
 using YA.UserWorker.Options;
+using YA.UserWorker.Constants;
+using YA.UserWorker.Extensions;
+using YA.UserWorker.Application.Interfaces;
 
 [assembly: CLSCompliant(false)]
 namespace YA.UserWorker;

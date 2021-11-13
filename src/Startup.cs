@@ -18,7 +18,6 @@ using Microsoft.IdentityModel.Protocols;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Prometheus;
 using YA.Common.Constants;
-using YA.UserWorker.Extensions;
 using YA.UserWorker.Infrastructure.Health;
 using YA.UserWorker.Infrastructure.Authentication;
 using YA.UserWorker.Options;
@@ -26,6 +25,7 @@ using MicroElements.Swashbuckle.FluentValidation.AspNetCore;
 using Delobytes.AspNetCore.Logging;
 using Delobytes.AspNetCore.Idempotency;
 using Delobytes.AspNetCore;
+using YA.UserWorker.Extensions;
 //using Elastic.Apm.NetCoreAll;
 
 namespace YA.UserWorker;
@@ -81,7 +81,6 @@ public class Startup
 
         services
             .AddCorrelationIdFluent(generalOptions)
-
             .AddCustomCaching(secrets)
             .AddCustomCors()
             .AddCustomRouting()

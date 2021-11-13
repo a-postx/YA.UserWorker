@@ -23,8 +23,7 @@ internal static class ApplicationBuilderExtensions
                 webHostEnvironment.EnvironmentName == "Development",
                 x => x
                     .UseDeveloperExceptionPage()
-                    .UseMigrationsEndPoint()
-                    .UseDeveloperExceptionPage());
+                    .UseMigrationsEndPoint());
     }
 
     /// <summary>

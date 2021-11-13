@@ -1,4 +1,5 @@
 using AutoMapper;
+using Delobytes.AspNetCore.Logging;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;

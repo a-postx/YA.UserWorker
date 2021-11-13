@@ -1,6 +1,7 @@
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Unicode;
+using Delobytes.AspNetCore.Logging;
 using MassTransit.Audit;
 using Microsoft.Extensions.Options;
 using YA.Common.Constants;
