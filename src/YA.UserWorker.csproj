@@ -12,7 +12,7 @@
   </PropertyGroup>
 
   <PropertyGroup Label="Package">
-    <Version>0.2.0.1</Version>
+    <Version>0.2.0.2</Version>
     <Authors>Alexey Yakubin</Authors>
     <Company>Delobytes</Company>
     <Product>YA.UserWorker</Product>
