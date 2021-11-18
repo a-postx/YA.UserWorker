@@ -1,5 +1,4 @@
 using Delobytes.Mapper;
-using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 using YA.UserWorker.Application.ActionHandlers.ClientInfos;
 using YA.UserWorker.Application.ActionHandlers.Invitations;
@@ -91,17 +90,5 @@ public static class ProjectServiceCollectionExtensions
             .AddScoped<IRuntimeContextAccessor, RuntimeContextAccessor>()
             .AddSingleton<IRuntimeGeoDataService, IpWhoisRuntimeGeoData>()
             .AddScoped<IAuthProviderManager, Auth0AuthProviderManager>();
-    }
-
-    /// <summary>
-    /// Добавляет кастомизированную фабрику Деталей Проблемы.
-    /// </summary>
-    public static IServiceCollection AddCustomProblemDetails(this IServiceCollection services)
-    {
-        services
-            .AddTransient<IProblemDetailsFactory, YaProblemDetailsFactory>()
-            .AddTransient<ProblemDetailsFactory, YaProblemDetailsFactory>();
-
-        return services;
     }
 }

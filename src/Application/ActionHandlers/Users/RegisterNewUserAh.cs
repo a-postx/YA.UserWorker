@@ -5,14 +5,13 @@ using System.Net.Http.Headers;
 using System.Security.Claims;
 using System.Text.Json;
 using AutoMapper;
+using Delobytes.AspNetCore.Application;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.Net.Http.Headers;
 using YA.Common.Constants;
-using YA.UserWorker.Application.Enums;
-using YA.UserWorker.Application.Features;
 using YA.UserWorker.Application.Features.Memberships.Commands;
 using YA.UserWorker.Application.Features.TenantInvitations.Commands;
 using YA.UserWorker.Application.Features.TenantInvitations.Queries;
@@ -219,7 +218,7 @@ public class RegisterNewUserAh : IRegisterNewUserAh
 
         if (inviteToExistingTenant)
         {
-            ICommandResult<EmptyCommandResult> invitationClaimedResult = await _mediator
+            ICommandResult invitationClaimedResult = await _mediator
                 .Send(new SetInvitationClaimedCommand(userInvitation.YaInvitationID, userMembership.MembershipID), cancellationToken);
 
             switch (membershipResult.Status)

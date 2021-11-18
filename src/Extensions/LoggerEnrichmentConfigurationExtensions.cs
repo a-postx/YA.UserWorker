@@ -16,10 +16,7 @@ public static class LoggerEnrichmentConfigurationExtensions
     /// <returns></returns>
     public static LoggerConfiguration FromCustomMbMessageContext(this LoggerEnrichmentConfiguration configuration)
     {
-        if (configuration == null)
-        {
-            throw new ArgumentNullException(nameof(configuration));
-        }
+        ArgumentNullException.ThrowIfNull(configuration);
 
         return configuration.With<YaCustomMbEventEnricher>();
     }

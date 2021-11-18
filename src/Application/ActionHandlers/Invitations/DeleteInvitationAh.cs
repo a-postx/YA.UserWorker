@@ -1,8 +1,7 @@
+using Delobytes.AspNetCore.Application;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
-using YA.UserWorker.Application.Enums;
-using YA.UserWorker.Application.Features;
 using YA.UserWorker.Application.Features.TenantInvitations.Commands;
 using YA.UserWorker.Application.Interfaces;
 
@@ -30,7 +29,7 @@ public class DeleteInvitationAh : IDeleteInvitationAh
     {
         Guid tenantId = _runtimeCtx.GetTenantId();
 
-        ICommandResult<EmptyCommandResult> result = await _mediator
+        ICommandResult result = await _mediator
             .Send(new DeleteInvitationCommand(yaInviteId, tenantId), cancellationToken);
 
         switch (result.Status)

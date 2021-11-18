@@ -1,10 +1,10 @@
 using Delobytes.AspNetCore;
+using Delobytes.AspNetCore.Application;
 using Delobytes.Mapper;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using YA.Common.Constants;
-using YA.UserWorker.Application.Enums;
 using YA.UserWorker.Application.Features.Tenants.Queries;
 using YA.UserWorker.Application.Interfaces;
 using YA.UserWorker.Application.Models.HttpQueryParams;

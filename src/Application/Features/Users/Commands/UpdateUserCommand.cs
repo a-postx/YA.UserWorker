@@ -1,9 +1,9 @@
 using AutoMapper;
+using Delobytes.AspNetCore.Application;
+using Delobytes.AspNetCore.Application.Commands;
 using FluentValidation.Results;
 using MediatR;
 using Microsoft.AspNetCore.JsonPatch;
-using YA.UserWorker.Application.Enums;
-using YA.UserWorker.Application.Interfaces;
 using YA.UserWorker.Application.Models.SaveModels;
 using YA.UserWorker.Application.Validators;
 using YA.UserWorker.Core.Entities;
@@ -60,12 +60,11 @@ public class UpdateUserCommand : IRequest<ICommandResult<User>>
 
             patch.ApplyTo(userSm);
 
-            UserSmValidator validator = new UserSmValidator();
-            ValidationResult validationResult = validator.Validate(userSm);
+            ValidationResult validationResult = new UserSmValidator().Validate(userSm);
 
             if (!validationResult.IsValid)
             {
-                return new CommandResult<User>(CommandStatus.ModelInvalid, null, validationResult);
+                return new CommandResult<User>(CommandStatus.ModelInvalid, null, validationResult.Errors.Select(e => e.ErrorMessage).ToArray());
             }
 
             user = (User)_mapper.Map(userSm, user, typeof(UserSm), typeof(User));

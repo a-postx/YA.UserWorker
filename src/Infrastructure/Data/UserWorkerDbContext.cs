@@ -22,10 +22,7 @@ public class UserWorkerDbContext : DbContext, IUserWorkerDbContext
 {
     public UserWorkerDbContext(DbContextOptions options, IRuntimeContextAccessor runtimeCtx) : base(options)
     {
-        if (runtimeCtx == null)
-        {
-            throw new ArgumentNullException(nameof(runtimeCtx));
-        }
+        ArgumentNullException.ThrowIfNull(runtimeCtx);
 
         _tenantId = runtimeCtx.GetTenantId();
         _userId = runtimeCtx.GetUserId();
@@ -59,10 +56,7 @@ public class UserWorkerDbContext : DbContext, IUserWorkerDbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        if (modelBuilder == null)
-        {
-            throw new ArgumentNullException(nameof(modelBuilder));
-        }
+        ArgumentNullException.ThrowIfNull(modelBuilder);
             
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(UserWorkerDbContext).Assembly);
 

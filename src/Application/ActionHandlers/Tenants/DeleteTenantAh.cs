@@ -1,8 +1,7 @@
+using Delobytes.AspNetCore.Application;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
-using YA.UserWorker.Application.Enums;
-using YA.UserWorker.Application.Features;
 using YA.UserWorker.Application.Features.Tenants.Commands;
 using YA.UserWorker.Application.Features.Users.Queries;
 using YA.UserWorker.Application.Interfaces;
@@ -61,7 +60,7 @@ public class DeleteTenantAh : IDeleteTenantAh
             return new ForbidResult();
         }
 
-        ICommandResult<EmptyCommandResult> deleteTenantResult = await _mediator
+        ICommandResult deleteTenantResult = await _mediator
             .Send(new DeleteTenantCommand(tenantId), cancellationToken);
 
         switch (deleteTenantResult.Status)

@@ -1,11 +1,10 @@
 using System.Globalization;
 using AutoMapper;
+using Delobytes.AspNetCore.Application;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Net.Http.Headers;
-using YA.UserWorker.Application.Enums;
-using YA.UserWorker.Application.Features;
 using YA.UserWorker.Application.Features.Memberships.Commands;
 using YA.UserWorker.Application.Features.TenantInvitations.Commands;
 using YA.UserWorker.Application.Features.TenantInvitations.Queries;
@@ -114,7 +113,7 @@ public class PostMembershipAh : IPostMembershipAh
             return new BadRequestResult();
         }
 
-        ICommandResult<EmptyCommandResult> invitationClaimedResult = await _mediator
+        ICommandResult invitationClaimedResult = await _mediator
             .Send(new SetInvitationClaimedCommand(yaInvite.YaInvitationID, membershipResult.Data.MembershipID), cancellationToken);
 
         switch (invitationClaimedResult.Status)

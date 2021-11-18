@@ -1,8 +1,7 @@
+using Delobytes.AspNetCore.Application;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
-using YA.UserWorker.Application.Enums;
-using YA.UserWorker.Application.Features;
 using YA.UserWorker.Application.Features.Memberships.Commands;
 using YA.UserWorker.Application.Features.Memberships.Queries;
 using YA.UserWorker.Application.Interfaces;
@@ -53,7 +52,7 @@ public class DeleteMembershipAh : IDeleteMembershipAh
             throw new InvalidOperationException("User not found.");
         }
 
-        ICommandResult<EmptyCommandResult> deleteResult = await _mediator
+        ICommandResult deleteResult = await _mediator
             .Send(new DeleteMembershipCommand(yaMembershipId, targetTenantId), cancellationToken);
 
         switch (deleteResult.Status)

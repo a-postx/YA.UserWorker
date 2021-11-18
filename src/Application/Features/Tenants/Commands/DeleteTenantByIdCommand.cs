@@ -1,13 +1,14 @@
 using AutoMapper;
+using Delobytes.AspNetCore.Application;
+using Delobytes.AspNetCore.Application.Commands;
 using MediatR;
-using YA.UserWorker.Application.Enums;
 using YA.UserWorker.Application.Interfaces;
 using YA.UserWorker.Application.Models.Dto;
 using YA.UserWorker.Core.Entities;
 
 namespace YA.UserWorker.Application.Features.Tenants.Commands;
 
-public class DeleteTenantByIdCommand : IRequest<ICommandResult<EmptyCommandResult>>
+public class DeleteTenantByIdCommand : IRequest<ICommandResult>
 {
     public DeleteTenantByIdCommand(Guid id)
     {
@@ -16,7 +17,7 @@ public class DeleteTenantByIdCommand : IRequest<ICommandResult<EmptyCommandResul
 
     public Guid Id { get; protected set; }
 
-    public class DeleteTenantByIdHandler : IRequestHandler<DeleteTenantByIdCommand, ICommandResult<EmptyCommandResult>>
+    public class DeleteTenantByIdHandler : IRequestHandler<DeleteTenantByIdCommand, ICommandResult>
     {
         public DeleteTenantByIdHandler(ILogger<DeleteTenantByIdHandler> logger,
             IMapper mapper,
@@ -34,20 +35,20 @@ public class DeleteTenantByIdCommand : IRequest<ICommandResult<EmptyCommandResul
         private readonly IUserWorkerDbContext _dbContext;
         private readonly IMessageBus _messageBus;
 
-        public async Task<ICommandResult<EmptyCommandResult>> Handle(DeleteTenantByIdCommand command, CancellationToken cancellationToken)
+        public async Task<ICommandResult> Handle(DeleteTenantByIdCommand command, CancellationToken cancellationToken)
         {
             Guid tenantId = command.Id;
 
             if (tenantId == Guid.Empty)
             {
-                return new CommandResult<EmptyCommandResult>(CommandStatus.BadRequest, null);
+                return new CommandResult(CommandStatus.BadRequest);
             }
 
             Tenant tenant = await _dbContext.GetTenantAsync(e => e.TenantID == tenantId, cancellationToken);
 
             if (tenant == null)
             {
-                return new CommandResult<EmptyCommandResult>(CommandStatus.NotFound, null);
+                return new CommandResult(CommandStatus.NotFound);
             }
 
             _dbContext.DeleteTenant(tenant);
@@ -55,7 +56,7 @@ public class DeleteTenantByIdCommand : IRequest<ICommandResult<EmptyCommandResul
 
             await _messageBus.TenantDeletedV1Async(tenant.TenantID, _mapper.Map<TenantTm>(tenant), cancellationToken);
 
-            return new CommandResult<EmptyCommandResult>(CommandStatus.Ok, null);
+            return new CommandResult(CommandStatus.Ok);
         }
     }
 }

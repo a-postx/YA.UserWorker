@@ -1,5 +1,5 @@
 using System.Dynamic;
-using Microsoft.AspNetCore.Mvc.Infrastructure;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Primitives;
 using YA.UserWorker.Application.Interfaces;
@@ -13,13 +13,13 @@ namespace YA.UserWorker.Application.Services;
 /// </summary>
 public class PaginatedResultFactory : IPaginatedResultFactory
 {
-    public PaginatedResultFactory(IActionContextAccessor actionCtx, LinkGenerator linkGenerator)
+    public PaginatedResultFactory(IHttpContextAccessor actionCtx, LinkGenerator linkGenerator)
     {
-        _actionCtx = actionCtx ?? throw new ArgumentNullException(nameof(actionCtx));
+        _httpCtx = actionCtx ?? throw new ArgumentNullException(nameof(actionCtx));
         _linkGenerator = linkGenerator ?? throw new ArgumentNullException(nameof(linkGenerator));
     }
 
-    private readonly IActionContextAccessor _actionCtx;
+    private readonly IHttpContextAccessor _httpCtx;
     private readonly LinkGenerator _linkGenerator;
 
     private const string ApiVersionQueryKey = "api-version";
@@ -27,10 +27,7 @@ public class PaginatedResultFactory : IPaginatedResultFactory
     public PaginatedResultVm<T> GetCursorPaginatedResult<T>(PageOptionsCursor pageOptions, bool hasNextPage, bool hasPreviousPage,
         int totalCount, string startCursor, string endCursor, string routeName, ICollection<T> items) where T : class
     {
-        if (pageOptions == null)
-        {
-            throw new ArgumentNullException(nameof(pageOptions));
-        }
+        ArgumentNullException.ThrowIfNull(pageOptions);
 
         if (string.IsNullOrEmpty(routeName))
         {
@@ -62,7 +59,7 @@ public class PaginatedResultFactory : IPaginatedResultFactory
         ExpandoObject uniqueParams = new ExpandoObject();
         ExpandoObject apiVersionParam = new ExpandoObject();
 
-        foreach (KeyValuePair<string, StringValues> item in _actionCtx.ActionContext.HttpContext.Request.Query)
+        foreach (KeyValuePair<string, StringValues> item in _httpCtx.HttpContext.Request.Query)
         {
             string key = item.Key.ToLowerInvariant();
 
@@ -143,7 +140,7 @@ public class PaginatedResultFactory : IPaginatedResultFactory
             queryParams.TryAdd(ApiVersionQueryKey, versionValue);
         }
 
-        Uri link = new Uri(_linkGenerator.GetUriByRouteValues(_actionCtx.ActionContext.HttpContext, routeName, queryParams));
+        Uri link = new Uri(_linkGenerator.GetUriByRouteValues(_httpCtx.HttpContext, routeName, queryParams));
 
         return link;
     }
@@ -188,7 +185,7 @@ public class PaginatedResultFactory : IPaginatedResultFactory
         ExpandoObject uniqueParams = new ExpandoObject();
         ExpandoObject apiVersionParam = new ExpandoObject();
 
-        foreach (KeyValuePair<string, StringValues> item in _actionCtx.ActionContext.HttpContext.Request.Query)
+        foreach (KeyValuePair<string, StringValues> item in _httpCtx.HttpContext.Request.Query)
         {
             string key = item.Key.ToLowerInvariant();
 

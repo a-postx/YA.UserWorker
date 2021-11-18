@@ -12,7 +12,7 @@
   </PropertyGroup>
 
   <PropertyGroup Label="Package">
-    <Version>0.2.0.2</Version>
+    <Version>0.2.1.0</Version>
     <Authors>Alexey Yakubin</Authors>
     <Company>Delobytes</Company>
     <Product>YA.UserWorker</Product>
@@ -42,10 +42,11 @@
     <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="8.1.1" />
     <PackageReference Include="Ben.Demystifier" Version="0.4.1" />
     <PackageReference Include="CorrelationId" Version="3.0.1" />
-    <PackageReference Include="Delobytes.AspNetCore" Version="5.0.0-alpha1" />
-    <PackageReference Include="Delobytes.AspNetCore.Idempotency" Version="1.0.0" />
-    <PackageReference Include="Delobytes.AspNetCore.Logging" Version="1.0.1" />
-    <PackageReference Include="Delobytes.AspNetCore.Swagger" Version="5.0.0" />
+    <PackageReference Include="Delobytes.AspNetCore" Version="5.1.0-alpha1" />
+    <PackageReference Include="Delobytes.AspNetCore.Idempotency" Version="2.0.0" />
+    <PackageReference Include="Delobytes.AspNetCore.Infrastructure" Version="1.0.0-beta1" />
+    <PackageReference Include="Delobytes.AspNetCore.Logging" Version="2.0.0" />
+    <PackageReference Include="Delobytes.AspNetCore.Swagger" Version="6.0.0" />
     <PackageReference Include="Delobytes.Mapper" Version="1.1.0" />
     <PackageReference Include="Elastic.Apm.NetCoreAll" Version="1.9.0" />
     <PackageReference Include="FluentValidation.AspNetCore" Version="10.3.4" />
@@ -67,8 +68,7 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="6.0.0" />
-    <PackageReference Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" Version="6.14.1" />
-    <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.11.1" />
+    <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.14.0" />
     <PackageReference Include="Microsoft.VisualStudio.Threading.Analyzers" Version="17.0.64">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -88,6 +88,5 @@
     <PackageReference Include="SerilogAnalyzer" Version="0.15.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.2.3" />
     <PackageReference Include="Swashbuckle.AspNetCore.Annotations" Version="6.2.3" />
-    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="6.14.1" />
     <PackageReference Include="YA.Common" Version="1.0.7" />
   </ItemGroup></Project>

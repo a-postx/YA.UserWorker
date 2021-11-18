@@ -16,15 +16,8 @@ public class ApiVersionOperationFilter : IOperationFilter
 {
     public void Apply(OpenApiOperation operation, OperationFilterContext context)
     {
-        if (operation is null)
-        {
-            throw new ArgumentNullException(nameof(operation));
-        }
-
-        if (context is null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(operation);
+        ArgumentNullException.ThrowIfNull(context);
 
         ApiDescription apiDescription = context.ApiDescription;
         operation.Deprecated |= apiDescription.IsDeprecated();

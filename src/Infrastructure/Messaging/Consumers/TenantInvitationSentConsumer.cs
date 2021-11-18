@@ -1,9 +1,9 @@
 using AutoMapper;
+using Delobytes.AspNetCore.Application;
 using MassTransit;
 using MbEvents;
 using MediatR;
 using Microsoft.Extensions.Hosting;
-using YA.UserWorker.Application.Enums;
 using YA.UserWorker.Application.Exceptions;
 using YA.UserWorker.Application.Features.TenantInvitations.Commands;
 using YA.UserWorker.Application.Interfaces;

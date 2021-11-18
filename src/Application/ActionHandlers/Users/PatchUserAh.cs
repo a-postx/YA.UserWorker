@@ -1,9 +1,10 @@
 using AutoMapper;
+using Delobytes.AspNetCore.Application;
+using Delobytes.AspNetCore.Application.Actions;
 using MediatR;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
-using YA.UserWorker.Application.Enums;
 using YA.UserWorker.Application.Features.Users.Commands;
 using YA.UserWorker.Application.Interfaces;
 using YA.UserWorker.Application.Models.SaveModels;
@@ -18,14 +19,12 @@ public class PatchUserAh : IPatchUserAh
         IActionContextAccessor actionCtx,
         IRuntimeContextAccessor runtimeContext,
         IMediator mediator,
-        IProblemDetailsFactory problemDetailsFactory,
         IMapper mapper)
     {
         _log = logger ?? throw new ArgumentNullException(nameof(logger));
         _actionCtx = actionCtx ?? throw new ArgumentNullException(nameof(actionCtx));
         _runtimeCtx = runtimeContext ?? throw new ArgumentNullException(nameof(runtimeContext));
         _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
-        _pdFactory = problemDetailsFactory ?? throw new ArgumentNullException(nameof(problemDetailsFactory));
         _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
     }
 
@@ -33,7 +32,6 @@ public class PatchUserAh : IPatchUserAh
     private readonly IActionContextAccessor _actionCtx;
     private readonly IRuntimeContextAccessor _runtimeCtx;
     private readonly IMediator _mediator;
-    private readonly IProblemDetailsFactory _pdFactory;
     private readonly IMapper _mapper;
 
     public async Task<IActionResult> ExecuteAsync(JsonPatchDocument<UserSm> patch, CancellationToken cancellationToken)
@@ -49,9 +47,7 @@ public class PatchUserAh : IPatchUserAh
             default:
                 throw new ArgumentOutOfRangeException(nameof(result.Status), result.Status, null);
             case CommandStatus.ModelInvalid:
-                ValidationProblemDetails problemDetails = _pdFactory
-                    .CreateValidationProblemDetails(_actionCtx.ActionContext.HttpContext, result.ValidationResult);
-                return new BadRequestObjectResult(problemDetails);
+                return new BadRequestObjectResult(new Failure(_runtimeCtx.GetCorrelationId(), result.ErrorMessages));
             case CommandStatus.BadRequest:
                 return new BadRequestResult();
             case CommandStatus.NotFound:

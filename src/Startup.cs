@@ -14,18 +14,16 @@ using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.IdentityModel.Protocols;
-using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Prometheus;
 using YA.Common.Constants;
 using YA.UserWorker.Infrastructure.Health;
-using YA.UserWorker.Infrastructure.Authentication;
 using YA.UserWorker.Options;
 using MicroElements.Swashbuckle.FluentValidation.AspNetCore;
 using Delobytes.AspNetCore.Logging;
 using Delobytes.AspNetCore.Idempotency;
 using Delobytes.AspNetCore;
 using YA.UserWorker.Extensions;
+using Delobytes.AspNetCore.Infrastructure.Authentication;
 //using Elastic.Apm.NetCoreAll;
 
 namespace YA.UserWorker;
@@ -62,6 +60,7 @@ public class Startup
 
         AppSecrets secrets = _config.GetSection(nameof(AppSecrets)).Get<AppSecrets>();
         GeneralOptions generalOptions = _config.GetSection(nameof(ApplicationOptions.General)).Get<GeneralOptions>();
+        OauthOptions oauthOptions = _config.GetSection(nameof(ApplicationOptions.OAuth)).Get<OauthOptions>();
         IdempotencyOptions idempotencyOptions = _config
             .GetSection(nameof(ApplicationOptions.IdempotencyControl)).Get<IdempotencyOptions>();
 
@@ -95,18 +94,16 @@ public class Startup
 
             .AddCustomApiVersioning();
 
-        //забираем регулярно обновляемые ключи шифрования токенов с сервера провайдера
-        services.AddSingleton<IConfigurationManager<OpenIdConnectConfiguration>>(provider =>
-            new ConfigurationManager<OpenIdConnectConfiguration>(
-                secrets.OidcProviderIssuer + ".well-known/openid-configuration",
-                new OpenIdConnectConfigurationRetriever(),
-                new HttpDocumentRetriever { RequireHttps = true })
-        );
-
-        services.AddAuthenticationCore(o =>
+        services.AddAuth0Authentication(secrets.OidcProviderIssuer, "YaScheme", options =>
         {
-            o.DefaultScheme = "YaScheme";
-            o.AddScheme<YaAuthenticationHandler>("YaScheme", "Authentication scheme that use claims extracted from JWT token.");
+            options.Authority = oauthOptions.Authority;
+            options.Audience = oauthOptions.Audience;
+            options.LoginRedirectPath = "/authentication/login";
+            options.ApiGatewayHost = secrets.ApiGatewayHost;
+            options.ApiGatewayPort = secrets.ApiGatewayPort;
+            options.EmailClaimName = "http://yaapp.email";
+            options.EmailVerifiedClaimName = "http://yaapp.email_verified";
+            options.AppMetadataClaimName = "http://yaapp.app_metadata";
         });
 
         services.AddClaimsLogging();
@@ -138,8 +135,6 @@ public class Startup
             options.HeaderRequired = true;
             options.IdempotencyHeader = idempotencyOptions.IdempotencyHeader;
         });
-
-        services.AddCustomProblemDetails();
 
         services
             .AddAuthorizationCore(options =>
@@ -240,7 +235,7 @@ public class Startup
             .UseMetricServer()
             .UseHttpMetrics()
 
-            .UseAuthentication()
+            .UseAuth0Authentication()
             .UseClaimsLogging()
             .UseAuthorization()
 

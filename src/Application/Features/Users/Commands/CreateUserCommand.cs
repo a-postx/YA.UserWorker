@@ -1,7 +1,7 @@
 using AutoMapper;
+using Delobytes.AspNetCore.Application;
+using Delobytes.AspNetCore.Application.Commands;
 using MediatR;
-using YA.UserWorker.Application.Enums;
-using YA.UserWorker.Application.Interfaces;
 using YA.UserWorker.Core.Entities;
 
 namespace YA.UserWorker.Application.Features.Users.Commands;

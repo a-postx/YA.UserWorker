@@ -24,7 +24,8 @@
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       },
-      "applicationUrl": "http://localhost:7453"
+      "applicationUrl": "http://localhost:7453",
+      "hotReloadProfile": "aspnetcore"
     },
     "Kestrel Production": {
       "commandName": "Project",

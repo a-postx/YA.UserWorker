@@ -1,17 +1,15 @@
 using AutoMapper;
+using Delobytes.AspNetCore.Application;
 using Delobytes.AspNetCore.Logging;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.Primitives;
 using YA.Common.Constants;
-using YA.UserWorker.Application.Features;
 using YA.UserWorker.Application.Features.ClientInfos.Commands;
-using YA.UserWorker.Application.Interfaces;
 using YA.UserWorker.Application.Models.Dto;
 using YA.UserWorker.Application.Models.SaveModels;
 using YA.UserWorker.Application.Models.ViewModels;
-using YA.UserWorker.Extensions;
 
 namespace YA.UserWorker.Application.ActionHandlers.ClientInfos;
 
@@ -92,7 +90,7 @@ public class PostClientInfoAh : IPostClientInfoAh
         clientInfoTm.Username = username;
         clientInfoTm.IpAddress = clientIp;
 
-        ICommandResult<EmptyCommandResult> result = await _mediator
+        ICommandResult result = await _mediator
             .Send(new CreateClientInfoCommand(clientInfoTm), cancellationToken);
 
         ClientInfoVm clientInfoVm = new ClientInfoVm(true);

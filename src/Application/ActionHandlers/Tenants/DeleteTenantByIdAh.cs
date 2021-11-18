@@ -1,10 +1,8 @@
+using Delobytes.AspNetCore.Application;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
-using YA.UserWorker.Application.Enums;
-using YA.UserWorker.Application.Features;
 using YA.UserWorker.Application.Features.Tenants.Commands;
-using YA.UserWorker.Application.Interfaces;
 
 namespace YA.UserWorker.Application.ActionHandlers.Tenants;
 
@@ -25,7 +23,7 @@ public class DeleteTenantByIdAh : IDeleteTenantByIdAh
 
     public async Task<IActionResult> ExecuteAsync(Guid yaTenantId, CancellationToken cancellationToken)
     {
-        ICommandResult<EmptyCommandResult> result = await _mediator
+        ICommandResult result = await _mediator
             .Send(new DeleteTenantByIdCommand(yaTenantId), cancellationToken);
 
         switch (result.Status)

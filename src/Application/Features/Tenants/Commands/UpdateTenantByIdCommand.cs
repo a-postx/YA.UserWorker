@@ -1,8 +1,9 @@
 using AutoMapper;
+using Delobytes.AspNetCore.Application;
+using Delobytes.AspNetCore.Application.Commands;
 using FluentValidation.Results;
 using MediatR;
 using Microsoft.AspNetCore.JsonPatch;
-using YA.UserWorker.Application.Enums;
 using YA.UserWorker.Application.Interfaces;
 using YA.UserWorker.Application.Models.Dto;
 using YA.UserWorker.Application.Models.SaveModels;
@@ -66,7 +67,7 @@ public class UpdateTenantByIdCommand : IRequest<ICommandResult<Tenant>>
 
             if (!validationResult.IsValid)
             {
-                return new CommandResult<Tenant>(CommandStatus.ModelInvalid, null, validationResult);
+                return new CommandResult<Tenant>(CommandStatus.ModelInvalid, null, validationResult.Errors.Select(e => e.ErrorMessage).ToArray());
             }
 
             tenant = (Tenant)_mapper.Map(tenantSm, tenant, typeof(TenantSm), typeof(Tenant));

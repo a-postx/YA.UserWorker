@@ -31,15 +31,8 @@ public class TenantToVmMapper : IMapper<Tenant, TenantVm>
 
     public void Map(Tenant source, TenantVm destination)
     {
-        if (source == null)
-        {
-            throw new ArgumentNullException(nameof(source));
-        }
-
-        if (destination == null)
-        {
-            throw new ArgumentNullException(nameof(destination));
-        }
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(destination);
 
         Guid tenantId = source.TenantID;
 

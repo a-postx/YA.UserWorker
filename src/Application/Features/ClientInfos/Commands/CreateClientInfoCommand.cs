@@ -1,13 +1,13 @@
 using AutoMapper;
+using Delobytes.AspNetCore.Application;
+using Delobytes.AspNetCore.Application.Commands;
 using MediatR;
-using YA.UserWorker.Application.Enums;
-using YA.UserWorker.Application.Interfaces;
 using YA.UserWorker.Application.Models.Dto;
 using YA.UserWorker.Core.Entities;
 
 namespace YA.UserWorker.Application.Features.ClientInfos.Commands;
 
-public class CreateClientInfoCommand : IRequest<ICommandResult<EmptyCommandResult>>
+public class CreateClientInfoCommand : IRequest<ICommandResult>
 {
     public CreateClientInfoCommand(ClientInfoTm clientInfoTm)
     {
@@ -16,7 +16,7 @@ public class CreateClientInfoCommand : IRequest<ICommandResult<EmptyCommandResul
 
     public ClientInfoTm ClientInfoTm { get; protected set; }
 
-    public class CreateClientInfoHandler : IRequestHandler<CreateClientInfoCommand, ICommandResult<EmptyCommandResult>>
+    public class CreateClientInfoHandler : IRequestHandler<CreateClientInfoCommand, ICommandResult>
     {
         public CreateClientInfoHandler(ILogger<CreateClientInfoHandler> logger,
             IMapper mapper,
@@ -31,7 +31,7 @@ public class CreateClientInfoCommand : IRequest<ICommandResult<EmptyCommandResul
         private readonly IMapper _mapper;
         private readonly IUserWorkerDbContext _dbContext;
 
-        public async Task<ICommandResult<EmptyCommandResult>> Handle(CreateClientInfoCommand command, CancellationToken cancellationToken)
+        public async Task<ICommandResult> Handle(CreateClientInfoCommand command, CancellationToken cancellationToken)
         {
             ClientInfoTm clientInfo = command.ClientInfoTm;
 
@@ -40,7 +40,7 @@ public class CreateClientInfoCommand : IRequest<ICommandResult<EmptyCommandResul
             await _dbContext.CreateClientInfoAsync(yaClientInfo, cancellationToken);
             await _dbContext.ApplyChangesAsync(cancellationToken);
 
-            return new CommandResult<EmptyCommandResult>(CommandStatus.Ok, null);
+            return new CommandResult(CommandStatus.Ok);
         }
     }
 }

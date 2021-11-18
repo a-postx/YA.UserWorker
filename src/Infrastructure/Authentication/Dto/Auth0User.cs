@@ -1,4 +1,4 @@
-namespace YA.UserWorker.Application.Models.Internal;
+namespace YA.UserWorker.Infrastructure.Authentication.Dto;
 
 public class Auth0User
 {

@@ -5,7 +5,6 @@ using System.Text;
 using System.Text.Json;
 using Microsoft.Extensions.Options;
 using YA.UserWorker.Application.Interfaces;
-using YA.UserWorker.Application.Models.Internal;
 using YA.UserWorker.Core.Entities;
 using YA.UserWorker.Infrastructure.Authentication.Dto;
 using YA.UserWorker.Options;

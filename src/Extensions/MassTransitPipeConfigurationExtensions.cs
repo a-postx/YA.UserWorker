@@ -12,10 +12,7 @@ public static class MassTransitPipeConfiguratorExtensions
     /// <param name="configurator"></param>
     public static void UseMbContextFilter<T>(this IPipeConfigurator<T> configurator) where T : class, PipeContext
     {
-        if (configurator == null)
-        {
-            throw new ArgumentNullException(nameof(configurator));
-        }
+        ArgumentNullException.ThrowIfNull(configurator);
 
         configurator.AddPipeSpecification(new MbMessageContextFilterPipeSpecification<T>());
     }
