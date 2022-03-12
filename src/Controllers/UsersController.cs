@@ -57,8 +57,8 @@ public class UsersController : ControllerBase
     [SwaggerResponse(StatusCodes.Status200OK, "Текущий пользователь.", typeof(UserVm))]
     [SwaggerResponse(StatusCodes.Status304NotModified, "Пользователь не изменён с даты в заголовке If-Modified-Since.")]
     [SwaggerResponse(StatusCodes.Status404NotFound, "Пользователь не найден.")]
-    [SwaggerResponse(StatusCodes.Status406NotAcceptable, "Недопустимый тип MIME в заголовке Accept.", typeof(ProblemDetails))]
-    [SwaggerResponse(StatusCodes.Status409Conflict, "Запрос-дубликат.", typeof(ProblemDetails))]
+    [SwaggerResponse(StatusCodes.Status406NotAcceptable, "Недопустимый тип MIME в заголовке Accept.")]
+    [SwaggerResponse(StatusCodes.Status409Conflict, "Запрос-дубликат.")]
     public Task<IActionResult> GetUserAsync(
         [FromServices] IGetUserAh handler,
         CancellationToken cancellationToken)
@@ -79,11 +79,11 @@ public class UsersController : ControllerBase
     [HttpPost("", Name = RouteNames.PostUser)]
     [ServiceFilter(typeof(IdempotencyFilterAttribute))]
     [SwaggerResponse(StatusCodes.Status201Created, "Модель созданного пользователя.", typeof(UserVm))]
-    [SwaggerResponse(StatusCodes.Status400BadRequest, "Недопустимый запрос.", typeof(ProblemDetails))]
-    [SwaggerResponse(StatusCodes.Status406NotAcceptable, "Недопустимый тип MIME в заголовке Accept.", typeof(ProblemDetails))]
-    [SwaggerResponse(StatusCodes.Status409Conflict, "Запрос-дубликат.", typeof(ProblemDetails))]        
-    [SwaggerResponse(StatusCodes.Status415UnsupportedMediaType, "Тип MIME в заголовке Content-Type не поддерживается.", typeof(ProblemDetails))]
-    [SwaggerResponse(StatusCodes.Status422UnprocessableEntity, "Пользователь не может быть создан, поскольку уже существует.", typeof(ProblemDetails))]
+    [SwaggerResponse(StatusCodes.Status400BadRequest, "Недопустимый запрос.")]
+    [SwaggerResponse(StatusCodes.Status406NotAcceptable, "Недопустимый тип MIME в заголовке Accept.")]
+    [SwaggerResponse(StatusCodes.Status409Conflict, "Запрос-дубликат.")]        
+    [SwaggerResponse(StatusCodes.Status415UnsupportedMediaType, "Тип MIME в заголовке Content-Type не поддерживается.")]
+    [SwaggerResponse(StatusCodes.Status422UnprocessableEntity, "Пользователь не может быть создан, поскольку уже существует.")]
     public Task<IActionResult> RegisterUserAsync(
         [FromServices] IRegisterNewUserAh handler,
         [FromBody] UserRegistrationInfoSm registrationInfo,
@@ -107,10 +107,10 @@ public class UsersController : ControllerBase
     [ServiceFilter(typeof(IdempotencyFilterAttribute))]
     [SwaggerResponse(StatusCodes.Status200OK, "Арендатор переключен.")]
     [SwaggerResponse(StatusCodes.Status404NotFound, "Арендатор или пользователь не найдены.")]
-    [SwaggerResponse(StatusCodes.Status400BadRequest, "Недопустимый запрос.", typeof(ProblemDetails))]
-    [SwaggerResponse(StatusCodes.Status406NotAcceptable, "Недопустимый тип MIME в заголовке Accept.", typeof(ProblemDetails))]
-    [SwaggerResponse(StatusCodes.Status409Conflict, "Запрос-дубликат.", typeof(ProblemDetails))]
-    [SwaggerResponse(StatusCodes.Status415UnsupportedMediaType, "Тип MIME в заголовке Content-Type не поддерживается.", typeof(ProblemDetails))]
+    [SwaggerResponse(StatusCodes.Status400BadRequest, "Недопустимый запрос.")]
+    [SwaggerResponse(StatusCodes.Status406NotAcceptable, "Недопустимый тип MIME в заголовке Accept.")]
+    [SwaggerResponse(StatusCodes.Status409Conflict, "Запрос-дубликат.")]
+    [SwaggerResponse(StatusCodes.Status415UnsupportedMediaType, "Тип MIME в заголовке Content-Type не поддерживается.")]
     public Task<IActionResult> SwitchUserTenantAsync(
         [FromServices] ISwitchUserTenantAh handler,
         [FromQuery] Guid targetTenantId,
@@ -132,11 +132,11 @@ public class UsersController : ControllerBase
     [HttpPatch("", Name = RouteNames.PatchUser)]
     [ServiceFilter(typeof(IdempotencyFilterAttribute))]
     [SwaggerResponse(StatusCodes.Status200OK, "Модель изменённого пользователя.", typeof(UserVm))]
-    [SwaggerResponse(StatusCodes.Status400BadRequest, "Патч-документ неверен.", typeof(ProblemDetails))]
+    [SwaggerResponse(StatusCodes.Status400BadRequest, "Патч-документ неверен.")]
     [SwaggerResponse(StatusCodes.Status404NotFound, "Пользователь не найден.")]
-    [SwaggerResponse(StatusCodes.Status406NotAcceptable, "Недопустимый тип MIME в заголовке Accept.", typeof(ProblemDetails))]
-    [SwaggerResponse(StatusCodes.Status409Conflict, "Запрос-дубликат.", typeof(ProblemDetails))]
-    [SwaggerResponse(StatusCodes.Status415UnsupportedMediaType, "Тип MIME в заголовке Content-Type не поддерживается.", typeof(ProblemDetails))]
+    [SwaggerResponse(StatusCodes.Status406NotAcceptable, "Недопустимый тип MIME в заголовке Accept.")]
+    [SwaggerResponse(StatusCodes.Status409Conflict, "Запрос-дубликат.")]
+    [SwaggerResponse(StatusCodes.Status415UnsupportedMediaType, "Тип MIME в заголовке Content-Type не поддерживается.")]
     public Task<IActionResult> PatchUserAsync(
         [FromServices] IPatchUserAh handler,
         [FromBody] JsonPatchDocument<UserSm> patch,

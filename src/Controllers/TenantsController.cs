@@ -95,8 +95,8 @@ public class TenantsController : ControllerBase
     [SwaggerResponse(StatusCodes.Status200OK, "Текущий арендатор.", typeof(TenantVm))]
     [SwaggerResponse(StatusCodes.Status304NotModified, "Арендатор не изменён с даты в заголовке If-Modified-Since.")]
     [SwaggerResponse(StatusCodes.Status404NotFound, "Арендатор не найден.")]
-    [SwaggerResponse(StatusCodes.Status406NotAcceptable, "Недопустимый тип MIME в заголовке Accept.", typeof(ProblemDetails))]
-    [SwaggerResponse(StatusCodes.Status409Conflict, "Запрос-дубликат.", typeof(ProblemDetails))]
+    [SwaggerResponse(StatusCodes.Status406NotAcceptable, "Недопустимый тип MIME в заголовке Accept.")]
+    [SwaggerResponse(StatusCodes.Status409Conflict, "Запрос-дубликат.")]
     public Task<IActionResult> GetTenantAsync(
         [FromServices] IGetTenantAh handler,
         CancellationToken cancellationToken)
@@ -119,8 +119,8 @@ public class TenantsController : ControllerBase
     [SwaggerResponse(StatusCodes.Status200OK, "Арендатор с указанным идентификатором.", typeof(TenantVm))]
     [SwaggerResponse(StatusCodes.Status304NotModified, "Арендатор не изменён с даты в заголовке If-Modified-Since.")]
     [SwaggerResponse(StatusCodes.Status404NotFound, "Арендатор не найден.")]
-    [SwaggerResponse(StatusCodes.Status406NotAcceptable, "Недопустимый тип MIME в заголовке Accept.", typeof(ProblemDetails))]
-    [SwaggerResponse(StatusCodes.Status409Conflict, "Запрос-дубликат.", typeof(ProblemDetails))]
+    [SwaggerResponse(StatusCodes.Status406NotAcceptable, "Недопустимый тип MIME в заголовке Accept.")]
+    [SwaggerResponse(StatusCodes.Status409Conflict, "Запрос-дубликат.")]
     public Task<IActionResult> GetTenantByIdAsync(
         [FromServices] IGetTenantByIdAh handler,
         Guid tenantId, 
@@ -143,10 +143,10 @@ public class TenantsController : ControllerBase
     [HttpHead("all", Name = RouteNames.HeadTenantPage)]
     [Authorize(Policy = "MustBeAdministrator")]
     [SwaggerResponse(StatusCodes.Status200OK, "Список арендаторов на указанной странице.", typeof(PaginatedResultVm<TenantVm>))]
-    [SwaggerResponse(StatusCodes.Status400BadRequest, "Параметры запроса неверны.", typeof(ProblemDetails))]
-    [SwaggerResponse(StatusCodes.Status404NotFound, "Страница с указанным номером не найдена.", typeof(ProblemDetails))]
-    [SwaggerResponse(StatusCodes.Status406NotAcceptable, "Недопустимый тип MIME в заголовке Accept.", typeof(ProblemDetails))]
-    [SwaggerResponse(StatusCodes.Status409Conflict, "Запрос-дубликат.", typeof(ProblemDetails))]
+    [SwaggerResponse(StatusCodes.Status400BadRequest, "Параметры запроса неверны.")]
+    [SwaggerResponse(StatusCodes.Status404NotFound, "Страница с указанным номером не найдена.")]
+    [SwaggerResponse(StatusCodes.Status406NotAcceptable, "Недопустимый тип MIME в заголовке Accept.")]
+    [SwaggerResponse(StatusCodes.Status409Conflict, "Запрос-дубликат.")]
     public Task<IActionResult> GetTenantAllPageAsync(
         [FromServices] IGetTenantAllPageAh handler,
         [FromQuery] PageOptionsCursor pageOptions,
@@ -169,11 +169,11 @@ public class TenantsController : ControllerBase
     [Authorize(Policy = YaPolicyNames.Admin)]
     [ServiceFilter(typeof(IdempotencyFilterAttribute))]
     [SwaggerResponse(StatusCodes.Status200OK, "Модель изменённого арендатора.", typeof(TenantVm))]
-    [SwaggerResponse(StatusCodes.Status400BadRequest, "Патч-документ неверен.", typeof(ProblemDetails))]
+    [SwaggerResponse(StatusCodes.Status400BadRequest, "Патч-документ неверен.")]
     [SwaggerResponse(StatusCodes.Status404NotFound, "Арендатор не найден.")]
-    [SwaggerResponse(StatusCodes.Status406NotAcceptable, "Недопустимый тип MIME в заголовке Accept.", typeof(ProblemDetails))]
-    [SwaggerResponse(StatusCodes.Status409Conflict, "Запрос-дубликат.", typeof(ProblemDetails))]
-    [SwaggerResponse(StatusCodes.Status415UnsupportedMediaType, "Тип MIME в заголовке Content-Type не поддерживается.", typeof(ProblemDetails))]
+    [SwaggerResponse(StatusCodes.Status406NotAcceptable, "Недопустимый тип MIME в заголовке Accept.")]
+    [SwaggerResponse(StatusCodes.Status409Conflict, "Запрос-дубликат.")]
+    [SwaggerResponse(StatusCodes.Status415UnsupportedMediaType, "Тип MIME в заголовке Content-Type не поддерживается.")]
     public Task<IActionResult> PatchTenantAsync(
         [FromServices] IPatchTenantAh handler,
         [FromBody] JsonPatchDocument<TenantSm> patch,
@@ -197,11 +197,11 @@ public class TenantsController : ControllerBase
     [Authorize(Policy = "MustBeAdministrator")]
     [ServiceFilter(typeof(IdempotencyFilterAttribute))]
     [SwaggerResponse(StatusCodes.Status200OK, "Арендатор обновлён", typeof(TenantVm))]
-    [SwaggerResponse(StatusCodes.Status400BadRequest, "Патч-документ неверен.", typeof(ProblemDetails))]
+    [SwaggerResponse(StatusCodes.Status400BadRequest, "Патч-документ неверен.")]
     [SwaggerResponse(StatusCodes.Status404NotFound, "Арендатор с указанным идентификатором не найден.")]
-    [SwaggerResponse(StatusCodes.Status406NotAcceptable, "Недопустимый тип MIME в заголовке Accept.", typeof(ProblemDetails))]
-    [SwaggerResponse(StatusCodes.Status409Conflict, "Запрос-дубликат.", typeof(ProblemDetails))]
-    [SwaggerResponse(StatusCodes.Status415UnsupportedMediaType, "Тип MIME в заголовке Content-Type не поддерживается.", typeof(ProblemDetails))]
+    [SwaggerResponse(StatusCodes.Status406NotAcceptable, "Недопустимый тип MIME в заголовке Accept.")]
+    [SwaggerResponse(StatusCodes.Status409Conflict, "Запрос-дубликат.")]
+    [SwaggerResponse(StatusCodes.Status415UnsupportedMediaType, "Тип MIME в заголовке Content-Type не поддерживается.")]
     public Task<IActionResult> PatchTenantByIdAsync(
         [FromServices] IPatchTenantByIdAh handler,
         Guid tenantId,
@@ -224,7 +224,7 @@ public class TenantsController : ControllerBase
     [Authorize(Policy = "MustBeAdministrator")]
     [SwaggerResponse(StatusCodes.Status204NoContent, "Арендатор с указанным идентификатором был удалён.")]
     [SwaggerResponse(StatusCodes.Status404NotFound, "Арендатор с указанным идентификатором не найден.")]
-    [SwaggerResponse(StatusCodes.Status409Conflict, "Запрос-дубликат.", typeof(ProblemDetails))]
+    [SwaggerResponse(StatusCodes.Status409Conflict, "Запрос-дубликат.")]
     public Task<IActionResult> DeleteTenantByIdAsync(
         [FromServices] IDeleteTenantByIdAh handler,
         Guid tenantId,

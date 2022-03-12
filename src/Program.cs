@@ -219,13 +219,9 @@ public static class Program
 
     private static IConfigurationBuilder AddConfiguration(IConfigurationBuilder configurationBuilder, IHostEnvironment hostingEnvironment, string[] args)
     {
-        configurationBuilder
-            .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
-            .AddJsonFile($"appsettings.{hostingEnvironment.EnvironmentName}.json", optional: false, reloadOnChange: true)
-            .AddEnvironmentVariables();
-
         IConfigurationRoot tempConfig = new ConfigurationBuilder()
             .AddJsonFile("appsettings.json")
+            .AddJsonFile($"appsettings.{hostingEnvironment.EnvironmentName}.json", optional: false, reloadOnChange: false)
             .Build();
 
         string accessKey = Environment.GetEnvironmentVariable("AWS_ACCESS_KEY_ID");
@@ -238,14 +234,33 @@ public static class Program
             Region = RegionEndpoint.GetBySystemName(tempConfig.GetValue<string>("AWS:Region"))
         };
 
-        string awsSharedParameterStorePath = $"/{hostingEnvironment.EnvironmentName.ToLowerInvariant()}";
+        configurationBuilder
+            .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+            .AddJsonFile($"appsettings.{hostingEnvironment.EnvironmentName}.json", optional: false, reloadOnChange: true)
+            .AddEnvironmentVariables();
 
-        configurationBuilder.AddSystemsManager(config =>
+        string envParameterStorePath = hostingEnvironment.EnvironmentName.ToLowerInvariant();
+
+        //configurationBuilder.AddSystemsManager(config =>
+        //{
+        //    config.AwsOptions = awsOptions;
+        //    config.Optional = false;
+        //    config.Path = $"/{envParameterStorePath}";
+        //    config.ReloadAfter = TimeSpan.FromDays(1);
+        //    config.OnLoadException += exceptionContext =>
+        //    {
+        //        //log
+        //    };
+        //});
+
+        configurationBuilder.AddYandexCloudLockboxConfiguration(config =>
         {
-            config.AwsOptions = awsOptions;
+            config.OauthToken = Environment.GetEnvironmentVariable("YC_OAUTH_TOKEN");
+            config.SecretId = tempConfig.GetValue<string>("YC:ConfigurationSecretId");
+            config.PathSeparator = '-';
             config.Optional = false;
-            config.Path = awsSharedParameterStorePath;
-            config.ReloadAfter = TimeSpan.FromDays(1);
+            config.ReloadPeriod = TimeSpan.FromDays(7);
+            config.LoadTimeout = TimeSpan.FromSeconds(20);
             config.OnLoadException += exceptionContext =>
             {
                 //log
@@ -347,6 +362,10 @@ public static class Program
                 }
             });
         }
+        else
+        {
+            Log.Warning("Sending logs to remote log managment systems is disabled.");
+        }
 
         if (!string.IsNullOrEmpty(secrets.LogzioToken))
         {
@@ -369,10 +388,10 @@ public static class Program
             //loggerConfig.WriteTo.Logzio(secrets.LogzioToken, 1000, TimeSpan.FromSeconds(10), null, LogEventLevel.Information);
         }
 
-        if (string.IsNullOrEmpty(secrets.AppInsightsInstrumentationKey) && string.IsNullOrEmpty(secrets.LogzioToken))
-        {
-            Log.Warning("Sending logs to remote log managment systems is disabled.");
-        }
+        ////if (string.IsNullOrEmpty(secrets.AppInsightsInstrumentationKey) && string.IsNullOrEmpty(secrets.LogzioToken))
+        ////{
+        ////    Log.Warning("Sending logs to remote log managment systems is disabled.");
+        ////}
     }
 
     /// <summary>

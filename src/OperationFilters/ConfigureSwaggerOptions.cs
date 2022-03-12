@@ -58,7 +58,6 @@ public class ConfigureSwaggerOptions : IConfigureOptions<SwaggerGenOptions>
         }
 
         options.OperationFilter<ContentTypeOperationFilter>(true);
-        options.OperationFilter<ProblemDetailsOperationFilter>();
         options.OperationFilter<ClaimsOperationFilter>(swaggerAuthenticationSchemeName);
         options.OperationFilter<SecurityRequirementsOperationFilter>(true, swaggerAuthenticationSchemeName);
 

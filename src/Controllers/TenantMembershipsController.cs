@@ -50,10 +50,10 @@ public class TenantMembershipsController : ControllerBase
     [HttpPost("", Name = RouteNames.PostTenantMembership)]
     [ServiceFilter(typeof(IdempotencyFilterAttribute))]
     [SwaggerResponse(StatusCodes.Status201Created, "Модель созданного членства.", typeof(MembershipVm))]
-    [SwaggerResponse(StatusCodes.Status400BadRequest, "Недопустимый запрос.", typeof(ProblemDetails))]
-    [SwaggerResponse(StatusCodes.Status406NotAcceptable, "Недопустимый тип MIME в заголовке Accept.", typeof(ProblemDetails))]
-    [SwaggerResponse(StatusCodes.Status409Conflict, "Запрос-дубликат.", typeof(ProblemDetails))]
-    [SwaggerResponse(StatusCodes.Status415UnsupportedMediaType, "Тип MIME в заголовке Content-Type не поддерживается.", typeof(ProblemDetails))]
+    [SwaggerResponse(StatusCodes.Status400BadRequest, "Недопустимый запрос.")]
+    [SwaggerResponse(StatusCodes.Status406NotAcceptable, "Недопустимый тип MIME в заголовке Accept.")]
+    [SwaggerResponse(StatusCodes.Status409Conflict, "Запрос-дубликат.")]
+    [SwaggerResponse(StatusCodes.Status415UnsupportedMediaType, "Тип MIME в заголовке Content-Type не поддерживается.")]
     public Task<IActionResult> PostMembershipAsync(
         [FromServices] IPostMembershipAh handler,
         [FromQuery] Guid token,
@@ -90,9 +90,9 @@ public class TenantMembershipsController : ControllerBase
     [HttpDelete("{membershipId}", Name = RouteNames.DeleteMembership)]
     [Authorize(Policy = YaPolicyNames.Owner)]
     [SwaggerResponse(StatusCodes.Status204NoContent, "Членство с указанным идентификатором было удалено.")]
-    [SwaggerResponse(StatusCodes.Status400BadRequest, "Недопустимый запрос.", typeof(ProblemDetails))]
+    [SwaggerResponse(StatusCodes.Status400BadRequest, "Недопустимый запрос.")]
     [SwaggerResponse(StatusCodes.Status404NotFound, "Членство с указанным идентификатором не найдено.")]
-    [SwaggerResponse(StatusCodes.Status409Conflict, "Запрос-дубликат.", typeof(ProblemDetails))]
+    [SwaggerResponse(StatusCodes.Status409Conflict, "Запрос-дубликат.")]
     public Task<IActionResult> DeleteMembershipAsync(
         [FromServices] IDeleteMembershipAh handler,
         [FromRoute] Guid membershipId,

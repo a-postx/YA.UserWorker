@@ -220,7 +220,8 @@ internal static class CustomServiceCollectionExtensions
     {
         // https://github.com/Xabaril/AspNetCore.Diagnostics.HealthChecks
         services
-            .AddSingleton<MessageBusServiceHealthCheck>()
+            // проверка дублирует встроенную проверку масстранзита
+            ////.AddSingleton<MessageBusServiceHealthCheck>()
             .AddHealthChecks()
                 //general system status
                 .AddGenericHealthCheck<UptimeHealthCheck>("uptime")
@@ -228,8 +229,9 @@ internal static class CustomServiceCollectionExtensions
                 //system components regular checks
                 .AddSqlServer(secrets.UserWorker.ConnectionString, "SELECT 1;", HealthCheckNames.Database, HealthStatus.Unhealthy, new string[] { "ready", "metric" })
                 .AddRedis($"{secrets.DistributedCacheHost}:{secrets.DistributedCachePort},password={secrets.DistributedCachePassword}",
-                    HealthCheckNames.DistributedCache, HealthStatus.Degraded, new[] { "ready", "metric" }, new TimeSpan(0, 0, 30))
-                .AddGenericHealthCheck<MessageBusServiceHealthCheck>(HealthCheckNames.MessageBus, HealthStatus.Degraded, new[] { "ready", "metric" });
+                    HealthCheckNames.DistributedCache, HealthStatus.Degraded, new[] { "ready", "metric" }, new TimeSpan(0, 0, 30));
+                // проверка дублирует встроенную проверку масстранзита
+                ////.AddGenericHealthCheck<MessageBusServiceHealthCheck>(HealthCheckNames.MessageBus, HealthStatus.Degraded, new[] { "ready", "metric" })
                 // Ping is not available on Azure Web Apps
                 //.AddNetworkHealthCheck("network");
 

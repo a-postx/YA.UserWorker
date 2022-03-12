@@ -12,7 +12,7 @@
   </PropertyGroup>
 
   <PropertyGroup Label="Package">
-    <Version>0.2.1.0</Version>
+    <Version>0.2.2.0</Version>
     <Authors>Alexey Yakubin</Authors>
     <Company>Delobytes</Company>
     <Product>YA.UserWorker</Product>
@@ -42,9 +42,10 @@
     <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="8.1.1" />
     <PackageReference Include="Ben.Demystifier" Version="0.4.1" />
     <PackageReference Include="CorrelationId" Version="3.0.1" />
-    <PackageReference Include="Delobytes.AspNetCore" Version="5.1.0-alpha1" />
+    <PackageReference Include="Delobytes.AspNetCore" Version="5.1.0" />
     <PackageReference Include="Delobytes.AspNetCore.Idempotency" Version="2.0.0" />
-    <PackageReference Include="Delobytes.AspNetCore.Infrastructure" Version="1.0.0-beta1" />
+    <PackageReference Include="Delobytes.AspNetCore.Infrastructure" Version="1.1.0" />
+    <PackageReference Include="Delobytes.Extensions.Configuration" Version="0.1.0" />
     <PackageReference Include="Delobytes.AspNetCore.Logging" Version="2.0.0" />
     <PackageReference Include="Delobytes.AspNetCore.Swagger" Version="6.0.0" />
     <PackageReference Include="Delobytes.Mapper" Version="1.1.0" />

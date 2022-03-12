@@ -52,10 +52,10 @@ public class TenantInvitationsController : ControllerBase
     [Authorize(Policy = YaPolicyNames.Owner)]
     [ServiceFilter(typeof(IdempotencyFilterAttribute))]
     [SwaggerResponse(StatusCodes.Status201Created, "Модель созданного приглашения.", typeof(InvitationVm))]
-    [SwaggerResponse(StatusCodes.Status400BadRequest, "Недопустимый запрос.", typeof(ProblemDetails))]
-    [SwaggerResponse(StatusCodes.Status406NotAcceptable, "Недопустимый тип MIME в заголовке Accept.", typeof(ProblemDetails))]
-    [SwaggerResponse(StatusCodes.Status409Conflict, "Запрос-дубликат.", typeof(ProblemDetails))]
-    [SwaggerResponse(StatusCodes.Status415UnsupportedMediaType, "Тип MIME в заголовке Content-Type не поддерживается.", typeof(ProblemDetails))]
+    [SwaggerResponse(StatusCodes.Status400BadRequest, "Недопустимый запрос.")]
+    [SwaggerResponse(StatusCodes.Status406NotAcceptable, "Недопустимый тип MIME в заголовке Accept.")]
+    [SwaggerResponse(StatusCodes.Status409Conflict, "Запрос-дубликат.")]
+    [SwaggerResponse(StatusCodes.Status415UnsupportedMediaType, "Тип MIME в заголовке Content-Type не поддерживается.")]
     public Task<IActionResult> PostInvitationAsync(
         [FromServices] IPostInvitationAh handler,
         [FromBody] InvitationSm inviteInfo,
@@ -97,8 +97,8 @@ public class TenantInvitationsController : ControllerBase
     [SwaggerResponse(StatusCodes.Status200OK, "Приглашение с указанным идентификатором.", typeof(InvitationVm))]
     [SwaggerResponse(StatusCodes.Status304NotModified, "Приглашение не изменено с даты в заголовке If-Modified-Since.")]
     [SwaggerResponse(StatusCodes.Status404NotFound, "Приглашение не найдено.")]
-    [SwaggerResponse(StatusCodes.Status406NotAcceptable, "Недопустимый тип MIME в заголовке Accept.", typeof(ProblemDetails))]
-    [SwaggerResponse(StatusCodes.Status409Conflict, "Запрос-дубликат.", typeof(ProblemDetails))]
+    [SwaggerResponse(StatusCodes.Status406NotAcceptable, "Недопустимый тип MIME в заголовке Accept.")]
+    [SwaggerResponse(StatusCodes.Status409Conflict, "Запрос-дубликат.")]
     public Task<IActionResult> GetInvitationAsync(
         [FromServices] IGetInvitationAh handler,
         Guid invitationId,
@@ -120,9 +120,9 @@ public class TenantInvitationsController : ControllerBase
     [HttpDelete("{invitationId}", Name = RouteNames.DeleteInvitation)]
     [Authorize(Policy = YaPolicyNames.Owner)]
     [SwaggerResponse(StatusCodes.Status204NoContent, "Приглашение с указанным идентификатором было удалено.")]
-    [SwaggerResponse(StatusCodes.Status400BadRequest, "Недопустимый запрос.", typeof(ProblemDetails))]
+    [SwaggerResponse(StatusCodes.Status400BadRequest, "Недопустимый запрос.")]
     [SwaggerResponse(StatusCodes.Status404NotFound, "Приглашение с указанным идентификатором не найдено.")]
-    [SwaggerResponse(StatusCodes.Status409Conflict, "Запрос-дубликат.", typeof(ProblemDetails))]
+    [SwaggerResponse(StatusCodes.Status409Conflict, "Запрос-дубликат.")]
     public Task<IActionResult> DeleteInvitationAsync(
         [FromServices] IDeleteInvitationAh handler,
         [FromRoute] Guid invitationId,

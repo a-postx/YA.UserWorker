@@ -48,10 +48,10 @@ public class ClientInfosController : ControllerBase
     /// 409 Конфликт если запрос является дубликатом</returns>
     [HttpPost("", Name = RouteNames.PostClientInfo)]
     [SwaggerResponse(StatusCodes.Status201Created, "Модель события информации о клиенте.", typeof(ClientInfoVm))]
-    [SwaggerResponse(StatusCodes.Status400BadRequest, "Недопустимый запрос.", typeof(ProblemDetails))]
-    [SwaggerResponse(StatusCodes.Status406NotAcceptable, "Недопустимый тип MIME в заголовке Accept.", typeof(ProblemDetails))]
-    [SwaggerResponse(StatusCodes.Status409Conflict, "Запрос-дубликат.", typeof(ProblemDetails))]        
-    [SwaggerResponse(StatusCodes.Status415UnsupportedMediaType, "Тип MIME в заголовке Content-Type не поддерживается.", typeof(ProblemDetails))]
+    [SwaggerResponse(StatusCodes.Status400BadRequest, "Недопустимый запрос.")]
+    [SwaggerResponse(StatusCodes.Status406NotAcceptable, "Недопустимый тип MIME в заголовке Accept.")]
+    [SwaggerResponse(StatusCodes.Status409Conflict, "Запрос-дубликат.")]        
+    [SwaggerResponse(StatusCodes.Status415UnsupportedMediaType, "Тип MIME в заголовке Content-Type не поддерживается.")]
     public Task<IActionResult> PostClientInfoAsync(
         [FromServices] IPostClientInfoAh handler,
         [FromBody] ClientInfoSm clientInfoSm,

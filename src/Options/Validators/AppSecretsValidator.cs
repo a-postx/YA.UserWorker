@@ -18,10 +18,10 @@ public class AppSecretsValidator : IValidateOptions<AppSecrets>
             failures.Add($"{nameof(options.ApiGatewayPort)} secret is not found.");
         }
 
-        if (string.IsNullOrWhiteSpace(options.AppInsightsInstrumentationKey))
-        {
-            failures.Add($"{nameof(options.AppInsightsInstrumentationKey)} secret is not found.");
-        }
+        //if (string.IsNullOrWhiteSpace(options.AppInsightsInstrumentationKey))
+        //{
+        //    failures.Add($"{nameof(options.AppInsightsInstrumentationKey)} secret is not found.");
+        //}
 
         if (string.IsNullOrWhiteSpace(options.ElasticSearchUrl))
         {
@@ -38,10 +38,10 @@ public class AppSecretsValidator : IValidateOptions<AppSecrets>
             failures.Add($"{nameof(options.ElasticSearchPassword)} secret is not found.");
         }
 
-        if (string.IsNullOrWhiteSpace(options.LogzioToken))
-        {
-            failures.Add($"{nameof(options.LogzioToken)} secret is not found.");
-        }
+        //if (string.IsNullOrWhiteSpace(options.LogzioToken))
+        //{
+        //    failures.Add($"{nameof(options.LogzioToken)} secret is not found.");
+        //}
 
         if (string.IsNullOrWhiteSpace(options.MessageBusHost))
         {
