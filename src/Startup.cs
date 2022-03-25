@@ -101,9 +101,9 @@ public class Startup
             options.LoginRedirectPath = "/authentication/login";
             options.ApiGatewayHost = secrets.ApiGatewayHost;
             options.ApiGatewayPort = secrets.ApiGatewayPort;
-            options.EmailClaimName = "http://yaapp.email";
-            options.EmailVerifiedClaimName = "http://yaapp.email_verified";
-            options.AppMetadataClaimName = "http://yaapp.app_metadata";
+            options.EmailClaimName = "http://myapp.email";
+            options.EmailVerifiedClaimName = "http://myapp.email_verified";
+            options.AppMetadataClaimName = "http://myapp.app_metadata";
         });
 
         services.AddClaimsLogging();

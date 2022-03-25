@@ -53,7 +53,7 @@ public class Auth0AuthProviderManager : IAuthProviderManager
 
             if (!tokenResponse.IsSuccessStatusCode)
             {
-                throw new InvalidOperationException("Cannot get management token.");
+                throw new InvalidOperationException($"Cannot get management token. Status: {tokenResponse.StatusCode}");
             }
 
             string tokenContent = await tokenResponse.Content.ReadAsStringAsync(cancellationToken);

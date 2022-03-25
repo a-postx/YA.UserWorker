@@ -38,6 +38,10 @@ using YA.UserWorker.Options;
 using YA.UserWorker.Constants;
 using YA.UserWorker.Extensions;
 using YA.UserWorker.Application.Interfaces;
+using System.Net;
+using System.Net.Security;
+using System.Security.Cryptography.X509Certificates;
+using System.Net.Http;
 
 [assembly: CLSCompliant(false)]
 namespace YA.UserWorker;
@@ -331,7 +335,16 @@ public static class Program
 
             loggerConfig.WriteTo.Elasticsearch(new ElasticsearchSinkOptions(new Uri(secrets.ElasticSearchUrl))
             {
-                ModifyConnectionSettings = x => x.BasicAuthentication(secrets.ElasticSearchUser, secrets.ElasticSearchPassword),
+                ModifyConnectionSettings = conn =>
+                {
+                    conn.BasicAuthentication(secrets.ElasticSearchUser, secrets.ElasticSearchPassword);
+                    conn.ServerCertificateValidationCallback(YandexCloudRootCaCertificateValidationCallback);
+                    ////conn.EnableDebugMode(conn =>
+                    ////{
+                    ////    string info = conn.DebugInformation;
+                    ////});
+                    return conn;
+                },
                 BatchPostingLimit = 1000,
                 Period = TimeSpan.FromSeconds(10),
                 MinimumLogEventLevel = LogEventLevel.Information,
@@ -392,6 +405,29 @@ public static class Program
         ////{
         ////    Log.Warning("Sending logs to remote log managment systems is disabled.");
         ////}
+    }
+
+    private static bool YandexCloudRootCaCertificateValidationCallback(object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors)
+    {
+        string rootCAThumbprint = "AAA1450272071C2D8D7F48469886180B7685EF94";
+
+        // remove this line if commercial CAs are not allowed to issue certificate for your service.
+        if ((sslPolicyErrors & (SslPolicyErrors.None)) > 0)
+        {
+            return true;
+        }
+
+        if ((sslPolicyErrors & (SslPolicyErrors.RemoteCertificateNameMismatch)) > 0 ||
+            (sslPolicyErrors & (SslPolicyErrors.RemoteCertificateNotAvailable)) > 0)
+        {
+            return false;
+        }
+
+        // get last chain element that should contain root CA certificate
+        // but this may not be the case in partial chains
+        X509Certificate2 projectedRootCert = chain.ChainElements[^1].Certificate;
+
+        return projectedRootCert.Thumbprint == rootCAThumbprint;
     }
 
     /// <summary>
