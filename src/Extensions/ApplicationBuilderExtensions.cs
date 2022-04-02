@@ -96,6 +96,9 @@ internal static class ApplicationBuilderExtensions
                     { "scope", "openid profile email" },
                     { "nonce","nonce" }
                 });
+
+            //string fn = "(request) => { var swaggerSelect = document.querySelector('#swagger-ui .swagger-container .topbar select'); if(swaggerSelect) { var selected = swaggerSelect.selectedOptions; if( selected ) { var version = selected[0].text.split('|')[1]; request.headers['api']=version; }  }; return request; }";
+            //options.UseRequestInterceptor(fn);
         });
     }
 }

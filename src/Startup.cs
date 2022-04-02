@@ -23,7 +23,7 @@ using Delobytes.AspNetCore.Logging;
 using Delobytes.AspNetCore.Idempotency;
 using Delobytes.AspNetCore;
 using YA.UserWorker.Extensions;
-using Delobytes.AspNetCore.Infrastructure.Authentication;
+using YA.UserWorker.Infrastructure.Authentication;
 //using Elastic.Apm.NetCoreAll;
 
 namespace YA.UserWorker;
@@ -94,7 +94,7 @@ public class Startup
 
             .AddCustomApiVersioning();
 
-        services.AddAuth0Authentication(secrets.OidcProviderIssuer, "YaScheme", options =>
+        services.AddAuth0Authentication("YaScheme", true, options =>
         {
             options.Authority = oauthOptions.Authority;
             options.Audience = oauthOptions.Audience;
@@ -104,6 +104,19 @@ public class Startup
             options.EmailClaimName = "http://myapp.email";
             options.EmailVerifiedClaimName = "http://myapp.email_verified";
             options.AppMetadataClaimName = "http://myapp.app_metadata";
+            options.OpenIdConfigurationEndpoint = oauthOptions.OidcIssuer + "/.well-known/openid-configuration";
+            options.TokenValidationParameters = new TokenValidationOptions
+            {
+                RequireExpirationTime = true,
+                RequireSignedTokens = true,
+                ValidateIssuer = true,
+                ValidIssuer = oauthOptions.Authority,
+                ValidateAudience = true,
+                ValidAudience = oauthOptions.Audience,
+                ValidateIssuerSigningKey = true,
+                ValidateLifetime = true,
+                ClockSkew = TimeSpan.FromMinutes(2),
+            };
         });
 
         services.AddClaimsLogging();

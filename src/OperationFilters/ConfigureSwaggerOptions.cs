@@ -74,6 +74,7 @@ public class ConfigureSwaggerOptions : IConfigureOptions<SwaggerGenOptions>
                         Array.Empty<string>()
                     }
                 });
+        ;
 
         options.AddSecurityDefinition("oauth2", new OpenApiSecurityScheme
         {

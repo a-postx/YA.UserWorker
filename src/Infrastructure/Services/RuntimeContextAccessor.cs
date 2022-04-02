@@ -72,8 +72,20 @@ public class RuntimeContextAccessor : IRuntimeContextAccessor
             .Where(e => e.Type == YaClaimNames.uid).First().Value;
 
         string[] userProps = uid.Split('|');
-        string userProvider = userProps[0];
-        string userExternalId = userProps[1];
+
+        string userProvider;
+        string userExternalId;
+
+        if (userProps.Length > 1)
+        {
+            userProvider = userProps[0];
+            userExternalId = userProps[1];
+        }
+        else
+        {
+            userProvider = "keycloak";
+            userExternalId = userProps[0];
+        }
 
         return (userProvider, userExternalId);
     }

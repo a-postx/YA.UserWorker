@@ -1,0 +1,64 @@
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Protocols;
+using Microsoft.IdentityModel.Protocols.OpenIdConnect;
+
+namespace YA.UserWorker.Infrastructure.Authentication;
+
+/// <summary>
+/// Расширения <see cref="IServiceCollection"/> для регистрации сервисов.
+/// </summary>
+public static class AuthenticationServiceCollectionExtensions
+{
+    /// <summary>
+    /// Добавляет в <see cref="IServiceCollection"/> всё необходимое для аутентификации на базе Auth0 (OAuth2, OpenID Connect и JWT-токены).
+    /// </summary>
+    /// <param name="services"><see cref="IServiceCollection"/> в которую нужно добавить аутентификацию.</param>
+    /// <param name="authSchemeName">Название схемы аутентификации.</param>
+    /// <param name="defaultScheme">Признак использования схемы по-умолчанию.</param>
+    /// <param name="configureOptions"><see cref="Action{AuthenticationOptions}"/> для настройки <see cref="AuthenticationOptions"/>.</param>
+    /// <returns>Ссылка на этот экземпляр после завершения операции.</returns>
+    public static IServiceCollection AddAuth0Authentication(this IServiceCollection services, string authSchemeName, bool defaultScheme, Action<AuthenticationOptions> configureOptions)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+        ArgumentNullException.ThrowIfNull(configureOptions);
+
+        if (string.IsNullOrEmpty(authSchemeName))
+        {
+            throw new InvalidOperationException("Parameter value is required: " + nameof(authSchemeName));
+        }
+        
+        services
+            .AddOptions()
+            .AddHttpContextAccessor()
+            .AddLogging();
+
+        services.AddSingleton<IValidateOptions<AuthenticationOptions>, AuthenticationOptionsValidator>();
+
+        services.AddSingleton(options => new AuthenticationOptions());
+        services.Configure(configureOptions);
+
+        //забираем регулярно обновляемые ключи шифрования токенов с сервера провайдера
+        services.AddSingleton<IConfigurationManager<OpenIdConnectConfiguration>>(provider =>
+        {
+            AuthenticationOptions authOptions = provider.GetService<IOptions<AuthenticationOptions>>().Value;
+
+            return new ConfigurationManager<OpenIdConnectConfiguration>(
+                authOptions.OpenIdConfigurationEndpoint,
+                new OpenIdConnectConfigurationRetriever(),
+                new HttpDocumentRetriever { RequireHttps = true });
+        });
+
+        services.AddAuthenticationCore(o =>
+        {
+            o.AddScheme<AuthenticationHandler>(authSchemeName, "Authentication scheme that use claims extracted from JWT token.");
+
+            if (defaultScheme)
+            {
+                o.DefaultScheme = authSchemeName;
+            }
+        });
+
+        return services;
+    }
+}

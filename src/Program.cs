@@ -338,7 +338,9 @@ public static class Program
                 ModifyConnectionSettings = conn =>
                 {
                     conn.BasicAuthentication(secrets.ElasticSearchUser, secrets.ElasticSearchPassword);
-                    conn.ServerCertificateValidationCallback(YandexCloudRootCaCertificateValidationCallback);
+
+                    //"https://rc1b-8k9r4mkxxxxxxxxxx.mdb.yandexcloud.net:9200"
+                    ////conn.ServerCertificateValidationCallback(YandexCloudRootCaCertificateValidationCallback);
                     ////conn.EnableDebugMode(conn =>
                     ////{
                     ////    string info = conn.DebugInformation;

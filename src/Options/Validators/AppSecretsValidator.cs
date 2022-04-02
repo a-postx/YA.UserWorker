@@ -108,11 +108,6 @@ public class AppSecretsValidator : IValidateOptions<AppSecrets>
             failures.Add($"{nameof(options.OauthManagementApiClientSecret)} secret is not found.");
         }
 
-        if (string.IsNullOrWhiteSpace(options.OidcProviderIssuer))
-        {
-            failures.Add($"{nameof(options.OidcProviderIssuer)} secret is not found.");
-        }
-
         if (failures.Count > 0)
         {
             return ValidateOptionsResult.Fail(failures);

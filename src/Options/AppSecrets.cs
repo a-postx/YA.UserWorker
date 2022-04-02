@@ -20,7 +20,6 @@ public class AppSecrets
     public string DistributedCachePassword { get; set; }
     public string ApiGatewayHost { get; set; }
     public int ApiGatewayPort { get; set; }
-    public string OidcProviderIssuer { get; set; }
     public string OauthImplicitAuthorizationUrl { get; set; }
     public string OauthImplicitTokenUrl { get; set; }
     public string OauthManagementApiUrl { get; set; }

@@ -13,6 +13,11 @@ public class OauthOptionsValidator : IValidateOptions<OauthOptions>
             failures.Add($"{nameof(options.Authority)} option is not found.");
         }
 
+        if (string.IsNullOrWhiteSpace(options.OidcIssuer))
+        {
+            failures.Add($"{nameof(options.OidcIssuer)} option is not found.");
+        }
+
         if (string.IsNullOrWhiteSpace(options.ClientId))
         {
             failures.Add($"{nameof(options.ClientId)} option is not found.");
