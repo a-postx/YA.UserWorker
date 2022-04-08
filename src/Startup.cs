@@ -1,10 +1,8 @@
 using System.Reflection;
 using System.Text;
-using Amazon.Extensions.NETCore.Setup;
 using CorrelationId;
 using MassTransit;
 using MediatR;
-using Microsoft.ApplicationInsights.AspNetCore.Extensions;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Hosting;
@@ -47,11 +45,7 @@ public class Startup
     // controller design generator search for this
     private IConfiguration Configuration { get; }
 
-    /// <summary>
-    /// Configures the services to add to the ASP.NET Core Injection of Control (IoC) container. This method gets
-    /// called by the ASP.NET runtime. See
-    /// http://blogs.msdn.com/b/webdev/archive/2014/06/17/dependency-injection-in-asp-net-vnext.aspx
-    /// </summary>
+
     public void ConfigureServices(IServiceCollection services)
     {
         services
@@ -63,20 +57,6 @@ public class Startup
         OauthOptions oauthOptions = _config.GetSection(nameof(ApplicationOptions.OAuth)).Get<OauthOptions>();
         IdempotencyOptions idempotencyOptions = _config
             .GetSection(nameof(ApplicationOptions.IdempotencyControl)).Get<IdempotencyOptions>();
-
-        AWSOptions awsOptions = _config.GetAWSOptions();
-        services.AddDefaultAWSOptions(awsOptions);
-
-        if (!string.IsNullOrEmpty(secrets.AppInsightsInstrumentationKey))
-        {
-            ApplicationInsightsServiceOptions options = new ApplicationInsightsServiceOptions
-            {
-                DeveloperMode = _webHostEnvironment.IsDevelopment(),
-                InstrumentationKey = secrets.AppInsightsInstrumentationKey
-            };
-
-            services.AddApplicationInsightsTelemetry(options);
-        }
 
         services
             .AddCorrelationIdFluent(generalOptions)
@@ -94,16 +74,42 @@ public class Startup
 
             .AddCustomApiVersioning();
 
-        services.AddAuth0Authentication("YaScheme", true, options =>
+        ////services.AddAuth0Authentication("YaScheme", true, options =>
+        ////{
+        ////    options.Authority = oauthOptions.Authority;
+        ////    options.Audience = oauthOptions.Audience;
+        ////    options.LoginRedirectPath = "/authentication/login";
+        ////    options.ApiGatewayHost = oauthOptions.ApiGatewayHost;
+        ////    options.ApiGatewayPort = oauthOptions.ApiGatewayPort;
+        ////    options.EmailClaimName = "http://myapp.email";
+        ////    options.EmailVerifiedClaimName = "http://myapp.email_verified";
+        ////    options.AppMetadataClaimName = "http://myapp.app_metadata";
+        ////    options.OpenIdConfigurationEndpoint = oauthOptions.OidcIssuer + ".well-known/openid-configuration";
+        ////    options.TokenValidationParameters = new TokenValidationOptions
+        ////    {
+        ////        RequireExpirationTime = true,
+        ////        RequireSignedTokens = true,
+        ////        ValidateIssuer = true,
+        ////        ValidIssuer = oauthOptions.Authority + "/",
+        ////        ValidateAudience = true,
+        ////        ValidAudience = oauthOptions.Audience,
+        ////        ValidateIssuerSigningKey = true,
+        ////        ValidateLifetime = true,
+        ////        ClockSkew = TimeSpan.FromMinutes(2),
+        ////    };
+        ////});
+
+        services.AddKeyCloakAuthentication("YaScheme", true, options =>
         {
             options.Authority = oauthOptions.Authority;
             options.Audience = oauthOptions.Audience;
             options.LoginRedirectPath = "/authentication/login";
-            options.ApiGatewayHost = secrets.ApiGatewayHost;
-            options.ApiGatewayPort = secrets.ApiGatewayPort;
-            options.EmailClaimName = "http://myapp.email";
-            options.EmailVerifiedClaimName = "http://myapp.email_verified";
-            options.AppMetadataClaimName = "http://myapp.app_metadata";
+            options.ApiGatewayHost = oauthOptions.ApiGatewayHost;
+            options.ApiGatewayPort = oauthOptions.ApiGatewayPort;
+            options.EmailClaimName = "email";
+            options.EmailVerifiedClaimName = "email_verified";
+            options.TenantIdClaimName = "tid";
+            options.TenantAccessTypeClaimName = "tenantaccesstype";
             options.OpenIdConfigurationEndpoint = oauthOptions.OidcIssuer + "/.well-known/openid-configuration";
             options.TokenValidationParameters = new TokenValidationOptions
             {
@@ -208,9 +214,7 @@ public class Startup
         services.AddCustomMessageBus(secrets);
     }
 
-    /// <summary>
-    /// Configures the application and HTTP request pipeline. Configure is called after IHost Run() by the ASP.NET runtime.
-    /// </summary>
+
     public void Configure(IApplicationBuilder application)
     {
         OauthOptions oauthOptions = _config.GetSection(nameof(ApplicationOptions.OAuth)).Get<OauthOptions>();
@@ -248,7 +252,7 @@ public class Startup
             .UseMetricServer()
             .UseHttpMetrics()
 
-            .UseAuth0Authentication()
+            .UseAuthentication()
             .UseClaimsLogging()
             .UseAuthorization()
 

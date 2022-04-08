@@ -28,6 +28,26 @@ public class OauthOptionsValidator : IValidateOptions<OauthOptions>
             failures.Add($"{nameof(options.Audience)} option is not found.");
         }
 
+        if (string.IsNullOrWhiteSpace(options.AuthorizationUrl))
+        {
+            failures.Add($"{nameof(options.AuthorizationUrl)} option is not found.");
+        }
+
+        if (string.IsNullOrWhiteSpace(options.TokenUrl))
+        {
+            failures.Add($"{nameof(options.TokenUrl)} option is not found.");
+        }
+
+        if (string.IsNullOrWhiteSpace(options.ApiGatewayHost))
+        {
+            failures.Add($"{nameof(options.ApiGatewayHost)} option is not found.");
+        }
+
+        if (options.ApiGatewayPort == 0)
+        {
+            failures.Add($"{nameof(options.ApiGatewayPort)} option is not found.");
+        }
+
         if (failures.Count > 0)
         {
             return ValidateOptionsResult.Fail(failures);

@@ -8,11 +8,23 @@ namespace YA.UserWorker.Infrastructure.Authentication;
 public static class AuthenticationApplicationBuilderExtensions
 {
     /// <summary>
-    /// Добавляет аутентификацию веб-АПИ приложения на базе Auth0 (OAuth2, OpenID Connect и JWT-токены).
+    /// Добавляет аутентификацию приложения на базе Auth0 (OAuth2, OpenID Connect и JWT-токены).
     /// </summary>
     /// <param name="app"></param>
     /// <returns></returns>
     public static IApplicationBuilder UseAuth0Authentication(this IApplicationBuilder app)
+    {
+        ArgumentNullException.ThrowIfNull(app);
+
+        return app.UseAuthentication();
+    }
+
+    /// <summary>
+    /// Добавляет аутентификацию приложения на базе KeyCloak (OAuth2, OpenID Connect и JWT-токены).
+    /// </summary>
+    /// <param name="app"></param>
+    /// <returns></returns>
+    public static IApplicationBuilder UseKeyCloakAuthentication(this IApplicationBuilder app)
     {
         ArgumentNullException.ThrowIfNull(app);
 

@@ -81,43 +81,27 @@ public class RegisterNewUserAh : IRegisterNewUserAh
         }
 
         JwtSecurityToken jst = securityToken as JwtSecurityToken;
-        string userInfoUri = jst.Audiences.FirstOrDefault(e => e.Contains("userinfo", StringComparison.OrdinalIgnoreCase));
-
-        if (string.IsNullOrEmpty(userInfoUri))
-        {
-            throw new InvalidOperationException("Userinfo endpoint cannot be obtained.");
-        }
 
         DetailedUserInfoTm userInfo;
 
-        using (HttpRequestMessage detailsRequest = new(HttpMethod.Get, userInfoUri))
-        using (HttpClient client = _httpClientFactory.CreateClient())
+        //Keycloak
+        if (jst.Claims.Where(claim => claim.Type == YaClaimNames.name).FirstOrDefault() != null)
         {
-            string auth0userId = authId + "|" + userId;
-
-            client.DefaultRequestHeaders.Authorization =
-                new AuthenticationHeaderValue("Bearer", regInfo.AccessToken);
-            string correlationId = _runtimeCtx.GetCorrelationId().ToString();
-            client.DefaultRequestHeaders.Add("x-correlation-id", correlationId);
-
-            HttpResponseMessage detailsResponse = await client.SendAsync(detailsRequest, cancellationToken);
-
-            if (!detailsResponse.IsSuccessStatusCode)
-            {
-                throw new InvalidOperationException($"Cannot get user info for {auth0userId}, status code: {detailsResponse.StatusCode}");
-            }
-
-            _log.LogInformation("{UserId} detailed info has been received", auth0userId);
-
-            string detailedInfoContent = await detailsResponse.Content.ReadAsStringAsync(cancellationToken);
-
-            userInfo = JsonSerializer
-                .Deserialize<DetailedUserInfoTm>(detailedInfoContent, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+            userInfo = new DetailedUserInfoTm();
+            userInfo.Name = jst.Claims.Where(claim => claim.Type == YaClaimNames.name).FirstOrDefault().Value;
+            userInfo.Given_Name = jst.Claims.Where(claim => claim.Type == "given_name").FirstOrDefault().Value;
+            userInfo.Family_Name = jst.Claims.Where(claim => claim.Type == "family_name").FirstOrDefault().Value;
+            userInfo.NickName = jst.Claims.Where(claim => claim.Type == "preferred_username").FirstOrDefault().Value;
+            //userInfo.Picture = jst.Claims.Where(claim => claim.Type == "picture").FirstOrDefault()?.Value;
         }
-
-        if (userInfo is null)
+        else //Auth0
         {
-            throw new InvalidOperationException("Detailed user info cannot be obtained.");
+            userInfo = await GetUserDetailsAsync(jst, regInfo.AccessToken, authId, userId, cancellationToken);
+
+            if (userInfo is null)
+            {
+                throw new InvalidOperationException("Detailed user info cannot be obtained.");
+            }
         }
 
         ClaimsPrincipal userCtx = _actionCtx.ActionContext.HttpContext.User;
@@ -235,7 +219,7 @@ public class RegisterNewUserAh : IRegisterNewUserAh
         Guid tenantId = userTenant.TenantID;
 
         await _authProviderManager
-            .SetTenantAsync(authId + "|" + userId, tenantId, accessType, cancellationToken);
+            .SetTenantAsync(userId, tenantId, accessType, cancellationToken);
 
         _actionCtx.ActionContext.HttpContext
             .Response.Headers.Add(HeaderNames.LastModified, userResult.Data.LastModifiedDateTime.ToString("R", CultureInfo.InvariantCulture));
@@ -243,5 +227,45 @@ public class RegisterNewUserAh : IRegisterNewUserAh
         UserVm userVm = _mapper.Map<UserVm>(userResult.Data);
 
         return new CreatedAtRouteResult(RouteNames.GetUser, new { }, userVm);
+    }
+
+    private async Task<DetailedUserInfoTm> GetUserDetailsAsync(JwtSecurityToken decodedToken, string accessToken, string authId, string userId, CancellationToken cancellationToken)
+    {
+        DetailedUserInfoTm userInfo;
+
+        string userInfoUri = decodedToken.Audiences
+            .FirstOrDefault(e => e.Contains("userinfo", StringComparison.OrdinalIgnoreCase));
+
+        if (string.IsNullOrEmpty(userInfoUri))
+        {
+            throw new InvalidOperationException("Userinfo endpoint cannot be obtained.");
+        }
+
+        using (HttpRequestMessage detailsRequest = new(HttpMethod.Get, userInfoUri))
+        using (HttpClient client = _httpClientFactory.CreateClient())
+        {
+            string auth0userId = authId + "|" + userId;
+
+            client.DefaultRequestHeaders.Authorization =
+                new AuthenticationHeaderValue("Bearer", accessToken);
+            string correlationId = _runtimeCtx.GetCorrelationId().ToString();
+            client.DefaultRequestHeaders.Add("x-correlation-id", correlationId);
+
+            HttpResponseMessage detailsResponse = await client.SendAsync(detailsRequest, cancellationToken);
+
+            if (!detailsResponse.IsSuccessStatusCode)
+            {
+                throw new InvalidOperationException($"Cannot get user info for {auth0userId}, status code: {detailsResponse.StatusCode}");
+            }
+
+            _log.LogInformation("{UserId} detailed info has been received", auth0userId);
+
+            string detailedInfoContent = await detailsResponse.Content.ReadAsStringAsync(cancellationToken);
+
+            userInfo = JsonSerializer
+                .Deserialize<DetailedUserInfoTm>(detailedInfoContent, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+        }
+
+        return userInfo;
     }
 }

@@ -89,6 +89,6 @@ public static class ProjectServiceCollectionExtensions
             .AddScoped<IMessageBus, MessageBus>()
             .AddScoped<IRuntimeContextAccessor, RuntimeContextAccessor>()
             .AddSingleton<IRuntimeGeoDataService, IpWhoisRuntimeGeoData>()
-            .AddScoped<IAuthProviderManager, Auth0AuthProviderManager>();
+            .AddScoped<IAuthProviderManager, KeyCloakAuthProviderManager>();
     }
 }

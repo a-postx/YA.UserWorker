@@ -5,9 +5,6 @@ global using System.Threading;
 global using System.Threading.Tasks;
 global using Microsoft.Extensions.Logging;
 
-using Amazon;
-using Amazon.Extensions.NETCore.Setup;
-using Amazon.Runtime;
 using Delobytes.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
@@ -28,7 +25,6 @@ using Serilog.Exceptions.EntityFrameworkCore.Destructurers;
 using Serilog.Extensions.Hosting;
 using Serilog.Formatting.Elasticsearch;
 using Serilog.Sinks.Elasticsearch;
-using Serilog.Sinks.Logz.Io;
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
@@ -228,16 +224,6 @@ public static class Program
             .AddJsonFile($"appsettings.{hostingEnvironment.EnvironmentName}.json", optional: false, reloadOnChange: false)
             .Build();
 
-        string accessKey = Environment.GetEnvironmentVariable("AWS_ACCESS_KEY_ID");
-        string secretKey = Environment.GetEnvironmentVariable("AWS_SECRET_ACCESS_KEY");
-
-        AWSCredentials credentials = new BasicAWSCredentials(accessKey, secretKey);
-        AWSOptions awsOptions = new AWSOptions()
-        {
-            Credentials = credentials,
-            Region = RegionEndpoint.GetBySystemName(tempConfig.GetValue<string>("AWS:Region"))
-        };
-
         configurationBuilder
             .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
             .AddJsonFile($"appsettings.{hostingEnvironment.EnvironmentName}.json", optional: false, reloadOnChange: true)
@@ -245,21 +231,11 @@ public static class Program
 
         string envParameterStorePath = hostingEnvironment.EnvironmentName.ToLowerInvariant();
 
-        //configurationBuilder.AddSystemsManager(config =>
-        //{
-        //    config.AwsOptions = awsOptions;
-        //    config.Optional = false;
-        //    config.Path = $"/{envParameterStorePath}";
-        //    config.ReloadAfter = TimeSpan.FromDays(1);
-        //    config.OnLoadException += exceptionContext =>
-        //    {
-        //        //log
-        //    };
-        //});
-
         configurationBuilder.AddYandexCloudLockboxConfiguration(config =>
         {
-            config.OauthToken = Environment.GetEnvironmentVariable("YC_OAUTH_TOKEN");
+            config.PrivateKey = Environment.GetEnvironmentVariable("YC_PRIVATE_KEY");
+            config.ServiceAccountId = tempConfig.GetValue<string>("YC:ServiceAccountId");
+            config.ServiceAccountAuthorizedKeyId = tempConfig.GetValue<string>("YC:ServiceAccountAuthorizedKeyId");
             config.SecretId = tempConfig.GetValue<string>("YC:ConfigurationSecretId");
             config.PathSeparator = '-';
             config.Optional = false;
@@ -319,11 +295,6 @@ public static class Program
                 //speed up EF Core exception destructuring
                 .WithDestructurers(new[] { new DbUpdateExceptionDestructurer() }));
 
-        if (!string.IsNullOrEmpty(secrets.AppInsightsInstrumentationKey))
-        {
-            loggerConfig.WriteTo.ApplicationInsights(secrets.AppInsightsInstrumentationKey, TelemetryConverter.Traces, LogEventLevel.Debug);
-        }
-
         if (!string.IsNullOrEmpty(secrets.ElasticSearchUrl)
             && !string.IsNullOrEmpty(secrets.ElasticSearchUser)
             && !string.IsNullOrEmpty(secrets.ElasticSearchPassword))
@@ -381,32 +352,6 @@ public static class Program
         {
             Log.Warning("Sending logs to remote log managment systems is disabled.");
         }
-
-        if (!string.IsNullOrEmpty(secrets.LogzioToken))
-        {
-            // EU logz.io sink
-            //loggerConfig.WriteTo.LogzIo(secrets.LogzioToken, null,
-            //    new LogzioOptions
-            //    {
-            //        DataCenterSubDomain = "listener-eu",
-            //        UseHttps = false,
-            //        RestrictedToMinimumLevel = LogEventLevel.Information,
-            //        Period = TimeSpan.FromSeconds(10),
-            //        BatchPostingLimit = 1000,
-            //        PropertyTransformationMap = null,
-            //        LowercaseLevel = false,
-            //        IncludeMessageTemplate = false,
-            //        BoostProperties = false
-            //    });
-
-            // US logz.io sink
-            //loggerConfig.WriteTo.Logzio(secrets.LogzioToken, 1000, TimeSpan.FromSeconds(10), null, LogEventLevel.Information);
-        }
-
-        ////if (string.IsNullOrEmpty(secrets.AppInsightsInstrumentationKey) && string.IsNullOrEmpty(secrets.LogzioToken))
-        ////{
-        ////    Log.Warning("Sending logs to remote log managment systems is disabled.");
-        ////}
     }
 
     private static bool YandexCloudRootCaCertificateValidationCallback(object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors)

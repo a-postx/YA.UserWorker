@@ -15,16 +15,16 @@ namespace YA.UserWorker.OperationFilters;
 public class ConfigureSwaggerOptions : IConfigureOptions<SwaggerGenOptions>
 {
     public ConfigureSwaggerOptions(IApiVersionDescriptionProvider provider,
-        IOptions<AppSecrets> secretOptions,
+        IOptions<OauthOptions> oauthOptions,
         IOptions<IdempotencyOptions> idempotencyOptions)
     {
         _provider = provider;
-        _secrets = secretOptions.Value;
+        _oauthOptions = oauthOptions.Value;
         _idempotencyOptions = idempotencyOptions.Value;
     }
 
     private readonly IApiVersionDescriptionProvider _provider;
-    private readonly AppSecrets _secrets;
+    private readonly OauthOptions _oauthOptions;
     private readonly IdempotencyOptions _idempotencyOptions;
 
     public void Configure(SwaggerGenOptions options)
@@ -83,8 +83,8 @@ public class ConfigureSwaggerOptions : IConfigureOptions<SwaggerGenOptions>
             {
                 Implicit = new OpenApiOAuthFlow()
                 {
-                    AuthorizationUrl = new Uri(_secrets.OauthImplicitAuthorizationUrl),
-                    TokenUrl = new Uri(_secrets.OauthImplicitTokenUrl),
+                    AuthorizationUrl = new Uri(_oauthOptions.AuthorizationUrl),
+                    TokenUrl = new Uri(_oauthOptions.TokenUrl),
                     Scopes = new Dictionary<string, string>()
                 }
             }

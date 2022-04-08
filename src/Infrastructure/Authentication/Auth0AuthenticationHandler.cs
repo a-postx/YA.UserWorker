@@ -16,15 +16,15 @@ using YA.UserWorker.Infrastructure.Authentication.Dto;
 namespace YA.UserWorker.Infrastructure.Authentication;
 
 /// <summary>
-/// Обработчик аутентификации АПИ-запроса.
+/// Обработчик аутентификации АПИ-запроса с помощью Auth0.
 /// </summary>
-public class AuthenticationHandler : IAuthenticationHandler
+public class Auth0AuthenticationHandler : IAuthenticationHandler
 {
     /// <summary>
     /// Конструктор.
     /// </summary>
     /// <exception cref="ArgumentNullException">Отсутствует какой-либо компонент внешней зависимости.</exception>
-    public AuthenticationHandler(ILogger<AuthenticationHandler> logger,
+    public Auth0AuthenticationHandler(ILogger<Auth0AuthenticationHandler> logger,
         IHttpContextAccessor httpContextAccessor,
         IConfigurationManager<OpenIdConnectConfiguration> configManager,
         IOptions<AuthenticationOptions> authOptions)
@@ -35,7 +35,7 @@ public class AuthenticationHandler : IAuthenticationHandler
         _authOptions = authOptions.Value;
     }
 
-    private readonly ILogger<AuthenticationHandler> _log;
+    private readonly ILogger<Auth0AuthenticationHandler> _log;
     private readonly IHttpContextAccessor _httpCtx;
     private readonly IConfigurationManager<OpenIdConnectConfiguration> _configManager;
     private readonly AuthenticationOptions _authOptions;

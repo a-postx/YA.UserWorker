@@ -81,6 +81,20 @@ public class AuthenticationOptions
 
     /// <summary>
     /// <para>
+    /// Имя удостоверения, которое даёт идентификатор арендатора.
+    /// </para>
+    /// </summary>
+    public string TenantIdClaimName { get; set; }
+
+    /// <summary>
+    /// <para>
+    /// Имя удостоверения, которое даёт тип доступа к арендатору.
+    /// </para>
+    /// </summary>
+    public string TenantAccessTypeClaimName { get; set; }
+
+    /// <summary>
+    /// <para>
     /// Адрес конфигурации OpenID.
     /// </para>
     /// </summary>

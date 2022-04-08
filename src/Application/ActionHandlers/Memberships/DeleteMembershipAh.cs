@@ -68,14 +68,14 @@ public class DeleteMembershipAh : IDeleteMembershipAh
                 break;                    
         }
 
-        string auth0UserId = getResult.Data.User.AuthProvider + "|" + getResult.Data.User.ExternalId;
+        string userId = getResult.Data.User.ExternalId;
 
         //check and delete from auth0
-        Guid currentTenantForTargetUser = await _authManager.GetUserTenantAsync(auth0UserId, cancellationToken);
+        Guid currentTenantForTargetUser = await _authManager.GetUserTenantAsync(userId, cancellationToken);
 
         if (currentTenantForTargetUser == targetTenantId)
         {
-            await _authManager.RemoveTenantAsync(auth0UserId, cancellationToken);
+            await _authManager.RemoveTenantAsync(userId, cancellationToken);
         }
 
         return new NoContentResult();

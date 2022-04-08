@@ -63,7 +63,7 @@ public class SwitchUserTenantAh : ISwitchUserTenantAh
             if (membership is not null)
             {
                 await _authProviderManager
-                    .SetTenantAsync(authId + "|" + userId, targetTenantId, membership.AccessType, cancellationToken);
+                    .SetTenantAsync(userId, targetTenantId, membership.AccessType, cancellationToken);
 
                 _log.LogInformation("User {UserId} has updated with tenant {TenantId}", userId, targetTenantId);
 

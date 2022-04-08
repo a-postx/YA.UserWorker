@@ -8,21 +8,6 @@ public class AppSecretsValidator : IValidateOptions<AppSecrets>
     {
         List<string> failures = new List<string>();
 
-        if (string.IsNullOrWhiteSpace(options.ApiGatewayHost))
-        {
-            failures.Add($"{nameof(options.ApiGatewayHost)} secret is not found.");
-        }
-
-        if (options.ApiGatewayPort <= 0)
-        {
-            failures.Add($"{nameof(options.ApiGatewayPort)} secret is not found.");
-        }
-
-        //if (string.IsNullOrWhiteSpace(options.AppInsightsInstrumentationKey))
-        //{
-        //    failures.Add($"{nameof(options.AppInsightsInstrumentationKey)} secret is not found.");
-        //}
-
         if (string.IsNullOrWhiteSpace(options.ElasticSearchUrl))
         {
             failures.Add($"{nameof(options.ElasticSearchUrl)} secret is not found.");
@@ -37,11 +22,6 @@ public class AppSecretsValidator : IValidateOptions<AppSecrets>
         {
             failures.Add($"{nameof(options.ElasticSearchPassword)} secret is not found.");
         }
-
-        //if (string.IsNullOrWhiteSpace(options.LogzioToken))
-        //{
-        //    failures.Add($"{nameof(options.LogzioToken)} secret is not found.");
-        //}
 
         if (string.IsNullOrWhiteSpace(options.MessageBusHost))
         {
@@ -83,29 +63,24 @@ public class AppSecretsValidator : IValidateOptions<AppSecrets>
             failures.Add($"{nameof(options.DistributedCachePassword)} secret is not found.");
         }
 
-        if (string.IsNullOrWhiteSpace(options.OauthImplicitAuthorizationUrl))
+        if (string.IsNullOrWhiteSpace(options.Auth0ManagementApiClientId))
         {
-            failures.Add($"{nameof(options.OauthImplicitAuthorizationUrl)} secret is not found.");
+            failures.Add($"{nameof(options.Auth0ManagementApiClientId)} secret is not found.");
         }
 
-        if (string.IsNullOrWhiteSpace(options.OauthImplicitTokenUrl))
+        if (string.IsNullOrWhiteSpace(options.Auth0ManagementApiClientSecret))
         {
-            failures.Add($"{nameof(options.OauthImplicitTokenUrl)} secret is not found.");
+            failures.Add($"{nameof(options.Auth0ManagementApiClientSecret)} secret is not found.");
         }
 
-        if (string.IsNullOrWhiteSpace(options.OauthManagementApiUrl))
+        if (string.IsNullOrWhiteSpace(options.KeycloakManagementApiClientId))
         {
-            failures.Add($"{nameof(options.OauthManagementApiUrl)} secret is not found.");
+            failures.Add($"{nameof(options.KeycloakManagementApiClientId)} secret is not found.");
         }
 
-        if (string.IsNullOrWhiteSpace(options.OauthManagementApiClientId))
+        if (string.IsNullOrWhiteSpace(options.KeycloakManagementApiClientSecret))
         {
-            failures.Add($"{nameof(options.OauthManagementApiClientId)} secret is not found.");
-        }
-
-        if (string.IsNullOrWhiteSpace(options.OauthManagementApiClientSecret))
-        {
-            failures.Add($"{nameof(options.OauthManagementApiClientSecret)} secret is not found.");
+            failures.Add($"{nameof(options.KeycloakManagementApiClientSecret)} secret is not found.");
         }
 
         if (failures.Count > 0)

@@ -1,4 +1,5 @@
 using System.IO;
+using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
@@ -12,13 +13,11 @@ using YA.UserWorker.Options;
 namespace YA.UserWorker.Infrastructure.Authentication;
 
 /// <summary>
-/// Сервис управления поставщиком аутентификации Auth0. Ограничение - 1000 запросов в месяц.
-/// https://auth0.com/docs/api/management/v2
-/// при случае переделать на использование https://github.com/auth0/auth0.net
+/// Сервис управления поставщиком аутентификации KeyCloak.
 /// </summary>
-public class Auth0AuthProviderManager : IAuthProviderManager
+public class KeyCloakAuthProviderManager : IAuthProviderManager
 {
-    public Auth0AuthProviderManager(ILogger<Auth0AuthProviderManager> logger,
+    public KeyCloakAuthProviderManager(ILogger<KeyCloakAuthProviderManager> logger,
         IRuntimeContextAccessor runtimeCtx,
         IOptions<AppSecrets> secrets,
         IOptions<OauthOptions> oauthOptions,
@@ -28,30 +27,65 @@ public class Auth0AuthProviderManager : IAuthProviderManager
         _runtimeCtx = runtimeCtx ?? throw new ArgumentNullException(nameof(runtimeCtx));
         _secrets = secrets.Value;
         _oauthOptions = oauthOptions.Value;
-        _auth0ManagementApiUrl = oauthOptions.Value?.Authority + "/api/v2";
+
+        string autorityUrl = oauthOptions.Value?.Authority;
+
+        if (string.IsNullOrWhiteSpace(autorityUrl))
+        {
+            throw new InvalidOperationException("Authority URL is not found.");
+        }
+
+        Uri authorityUri = new Uri(autorityUrl);
+        //string[] arr = new string[authorityUri.Segments.Length + 1];
+
+        IEnumerable<string> arr = new List<string>();
+
+        foreach (string str in authorityUri.Segments)
+        {
+            if (str == "realms/")
+            {
+                arr = arr.Append("admin/");
+            }
+
+            arr = arr.Append(str);
+        }
+
+        string finalUrl = authorityUri.Scheme + "://" + authorityUri.Host + "/";
+
+        foreach (string str in arr)
+        {
+            if (str == "/")
+            {
+                continue;
+            }
+
+            finalUrl += str;
+        }
+
+        finalUrl += "/users";
+
+        _userManagementUrl = finalUrl;
         _httpClientFactory = httpClientFactory ?? throw new ArgumentNullException(nameof(httpClientFactory));
     }
 
-    private readonly ILogger<Auth0AuthProviderManager> _log;
+    private readonly ILogger<KeyCloakAuthProviderManager> _log;
     private readonly IRuntimeContextAccessor _runtimeCtx;
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly AppSecrets _secrets;
     private readonly OauthOptions _oauthOptions;
-    private readonly string _auth0ManagementApiUrl;
+    private readonly string _userManagementUrl;
 
     private async Task<string> GetManagementTokenAsync(CancellationToken cancellationToken)
     {
-        string clientId = _secrets.Auth0ManagementApiClientId;
-        string clientSecret = _secrets.Auth0ManagementApiClientSecret;
-        string audience = _auth0ManagementApiUrl + "/";
+        string clientId = _secrets.KeycloakManagementApiClientId;
+        string clientSecret = _secrets.KeycloakManagementApiClientSecret;
 
         Auth0ApiManagementTokenResponse tokenObject = null;
 
         using (HttpRequestMessage tokenRequest = new(HttpMethod.Post, _oauthOptions.TokenUrl))
         using (HttpClient client = _httpClientFactory.CreateClient())
         {
-            string requestBody = $"grant_type=client_credentials&client_id={clientId}&client_secret={clientSecret}&audience={audience}";
-
+            string requestBody = $"grant_type=client_credentials&client_id={clientId}&client_secret={clientSecret}";
             tokenRequest.Content = new StringContent(requestBody, Encoding.UTF8, "application/x-www-form-urlencoded");
 
             HttpResponseMessage tokenResponse = await client.SendAsync(tokenRequest, cancellationToken);
@@ -78,25 +112,23 @@ public class Auth0AuthProviderManager : IAuthProviderManager
 
     /// <summary>
     /// Установить идентификатор арендатора для пользователя. Добавляет идентификатор арендатора
-    /// в хранилище app_metadata указанного пользователя.
+    /// и тип доступа в артибуты указанного пользователя.
     /// </summary>
     /// <param name="userId">Идентификатор пользователя (sub).</param>
     /// <param name="tenantId">Идентификатор арендатора.</param>
-    /// <param name="accessType">Тип доступа пользователя к арендатору</param>
+    /// <param name="accessType">Тип доступа пользователя к арендатору.</param>
     /// <param name="cancellationToken">Токен отмены.</param>
     public async Task SetTenantAsync(string userId, Guid tenantId, YaMembershipAccessType accessType, CancellationToken cancellationToken)
     {
         string managementToken = await GetManagementTokenAsync(cancellationToken);
 
-        using (HttpRequestMessage updateRequest = new(HttpMethod.Patch, $"{_auth0ManagementApiUrl}/users/{userId}"))
+        using (HttpRequestMessage updateRequest = new(HttpMethod.Put, $"{_userManagementUrl}/{userId}"))
         using (HttpClient client = _httpClientFactory.CreateClient())
         {
             client.DefaultRequestHeaders.Authorization =
                 new AuthenticationHeaderValue("Bearer", managementToken);
-            string correlationId = _runtimeCtx.GetCorrelationId().ToString();
-            client.DefaultRequestHeaders.Add("x-correlation-id", correlationId);
 
-            string requestBody = "{\"app_metadata\": { \"tid\": \"" + tenantId + "\", \"tenantaccesstype\": \"" + accessType + "\" }}";
+            string requestBody = "{\"attributes\": { \"tid\": \"" + tenantId + "\", \"tenantaccesstype\": \"" + accessType + "\" }}";
             updateRequest.Content = new StringContent(requestBody, Encoding.UTF8, "application/json");
 
             HttpResponseMessage updateResponse = await client.SendAsync(updateRequest, cancellationToken);
@@ -121,13 +153,11 @@ public class Auth0AuthProviderManager : IAuthProviderManager
 
         string managementToken = await GetManagementTokenAsync(cancellationToken);
 
-        using (HttpRequestMessage getRequest = new(HttpMethod.Get, $"{_auth0ManagementApiUrl}/users/{userId}"))
+        using (HttpRequestMessage getRequest = new(HttpMethod.Get, $"{_userManagementUrl}/{userId}"))
         using (HttpClient client = _httpClientFactory.CreateClient())
         {
             client.DefaultRequestHeaders.Authorization =
                 new AuthenticationHeaderValue("Bearer", managementToken);
-            string correlationId = _runtimeCtx.GetCorrelationId().ToString();
-            client.DefaultRequestHeaders.Add("x-correlation-id", correlationId);
 
             HttpResponseMessage getUserResponse = await client.SendAsync(getRequest, cancellationToken);
 
@@ -177,13 +207,11 @@ public class Auth0AuthProviderManager : IAuthProviderManager
     {
         string managementToken = await GetManagementTokenAsync(cancellationToken);
 
-        using (HttpRequestMessage updateRequest = new(HttpMethod.Patch, $"{_auth0ManagementApiUrl}/users/{userId}"))
+        using (HttpRequestMessage updateRequest = new(HttpMethod.Patch, $"{_userManagementUrl}/{userId}"))
         using (HttpClient client = _httpClientFactory.CreateClient())
         {
             client.DefaultRequestHeaders.Authorization =
                 new AuthenticationHeaderValue("Bearer", managementToken);
-            string correlationId = _runtimeCtx.GetCorrelationId().ToString();
-            client.DefaultRequestHeaders.Add("x-correlation-id", correlationId);
 
             string requestBody = "{\"app_metadata\": {  }}";
             updateRequest.Content = new StringContent(requestBody, Encoding.UTF8, "application/json");

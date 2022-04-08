@@ -71,7 +71,7 @@ public class DeleteTenantAh : IDeleteTenantAh
             case CommandStatus.NotFound:
                 return new NotFoundResult();
             case CommandStatus.Ok:
-                await _authProviderManager.RemoveTenantAsync(authId + "|" + userId, cancellationToken);
+                await _authProviderManager.RemoveTenantAsync(userId, cancellationToken);
 
                 return new NoContentResult();
         }
