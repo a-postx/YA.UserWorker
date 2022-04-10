@@ -63,12 +63,12 @@ public class KeyCloakAuthenticationHandler : IAuthenticationHandler
     {
         if (!JwtTokenFound(out string token))
         {
-            return AuthenticateResult.NoResult();
+            return AuthenticateResult.Fail("Security token is not found");
         }
 
         JwtSecurityToken validatedToken;
 
-        using (CancellationTokenSource cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(_authOptions.SecurityTokenValidationTimeoutMsec)))
+        using (CancellationTokenSource cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(_authOptions.TokenValidationTimeoutMsec)))
         {
             validatedToken = await ValidateTokenAsync(token, cts.Token);
         }
@@ -80,10 +80,6 @@ public class KeyCloakAuthenticationHandler : IAuthenticationHandler
 
         string clientId = validatedToken.Claims.FirstOrDefault(claim => claim.Type == ClaimNames.azp)?.Value;
         string userId = validatedToken.Claims.FirstOrDefault(claim => claim.Type == ClaimNames.sub)?.Value;
-        string email = validatedToken.Claims.FirstOrDefault(claim => claim.Type == _authOptions.EmailClaimName)?.Value;
-        string emailVerified = validatedToken.Claims.FirstOrDefault(claim => claim.Type == _authOptions.EmailVerifiedClaimName)?.Value;
-        string tenantId = validatedToken.Claims.FirstOrDefault(claim => claim.Type == _authOptions.TenantIdClaimName)?.Value;
-        string tenantAccessType = validatedToken.Claims.FirstOrDefault(claim => claim.Type == _authOptions.TenantAccessTypeClaimName)?.Value;
 
         if (string.IsNullOrEmpty(clientId))
         {
@@ -95,39 +91,36 @@ public class KeyCloakAuthenticationHandler : IAuthenticationHandler
             return AuthenticateResult.Fail($"{ClaimNames.uid} claim cannot be found");
         }
 
-        UserInfo userInfo = new UserInfo(clientId, userId, tenantId, tenantAccessType, email, emailVerified);
-        AuthenticationTicket ticket = CreateAuthenticationTicket(userInfo, validatedToken);
+        Dictionary<string, string> customClaims = new Dictionary<string, string>();
+
+        foreach (string claimName in _authOptions.CustomClaims)
+        {
+            string claimValue = validatedToken.Claims.FirstOrDefault(claim => claim.Type == claimName)?.Value;
+
+            if (!string.IsNullOrEmpty(claimValue))
+            {
+                customClaims.Add(claimName, claimValue);
+            }
+        }
+
+        AuthenticationTicket ticket = CreateAuthenticationTicket(clientId, userId, customClaims, validatedToken);
 
         _log.LogInformation("User {UserId} is authenticated.", userId);
 
         return AuthenticateResult.Success(ticket);
     }
 
-    private AuthenticationTicket CreateAuthenticationTicket(UserInfo userInfo, JwtSecurityToken validatedToken)
+    private AuthenticationTicket CreateAuthenticationTicket(string clientId, string userId,
+        Dictionary<string, string> customClaims, JwtSecurityToken validatedToken)
     {
-        ClaimsIdentity userIdentity = new(_authOptions.AuthType, ClaimNames.name, ClaimNames.role);
+        ClaimsIdentity userIdentity = new ClaimsIdentity(_authOptions.AuthType, ClaimNames.name, ClaimNames.role);
 
-        userIdentity.AddClaim(new Claim(ClaimNames.cid, userInfo.ClientId));
-        userIdentity.AddClaim(new Claim(ClaimNames.uid, userInfo.UserId));
+        userIdentity.AddClaim(new Claim(ClaimNames.cid, clientId));
+        userIdentity.AddClaim(new Claim(ClaimNames.uid, userId));
 
-        if (!string.IsNullOrEmpty(userInfo.TenantId) && Guid.TryParse(userInfo.TenantId, out Guid tid))
+        foreach (KeyValuePair<string, string> claim in customClaims)
         {
-            userIdentity.AddClaim(new Claim(ClaimNames.tid, userInfo.TenantId));
-        }
-
-        if (!string.IsNullOrEmpty(userInfo.TenantAccessType))
-        {
-            userIdentity.AddClaim(new Claim(ClaimNames.tenantaccesstype, userInfo.TenantAccessType));
-        }
-
-        if (!string.IsNullOrEmpty(userInfo.Email))
-        {
-            userIdentity.AddClaim(new Claim(ClaimNames.email, userInfo.Email));
-        }
-
-        if (!string.IsNullOrEmpty(userInfo.EmailVerified))
-        {
-            userIdentity.AddClaim(new Claim(ClaimNames.emailVerified, userInfo.EmailVerified));
+            userIdentity.AddClaim(new Claim(claim.Key, claim.Value));
         }
 
         GenericPrincipal userPricipal = new GenericPrincipal(userIdentity, null);
@@ -136,9 +129,13 @@ public class KeyCloakAuthenticationHandler : IAuthenticationHandler
         AuthenticationProperties props = new AuthenticationProperties
         {
             IssuedUtc = validatedToken.IssuedAt,
-            ExpiresUtc = validatedToken.ValidTo,
-            RedirectUri = _authOptions.LoginRedirectPath
+            ExpiresUtc = validatedToken.ValidTo
         };
+
+        if (!string.IsNullOrEmpty(_authOptions.LoginRedirectPath))
+        {
+            props.RedirectUri = _authOptions.LoginRedirectPath;
+        }
 
         return new AuthenticationTicket(principal, props, _scheme.Name);
     }
@@ -148,8 +145,11 @@ public class KeyCloakAuthenticationHandler : IAuthenticationHandler
     {
         HttpContext context = _httpCtx.HttpContext;
 
-        if (context.Request.Host.Host == _authOptions.ApiGatewayHost
-            && context.Request.Host.Port == _authOptions.ApiGatewayPort)
+        if (!string.IsNullOrEmpty(_authOptions.ApiGatewayHost)
+            && context.Request.Host.Host == _authOptions.ApiGatewayHost
+            && _authOptions.ApiGatewayPort != 0
+            && context.Request.Host.Port == _authOptions.ApiGatewayPort
+            && !string.IsNullOrEmpty(_authOptions.LoginRedirectPath))
         {
             _log.LogInformation("Challenge: redirected.");
             context.Response.Redirect(_authOptions.LoginRedirectPath);

@@ -15,14 +15,6 @@ public class AuthenticationOptions
 
     /// <summary>
     /// <para>
-    /// Таймаут валидации JWT-токена.
-    /// </para>
-    /// <para>Default: 10000</para>
-    /// </summary>
-    public int SecurityTokenValidationTimeoutMsec { get; set; } = 10000;
-
-    /// <summary>
-    /// <para>
     /// Поставщик безопасности, который выписал токен. Используется при проверке ValidIssuer в токене.
     /// </para>
     /// </summary>
@@ -34,6 +26,13 @@ public class AuthenticationOptions
     /// </para>
     /// </summary>
     public string Audience { get; set; }
+
+    /// <summary>
+    /// <para>
+    /// Адрес конфигурации OpenID.
+    /// </para>
+    /// </summary>
+    public string OpenIdConfigurationEndpoint { get; set; }
 
     /// <summary>
     /// <para>
@@ -60,17 +59,10 @@ public class AuthenticationOptions
 
     /// <summary>
     /// <para>
-    /// Имя удостоверения, которое даёт электропочту пользователя.
+    /// Список дополнительных удостоверений, которые пользователь должен получить из токена.
     /// </para>
     /// </summary>
-    public string EmailClaimName { get; set; }
-
-    /// <summary>
-    /// <para>
-    /// Имя удостоверения, которое даёт признак подтверждения электропочты пользователя.
-    /// </para>
-    /// </summary>
-    public string EmailVerifiedClaimName { get; set; }
+    public IEnumerable<string> CustomClaims { get; set; } = new List<string>();
 
     /// <summary>
     /// <para>
@@ -81,24 +73,11 @@ public class AuthenticationOptions
 
     /// <summary>
     /// <para>
-    /// Имя удостоверения, которое даёт идентификатор арендатора.
+    /// Таймаут валидации JWT-токена.
     /// </para>
+    /// <para>Default: 10000</para>
     /// </summary>
-    public string TenantIdClaimName { get; set; }
-
-    /// <summary>
-    /// <para>
-    /// Имя удостоверения, которое даёт тип доступа к арендатору.
-    /// </para>
-    /// </summary>
-    public string TenantAccessTypeClaimName { get; set; }
-
-    /// <summary>
-    /// <para>
-    /// Адрес конфигурации OpenID.
-    /// </para>
-    /// </summary>
-    public string OpenIdConfigurationEndpoint { get; set; }
+    public int TokenValidationTimeoutMsec { get; set; } = 10000;
 
     /// <summary>
     /// <para>

@@ -63,16 +63,6 @@ public class AppSecretsValidator : IValidateOptions<AppSecrets>
             failures.Add($"{nameof(options.DistributedCachePassword)} secret is not found.");
         }
 
-        if (string.IsNullOrWhiteSpace(options.Auth0ManagementApiClientId))
-        {
-            failures.Add($"{nameof(options.Auth0ManagementApiClientId)} secret is not found.");
-        }
-
-        if (string.IsNullOrWhiteSpace(options.Auth0ManagementApiClientSecret))
-        {
-            failures.Add($"{nameof(options.Auth0ManagementApiClientSecret)} secret is not found.");
-        }
-
         if (string.IsNullOrWhiteSpace(options.KeycloakManagementApiClientId))
         {
             failures.Add($"{nameof(options.KeycloakManagementApiClientId)} secret is not found.");

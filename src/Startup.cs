@@ -74,43 +74,39 @@ public class Startup
 
             .AddCustomApiVersioning();
 
-        ////services.AddAuth0Authentication("YaScheme", true, options =>
-        ////{
-        ////    options.Authority = oauthOptions.Authority;
-        ////    options.Audience = oauthOptions.Audience;
-        ////    options.LoginRedirectPath = "/authentication/login";
-        ////    options.ApiGatewayHost = oauthOptions.ApiGatewayHost;
-        ////    options.ApiGatewayPort = oauthOptions.ApiGatewayPort;
-        ////    options.EmailClaimName = "http://myapp.email";
-        ////    options.EmailVerifiedClaimName = "http://myapp.email_verified";
-        ////    options.AppMetadataClaimName = "http://myapp.app_metadata";
-        ////    options.OpenIdConfigurationEndpoint = oauthOptions.OidcIssuer + ".well-known/openid-configuration";
-        ////    options.TokenValidationParameters = new TokenValidationOptions
-        ////    {
-        ////        RequireExpirationTime = true,
-        ////        RequireSignedTokens = true,
-        ////        ValidateIssuer = true,
-        ////        ValidIssuer = oauthOptions.Authority + "/",
-        ////        ValidateAudience = true,
-        ////        ValidAudience = oauthOptions.Audience,
-        ////        ValidateIssuerSigningKey = true,
-        ////        ValidateLifetime = true,
-        ////        ClockSkew = TimeSpan.FromMinutes(2),
-        ////    };
-        ////});
+        //services.AddAuth0Authentication("YaScheme", true, options =>
+        //{
+        //    options.Authority = oauthOptions.Authority;
+        //    options.Audience = oauthOptions.Audience;
+        //    options.LoginRedirectPath = "/authentication/login";
+        //    options.ApiGatewayHost = oauthOptions.ApiGatewayHost;
+        //    options.ApiGatewayPort = oauthOptions.ApiGatewayPort;
+        //    options.AppMetadataClaimName = "http://myapp.app_metadata";
+        //    options.CustomClaims = new List<string> { "http://myapp.email", "http://myapp.email_verified" };
+        //    options.OpenIdConfigurationEndpoint = oauthOptions.OidcIssuer + ".well-known/openid-configuration";
+        //    options.TokenValidationParameters = new TokenValidationOptions
+        //    {
+        //        RequireExpirationTime = true,
+        //        RequireSignedTokens = true,
+        //        ValidateIssuer = true,
+        //        ValidIssuer = oauthOptions.Authority + "/",
+        //        ValidateAudience = true,
+        //        ValidAudience = oauthOptions.Audience,
+        //        ValidateIssuerSigningKey = true,
+        //        ValidateLifetime = true,
+        //        ClockSkew = TimeSpan.FromMinutes(2),
+        //    };
+        //});
 
         services.AddKeyCloakAuthentication("YaScheme", true, options =>
         {
             options.Authority = oauthOptions.Authority;
             options.Audience = oauthOptions.Audience;
+            options.OpenIdConfigurationEndpoint = oauthOptions.OidcIssuer + "/.well-known/openid-configuration";
             options.LoginRedirectPath = "/authentication/login";
             options.ApiGatewayHost = oauthOptions.ApiGatewayHost;
             options.ApiGatewayPort = oauthOptions.ApiGatewayPort;
-            options.EmailClaimName = "email";
-            options.EmailVerifiedClaimName = "email_verified";
-            options.TenantIdClaimName = "tid";
-            options.TenantAccessTypeClaimName = "tenantaccesstype";
-            options.OpenIdConfigurationEndpoint = oauthOptions.OidcIssuer + "/.well-known/openid-configuration";
+            options.CustomClaims = new List<string> { "email", "email_verified", "tid", "tenantaccesstype" };
             options.TokenValidationParameters = new TokenValidationOptions
             {
                 RequireExpirationTime = true,

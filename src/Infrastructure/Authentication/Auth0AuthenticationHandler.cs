@@ -63,21 +63,14 @@ public class Auth0AuthenticationHandler : IAuthenticationHandler
     /// <inheritdoc/>
     public async Task<AuthenticateResult> AuthenticateAsync()
     {
-        string clientId = string.Empty;
-        string userId = string.Empty;
-        string tenantId = string.Empty;
-        string tenantAccessType = string.Empty;
-        string email = string.Empty;
-        string emailVerified = string.Empty;
-
         if (!JwtTokenFound(out string token))
         {
-            return AuthenticateResult.NoResult();
+            return AuthenticateResult.Fail("Security token is not found");
         }
 
         JwtSecurityToken validatedToken;
 
-        using (CancellationTokenSource cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(_authOptions.SecurityTokenValidationTimeoutMsec)))
+        using (CancellationTokenSource cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(_authOptions.TokenValidationTimeoutMsec)))
         {
             validatedToken = await ValidateTokenAsync(token, cts.Token);
         }
@@ -87,10 +80,33 @@ public class Auth0AuthenticationHandler : IAuthenticationHandler
             return AuthenticateResult.Fail("Security token validation has failed");
         }
 
-        clientId = validatedToken.Claims.FirstOrDefault(claim => claim.Type == ClaimNames.azp)?.Value;
-        userId = validatedToken.Claims.FirstOrDefault(claim => claim.Type == ClaimNames.sub)?.Value;
-        email = validatedToken.Claims.FirstOrDefault(claim => claim.Type == _authOptions.EmailClaimName)?.Value;
-        emailVerified = validatedToken.Claims.FirstOrDefault(claim => claim.Type == _authOptions.EmailVerifiedClaimName)?.Value;
+        string clientId = validatedToken.Claims.FirstOrDefault(claim => claim.Type == ClaimNames.azp)?.Value;
+        string userId = validatedToken.Claims.FirstOrDefault(claim => claim.Type == ClaimNames.sub)?.Value;
+
+        if (string.IsNullOrEmpty(clientId))
+        {
+            return AuthenticateResult.Fail($"{ClaimNames.azp} claim cannot be found");
+        }
+
+        if (string.IsNullOrEmpty(userId))
+        {
+            return AuthenticateResult.Fail($"{ClaimNames.uid} claim cannot be found");
+        }
+
+        Dictionary<string, string> customClaims = new Dictionary<string, string>();
+
+        foreach (string claimName in _authOptions.CustomClaims)
+        {
+            string claimValue = validatedToken.Claims.FirstOrDefault(claim => claim.Type == claimName)?.Value;
+
+            if (!string.IsNullOrEmpty(claimValue))
+            {
+                customClaims.Add(claimName, claimValue);
+            }
+        }
+
+        string tenantId = string.Empty;
+        string tenantAccessType = string.Empty;
 
         string appMetadataValue = validatedToken.Claims
             .FirstOrDefault(claim => claim.Type == _authOptions.AppMetadataClaimName)?.Value;
@@ -103,49 +119,34 @@ public class Auth0AuthenticationHandler : IAuthenticationHandler
             tenantAccessType = appMetadata.TenantAccessType;
         }
 
-        if (string.IsNullOrEmpty(clientId))
-        {
-            return AuthenticateResult.Fail($"{ClaimNames.azp} claim cannot be found");
-        }
-
-        if (string.IsNullOrEmpty(userId))
-        {
-            return AuthenticateResult.Fail($"{ClaimNames.uid} claim cannot be found");
-        }
-
-        UserInfo userInfo = new UserInfo(clientId, userId, tenantId, tenantAccessType, email, emailVerified);
-        AuthenticationTicket ticket = CreateAuthenticationTicket(userInfo, validatedToken);
+        AuthenticationTicket ticket = CreateAuthenticationTicket(clientId, userId, customClaims, tenantId, tenantAccessType, validatedToken);
 
         _log.LogInformation("User {UserId} is authenticated.", userId);
 
         return AuthenticateResult.Success(ticket);
     }
 
-    private AuthenticationTicket CreateAuthenticationTicket(UserInfo userInfo, JwtSecurityToken validatedToken)
+    private AuthenticationTicket CreateAuthenticationTicket(string clientId, string userId,
+        Dictionary<string, string> customClaims, string tenantId, string tenantAccessType, JwtSecurityToken validatedToken)
     {
         ClaimsIdentity userIdentity = new(_authOptions.AuthType, ClaimNames.name, ClaimNames.role);
 
-        userIdentity.AddClaim(new Claim(ClaimNames.cid, userInfo.ClientId));
-        userIdentity.AddClaim(new Claim(ClaimNames.uid, userInfo.UserId));
+        userIdentity.AddClaim(new Claim(ClaimNames.cid, clientId));
+        userIdentity.AddClaim(new Claim(ClaimNames.uid, userId));
 
-        if (!string.IsNullOrEmpty(userInfo.TenantId) && Guid.TryParse(userInfo.TenantId, out Guid tid))
+        foreach (KeyValuePair<string, string> claim in customClaims)
         {
-            userIdentity.AddClaim(new Claim(ClaimNames.tid, userInfo.TenantId));
+            userIdentity.AddClaim(new Claim(claim.Key, claim.Value));
         }
 
-        if (!string.IsNullOrEmpty(userInfo.TenantAccessType))
+        if (!string.IsNullOrEmpty(tenantId) && Guid.TryParse(tenantId, out Guid tid))
         {
-            userIdentity.AddClaim(new Claim(ClaimNames.tenantaccesstype, userInfo.TenantAccessType));
+            userIdentity.AddClaim(new Claim(ClaimNames.tid, tenantId));
         }
 
-        if (!string.IsNullOrEmpty(userInfo.Email))
+        if (!string.IsNullOrEmpty(tenantAccessType))
         {
-            userIdentity.AddClaim(new Claim(ClaimNames.email, userInfo.Email));
-        }
-
-        if (!string.IsNullOrEmpty(userInfo.EmailVerified))
-        {
-            userIdentity.AddClaim(new Claim(ClaimNames.emailVerified, userInfo.EmailVerified));
+            userIdentity.AddClaim(new Claim(ClaimNames.tenantaccesstype, tenantAccessType));
         }
 
         GenericPrincipal userPricipal = new GenericPrincipal(userIdentity, null);
@@ -154,9 +155,13 @@ public class Auth0AuthenticationHandler : IAuthenticationHandler
         AuthenticationProperties props = new AuthenticationProperties
         {
             IssuedUtc = validatedToken.IssuedAt,
-            ExpiresUtc = validatedToken.ValidTo,
-            RedirectUri = _authOptions.LoginRedirectPath
+            ExpiresUtc = validatedToken.ValidTo
         };
+
+        if (!string.IsNullOrEmpty(_authOptions.LoginRedirectPath))
+        {
+            props.RedirectUri = _authOptions.LoginRedirectPath;
+        }
 
         return new AuthenticationTicket(principal, props, _scheme.Name);
     }
@@ -166,8 +171,11 @@ public class Auth0AuthenticationHandler : IAuthenticationHandler
     {
         HttpContext context = _httpCtx.HttpContext;
 
-        if (context.Request.Host.Host == _authOptions.ApiGatewayHost
-            && context.Request.Host.Port == _authOptions.ApiGatewayPort)
+        if (!string.IsNullOrEmpty(_authOptions.ApiGatewayHost)
+            && context.Request.Host.Host == _authOptions.ApiGatewayHost
+            && _authOptions.ApiGatewayPort != 0
+            && context.Request.Host.Port == _authOptions.ApiGatewayPort
+            && !string.IsNullOrEmpty(_authOptions.LoginRedirectPath))
         {
             _log.LogInformation("Challenge: redirected.");
             context.Response.Redirect(_authOptions.LoginRedirectPath);
