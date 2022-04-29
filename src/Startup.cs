@@ -22,6 +22,9 @@ using Delobytes.AspNetCore.Idempotency;
 using Delobytes.AspNetCore;
 using YA.UserWorker.Extensions;
 using YA.UserWorker.Infrastructure.Authentication;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.IdentityModel.Protocols.OpenIdConnect;
+using Microsoft.IdentityModel.Protocols;
 //using Elastic.Apm.NetCoreAll;
 
 namespace YA.UserWorker;
