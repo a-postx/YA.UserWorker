@@ -63,7 +63,7 @@ public class KeyCloakAuthenticationHandler : IAuthenticationHandler
     {
         if (!JwtTokenFound(out string token))
         {
-            return AuthenticateResult.Fail("Security token is not found");
+            return AuthenticateResult.NoResult();
         }
 
         JwtSecurityToken validatedToken;
