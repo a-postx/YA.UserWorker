@@ -1,0 +1,60 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: userworker
+  labels:
+    service: userworker
+spec:
+  type: LoadBalancer
+  ports:
+    - name: http
+      protocol: TCP
+      port: 80
+      targetPort: 8080
+  selector:
+    service: userworker
+    layer: security
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: userworker
+  labels:
+    service: userworker
+    layer: security
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      service: userworker
+      layer: security
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        service: userworker
+        layer: security
+    spec:
+      containers:
+        - image: cr.yandex/crp5g4efguolv0dodoa6/ya.userworker:1.0
+          imagePullPolicy: IfNotPresent
+          args: []
+          name: userworker
+          resources:
+            limits:
+              memory: 512Mi
+          ports:
+            - containerPort: 8080
+          env:
+            - name: ASPNETCORE_ENVIRONMENT
+              value: Production
+            - name: YC_PRIVATE_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: venando-secrets
+                  key: yc_private_key
+          readinessProbe:
+            httpGet:
+              path: /status
+              port: 8080
