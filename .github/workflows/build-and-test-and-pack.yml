@@ -36,3 +36,15 @@ jobs:
       run: dotnet build --configuration Release --no-restore
     - name: 'Test'
       run: dotnet test --no-restore --verbosity normal
+    - name: 'Login to YC container registry'
+      uses: yc-actions/yc-cr-login@v1
+      with:
+        yc-sa-json-credentials: ${{ secrets.YC_JSON_CREDENTIALS }}
+    - name: 'Build, tag, and push image to YC'
+      env:
+        CR_REGISTRY: crp5g4efguolv0dodoa6
+        CR_REPO: ya.userworker
+        IMAGE_TAG: ${{ github.sha }}
+      run: |
+      docker build -t cr.yandex/$CR_REGISTRY/$CR_REPO:$IMAGE_TAG .
+      docker push cr.yandex/$CR_REGISTRY/$CR_REPO:$IMAGE_TAG
