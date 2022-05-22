@@ -37,7 +37,7 @@ jobs:
     - name: 'Test'
       run: dotnet test --no-restore --verbosity normal
     - name: 'Check artifact'
-      run: ls /home/runner/work -f
+      run: ls /home/runner/work/YA.UserWorker -f
     - name: "Publish Artefacts"
       uses: actions/upload-artifact@v3.0.0
       with:
