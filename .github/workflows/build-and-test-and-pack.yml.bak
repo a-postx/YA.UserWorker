@@ -22,7 +22,7 @@ jobs:
     runs-on: ${{matrix.os}}
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest]
+        os: [ubuntu-latest]
     steps:
     - name: 'Checkout'
       uses: actions/checkout@v2
@@ -44,7 +44,7 @@ jobs:
       env:
         CR_REGISTRY: crp5g4efguolv0dodoa6
         CR_REPO: ya.userworker
-        IMAGE_TAG: ${{ github.sha }}
+        IMAGE_TAG: build.${{github.run_number}}
       run: |
         docker build -t cr.yandex/$CR_REGISTRY/$CR_REPO:$IMAGE_TAG .
         docker push cr.yandex/$CR_REGISTRY/$CR_REPO:$IMAGE_TAG
