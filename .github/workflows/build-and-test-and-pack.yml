@@ -40,11 +40,11 @@ jobs:
       uses: yc-actions/yc-cr-login@v1
       with:
         yc-sa-json-credentials: ${{ secrets.YC_JSON_CREDENTIALS }}
-    - name: 'Build, tag, and push image to YC'
+    - name: 'Build, tag and push image to YC'
       env:
         CR_REGISTRY: crp5g4efguolv0dodoa6
         CR_REPO: ya.userworker
-        IMAGE_TAG: env.MINVERBUILDMETADATA
+        IMAGE_TAG: ${{ env.MINVERBUILDMETADATA }}
       run: |
         docker build -t cr.yandex/$CR_REGISTRY/$CR_REPO:$IMAGE_TAG .
         docker push cr.yandex/$CR_REGISTRY/$CR_REPO:$IMAGE_TAG
