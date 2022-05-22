@@ -36,8 +36,6 @@ jobs:
       run: dotnet build --configuration Release --no-restore
     - name: 'Test'
       run: dotnet test --no-restore --verbosity normal
-    - name: 'Check artifact'
-      run: ls -f
     - name: "Publish Artefacts"
       uses: actions/upload-artifact@v3.0.0
       with:
