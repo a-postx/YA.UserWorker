@@ -36,11 +36,20 @@ jobs:
       run: dotnet build --configuration Release --no-restore
     - name: 'Test'
       run: dotnet test --no-restore --verbosity normal
+    - name: "Publish Artefacts"
+      uses: actions/upload-artifact@v3.0.0
+      with:
+        name: ${{matrix.os}}
+        path: "./Artefacts"
   push-docker-container:
     name: "Push docker container"
     needs: [build]
     runs-on: ubuntu-latest
     steps:
+    - name: "Download Artefact"
+      uses: actions/download-artifact@v3.0.0
+      with:
+        name: "ubuntu-latest"
     - name: 'Login to YC container registry'
       uses: yc-actions/yc-cr-login@v1
       with:
