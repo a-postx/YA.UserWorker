@@ -1,4 +1,4 @@
-name: Build-and-test
+name: Build-and-test-and-pack
 
 on:
   push:
@@ -30,6 +30,12 @@ jobs:
       uses: actions/setup-dotnet@v2.0.0
       with:
         dotnet-version: '6.0.x'
+    - uses: actions/cache@v3
+      with:
+        path: ~/.nuget/packages
+        key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.lock.json') }}
+        restore-keys: |
+          ${{ runner.os }}-nuget
     - name: 'Install dependencies'
       run: dotnet restore
     - name: 'Build'
@@ -42,6 +48,7 @@ jobs:
         name: ${{matrix.os}}
         path: "."
         if-no-files-found: error
+        retention-days: 1
   push-docker-container:
     name: "Push docker container"
     needs: [build]
