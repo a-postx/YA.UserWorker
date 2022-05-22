@@ -37,12 +37,12 @@ jobs:
     - name: 'Test'
       run: dotnet test --no-restore --verbosity normal
     - name: 'Check artifact'
-      run: ls /home/runner/work/YA.UserWorker/YA.UserWorker -f
+      run: ls -f
     - name: "Publish Artefacts"
       uses: actions/upload-artifact@v3.0.0
       with:
         name: ${{matrix.os}}
-        path: "./Artefacts"
+        path: "."
         if-no-files-found: error
   push-docker-container:
     name: "Push docker container"
