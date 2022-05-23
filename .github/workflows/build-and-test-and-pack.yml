@@ -62,11 +62,14 @@ jobs:
       uses: yc-actions/yc-cr-login@v1
       with:
         yc-sa-json-credentials: ${{ secrets.YC_JSON_CREDENTIALS }}
+    - name: 'Get and set app version'
+      run: |
+         echo "myversion=find . -type f -name '*.csproj' -exec grep -H "<Version" {} \; | cut -f2 -d">"|cut -f1 -d"<"" >> $GITHUB_ENV
     - name: 'Build, tag and push image to YC'
       env:
         CR_REGISTRY: crp5g4efguolv0dodoa6
         CR_REPO: ya.userworker
-        IMAGE_TAG: ${{ env.MINVERBUILDMETADATA }}
+        IMAGE_TAG: ${{ env.myversion }}-${{ env.MINVERBUILDMETADATA }}
       run: |
         docker build -t cr.yandex/$CR_REGISTRY/$CR_REPO:$IMAGE_TAG .
         docker push cr.yandex/$CR_REGISTRY/$CR_REPO:$IMAGE_TAG
