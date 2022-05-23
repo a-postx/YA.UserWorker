@@ -48,7 +48,7 @@ jobs:
         name: ${{matrix.os}}
         path: "."
         if-no-files-found: error
-        retention-days: 1
+        retention-days: 3
   push-docker-container:
     name: "Push docker container"
     needs: [build]
