@@ -54,22 +54,24 @@ jobs:
     needs: [build]
     runs-on: ubuntu-latest
     steps:
-    - name: "Download Artefact"
+    - name: 'Download Artefact'
       uses: actions/download-artifact@v3.0.0
       with:
         name: "ubuntu-latest"
+    - name: 'List files'
+      run: ls -f
     - name: 'Login to YC container registry'
       uses: yc-actions/yc-cr-login@v1
       with:
         yc-sa-json-credentials: ${{ secrets.YC_JSON_CREDENTIALS }}
     - name: 'Get and set app version'
       run: |
-         echo "myversion=find . -type f -name '*.csproj' -exec grep -H "<Version" {} \; | cut -f2 -d">"|cut -f1 -d"<"" >> $GITHUB_ENV
+         echo "MYVERSION=find . -type f -name '*.csproj' -exec grep -H "<Version" {} \; | cut -f2 -d">"|cut -f1 -d"<"" >> $GITHUB_ENV
     - name: 'Build, tag and push image to YC'
       env:
         CR_REGISTRY: crp5g4efguolv0dodoa6
         CR_REPO: ya.userworker
-        IMAGE_TAG: ${{ env.myversion }}-${{ env.MINVERBUILDMETADATA }}
+        IMAGE_TAG: ${{ env.MYVERSION }}-${{ env.MINVERBUILDMETADATA }}
       run: |
         docker build -t cr.yandex/$CR_REGISTRY/$CR_REPO:$IMAGE_TAG .
         docker push cr.yandex/$CR_REGISTRY/$CR_REPO:$IMAGE_TAG
