@@ -58,7 +58,7 @@ jobs:
       run: echo ${{ steps.tagName.outputs.tag }}
   push-docker-container:
     name: "Push docker container"
-    if: success() && contains(steps.tagName.outputs.tag, 'v')
+    if: success()
     needs: [build]
     runs-on: ubuntu-latest
     steps:
