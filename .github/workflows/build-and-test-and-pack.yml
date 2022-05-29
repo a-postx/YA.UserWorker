@@ -58,7 +58,7 @@ jobs:
       run: echo 'v' ${{ steps.tagName.outputs.tag }}
   push-docker-container:
     name: "Push docker container"
-    if: success()
+    if: success() && ${{ steps.tagName.outputs.tag != null }}
     needs: [build]
     runs-on: ubuntu-latest
     steps:
@@ -68,7 +68,7 @@ jobs:
         name: "ubuntu-latest"
     - name: 'List files'
       run: ls -f
-    - name: 'Login to YC container registry'
+    - name: 'Login to YC container registry '
       uses: yc-actions/yc-cr-login@v1
       with:
         yc-sa-json-credentials: ${{ secrets.YC_JSON_CREDENTIALS }}
