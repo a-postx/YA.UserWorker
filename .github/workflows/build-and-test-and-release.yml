@@ -53,7 +53,7 @@ jobs:
     outputs:
       tagName: ${{ steps.tagName.outputs.tag }}
     steps:
-    - name: 'Check Tag'
+    - name: 'Check Tag '
       uses: olegtarasov/get-tag@v2.1
       id: tagName
       with:
