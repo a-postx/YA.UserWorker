@@ -53,7 +53,7 @@ jobs:
     outputs:
       tagName: ${{ steps.tagName.outputs.tag }}
     steps:
-    - name: 'Get tag'
+    - name: 'Get tag '
       id: tag
       uses: dawidd6/action-get-tag@v1
       with:
