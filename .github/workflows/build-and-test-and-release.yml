@@ -67,7 +67,7 @@ jobs:
   release-docker-container:
     name: "Push docker container"
     needs: [build, check-tag]
-    if: success() && needs.check-tag.outputs.tagName
+    if: success()
     runs-on: ubuntu-latest
     steps:
     - name: 'Download Artefact'
@@ -79,8 +79,8 @@ jobs:
     - name: 'Check Tag'
       id: tag
       uses: dawidd6/action-get-tag@v1
-        with:
-          strip_v: true
+      with:
+        strip_v: true
     - name: 'Login to YC container registry'
       uses: yc-actions/yc-cr-login@v1
       with:
