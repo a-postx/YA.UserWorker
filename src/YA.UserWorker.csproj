@@ -9,10 +9,12 @@
     <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
     <IsTransformWebConfigDisabled>true</IsTransformWebConfigDisabled>
     <ImplicitUsings>disable</ImplicitUsings>
+    <ServerGarbageCollection>true</ServerGarbageCollection>
+    <ConcurrentGarbageCollection>true</ConcurrentGarbageCollection>
   </PropertyGroup>
 
   <PropertyGroup Label="Package">
-    <Version>0.2.6.1</Version>
+    <Version>0.2.7.0</Version>
     <Authors>Alexey Yakubin</Authors>
     <Company>Delobytes</Company>
     <Product>YA.UserWorker</Product>
