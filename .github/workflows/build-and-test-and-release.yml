@@ -2,7 +2,6 @@ name: Build-and-test-and-release
 
 on:
   push:
-    branches: [ master ]
     tags:
       - v*.*
 
@@ -54,17 +53,14 @@ jobs:
     outputs:
       tagName: ${{ steps.tagName.outputs.tag }}
     steps:
-    - name: 'GetRef'
-      run: |
-        echo "Ref: ${{ github.ref }}"
     - name: 'Check Tag'
-      id: tag
-      uses: dawidd6/action-get-tag@v1
+      uses: olegtarasov/get-tag@v2.1
+      id: tagName
       with:
-        strip_v: true
+        tagRegex: "(v.+)"
     - name: 'Output Tag'
       run: |
-        echo "Tag: ${{ steps.tag.outputs.tag }}"
+        echo "Tag: ${{ needs.check-tag.outputs.tagName }}"
     - name: 'Fail if no tag'
       if: ${{ needs.check-tag.outputs.tagName == '' }}
       run: exit 1
