@@ -1,4 +1,4 @@
-name: Build-and-test-and-pack
+name: Build-and-test-and-release
 
 on:
   push:
@@ -61,14 +61,14 @@ jobs:
         tagRegex: "(v.+)"
     - name: 'Output Tag'
       run: |
-        echo "Tag: ${{ needs.check-tag.outputs.tagName }}"
+        echo "Tag: ${{ steps.tagName.outputs.tag }}"
     - name: 'Fail if no tag'
       if: ${{ needs.check-tag.outputs.tagName == '' }}
       run: exit 1
-  push-docker-container:
+  release-docker-container:
     name: "Push docker container"
-    if: success()
     needs: [build, check-tag]
+    if: success() && needs.check-tag.outputs.tagName
     runs-on: ubuntu-latest
     steps:
     - name: 'Download Artefact'
