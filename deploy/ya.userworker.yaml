@@ -37,11 +37,13 @@ spec:
         layer: security
     spec:
       containers:
-        - image: cr.yandex/crp5g4efguolv0dodoa6/ya.userworker:1.0
+        - image: cr.yandex/crp5g4efguolv0dodoa6/ya.userworker:cr.yandex/crp5g4efguolv0dodoa6/ya.userworker:0.2.7.0-build.15
           imagePullPolicy: IfNotPresent
           args: []
           name: userworker
           resources:
+            requests:
+              memory: 128Mi
             limits:
               memory: 512Mi
           ports:
