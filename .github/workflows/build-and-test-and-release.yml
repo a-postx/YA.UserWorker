@@ -53,16 +53,16 @@ jobs:
     outputs:
       tagName: ${{ steps.tagName.outputs.tag }}
     steps:
-    - name: 'Check Tag '
-      uses: olegtarasov/get-tag@v2.1
-      id: tagName
-      with:
-        tagRegex: "(v.+)"
+    - name: 'Check Tag'
+      id: tag
+      uses: dawidd6/action-get-tag@v1
+        with:
+          strip_v: true
     - name: 'Output Tag'
       run: |
-        echo "Tag: ${{ needs.check-tag.outputs.tagName }}"
+        echo "Tag: ${{ steps.tag.outputs.tag }}"
     - name: 'Fail if no tag'
-      if: ${{ needs.check-tag.outputs.tagName == '' }}
+      if: ${{ steps.tag.outputs.tag == '' }}
       run: exit 1
   release-docker-container:
     name: "Push docker container"
@@ -76,11 +76,11 @@ jobs:
         name: "ubuntu-latest"
     - name: 'List files'
       run: ls -f
-    - name: 'Get tag'
-      uses: olegtarasov/get-tag@v2.1
-      id: tagName
-      with:
-        tagRegex: "(v.+)"
+    - name: 'Check Tag'
+      id: tag
+      uses: dawidd6/action-get-tag@v1
+        with:
+          strip_v: true
     - name: 'Login to YC container registry'
       uses: yc-actions/yc-cr-login@v1
       with:
@@ -89,7 +89,7 @@ jobs:
       env:
         CR_REGISTRY: crp5g4efguolv0dodoa6
         CR_REPO: ya.userworker
-        IMAGE_TAG: ${{ steps.tagName.outputs.tag }}-${{ env.MINVERBUILDMETADATA }}
+        IMAGE_TAG: ${{ steps.tag.outputs.tag }}-${{ env.MINVERBUILDMETADATA }}
       run: |
         docker build -t cr.yandex/$CR_REGISTRY/$CR_REPO:$IMAGE_TAG .
         docker push cr.yandex/$CR_REGISTRY/$CR_REPO:$IMAGE_TAG
