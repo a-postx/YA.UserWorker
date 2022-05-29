@@ -82,7 +82,7 @@ jobs:
       id: tagName
       with:
         tagRegex: "(v.+)"
-    - name: 'Login to YC container registry '
+    - name: 'Login to YC container registry'
       uses: yc-actions/yc-cr-login@v1
       with:
         yc-sa-json-credentials: ${{ secrets.YC_JSON_CREDENTIALS }}
