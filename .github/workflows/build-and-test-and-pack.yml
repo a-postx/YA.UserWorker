@@ -49,17 +49,23 @@ jobs:
         path: "."
         if-no-files-found: error
         retention-days: 3
-    - name: 'Get version tag'
-      id: tagName
+  check-tag:
+    runs-on: ubuntu-latest
+    outputs:
+      tagName: ${{ steps.tagName.outputs.tag }}
+    steps:
+    - name: 'Check Tag'
       uses: olegtarasov/get-tag@v2.1
+      id: tagName
       with:
-        tagRegex: "v(.*)"
-    - name: 'Show version'
-      run: echo 'v' ${{ steps.tagName.outputs.tag }}
+        tagRegex: "(v.+)"
+    - name: Output Tag
+      run: |
+        echo "Tag: ${{ needs.check-tag.outputs.tagName }}"
   push-docker-container:
     name: "Push docker container"
     if: success()
-    needs: [build]
+    needs: [build, check-tag]
     runs-on: ubuntu-latest
     steps:
     - name: 'Download Artefact'
@@ -68,6 +74,11 @@ jobs:
         name: "ubuntu-latest"
     - name: 'List files'
       run: ls -f
+    - name: 'Check Tag'
+      uses: olegtarasov/get-tag@v2.1
+      id: tagName
+      with:
+        tagRegex: "(v.+)"
     - name: 'Login to YC container registry '
       uses: yc-actions/yc-cr-login@v1
       with:
