@@ -55,7 +55,7 @@ jobs:
       with:
         tagRegex: "v(.*)"
     - name: 'Show version'
-      run: echo ${{ steps.tagName.outputs.tag }}
+      run: echo 'v' ${{ steps.tagName.outputs.tag }}
   push-docker-container:
     name: "Push docker container"
     if: success()
