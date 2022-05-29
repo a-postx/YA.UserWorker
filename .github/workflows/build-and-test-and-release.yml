@@ -54,6 +54,9 @@ jobs:
     outputs:
       tagName: ${{ steps.tagName.outputs.tag }}
     steps:
+    - name: 'GetRef'
+      run: |
+        echo "Ref: ${{ github.ref }}"
     - name: 'Check Tag'
       id: tag
       uses: dawidd6/action-get-tag@v1
