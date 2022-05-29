@@ -3,8 +3,8 @@ name: Build-and-test-and-release
 on:
   push:
     branches: [ master ]
-  pull_request:
-    branches: [ master ]
+    tags:
+      - v*.*
 
 env:
   # Disable the .NET logo in the console output.
