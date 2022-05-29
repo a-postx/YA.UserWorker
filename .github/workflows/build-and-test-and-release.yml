@@ -56,8 +56,8 @@ jobs:
     - name: 'Check Tag'
       id: tag
       uses: dawidd6/action-get-tag@v1
-        with:
-          strip_v: true
+      with:
+        strip_v: true
     - name: 'Output Tag'
       run: |
         echo "Tag: ${{ steps.tag.outputs.tag }}"
