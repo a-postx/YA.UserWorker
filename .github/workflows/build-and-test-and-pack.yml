@@ -59,9 +59,12 @@ jobs:
       id: tagName
       with:
         tagRegex: "(v.+)"
-    - name: Output Tag
+    - name: 'Output Tag'
       run: |
         echo "Tag: ${{ needs.check-tag.outputs.tagName }}"
+    - name: 'Fail if no tag'
+      if: ${{ needs.check-tag.outputs.tagName == '' }}
+      run: exit 1
   push-docker-container:
     name: "Push docker container"
     if: success()
@@ -74,7 +77,7 @@ jobs:
         name: "ubuntu-latest"
     - name: 'List files'
       run: ls -f
-    - name: 'Check Tag'
+    - name: 'Get tag'
       uses: olegtarasov/get-tag@v2.1
       id: tagName
       with:
@@ -87,7 +90,7 @@ jobs:
       env:
         CR_REGISTRY: crp5g4efguolv0dodoa6
         CR_REPO: ya.userworker
-        IMAGE_TAG: $GIT_TAG_NAME-${{ env.MINVERBUILDMETADATA }}
+        IMAGE_TAG: ${{ steps.tagName.outputs.tag }}-${{ env.MINVERBUILDMETADATA }}
       run: |
         docker build -t cr.yandex/$CR_REGISTRY/$CR_REPO:$IMAGE_TAG .
         docker push cr.yandex/$CR_REGISTRY/$CR_REPO:$IMAGE_TAG
