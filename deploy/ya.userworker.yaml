@@ -37,7 +37,7 @@ spec:
         layer: security
     spec:
       containers:
-        - image: cr.yandex/crp5g4efguolv0dodoa6/ya.userworker:0.2.7.0-build.15
+        - image: cr.yandex/crp5g4efguolv0dodoa6/ya.userworker:0.2.7.1-build.16
           imagePullPolicy: IfNotPresent
           args: []
           name: userworker
