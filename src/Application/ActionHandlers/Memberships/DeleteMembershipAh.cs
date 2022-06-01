@@ -65,12 +65,11 @@ public class DeleteMembershipAh : IDeleteMembershipAh
             case CommandStatus.BadRequest:
                 return new BadRequestResult();
             case CommandStatus.Ok:
-                break;                    
+                break;
         }
 
         string userId = getResult.Data.User.ExternalId;
 
-        //check and delete from auth0
         Guid currentTenantForTargetUser = await _authManager.GetUserTenantAsync(userId, cancellationToken);
 
         if (currentTenantForTargetUser == targetTenantId)

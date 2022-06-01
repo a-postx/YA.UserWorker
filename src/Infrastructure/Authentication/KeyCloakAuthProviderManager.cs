@@ -1,5 +1,4 @@
 using System.IO;
-using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
@@ -170,14 +169,19 @@ public class KeyCloakAuthProviderManager : IAuthProviderManager
             {
                 using (Stream responseStream = await getUserResponse.Content.ReadAsStreamAsync(cancellationToken))
                 {
-                    Auth0User user = await JsonSerializer
-                        .DeserializeAsync<Auth0User>(responseStream, new JsonSerializerOptions { PropertyNameCaseInsensitive = true }, cancellationToken);
+                    KeyCloakUser user = await JsonSerializer
+                        .DeserializeAsync<KeyCloakUser>(responseStream, new JsonSerializerOptions { PropertyNameCaseInsensitive = true }, cancellationToken);
 
                     if (user != null)
                     {
-                        if (Guid.TryParse(user.app_metadata.Tid, out Guid tid))
+                        string tenantId = user.Attributes.Tid?.FirstOrDefault();
+
+                        if (tenantId != null)
                         {
-                            result = tid;
+                            if (Guid.TryParse(tenantId, out Guid tid))
+                            {
+                                result = tid;
+                            }
                         }
                     }
                     else
@@ -207,13 +211,13 @@ public class KeyCloakAuthProviderManager : IAuthProviderManager
     {
         string managementToken = await GetManagementTokenAsync(cancellationToken);
 
-        using (HttpRequestMessage updateRequest = new(HttpMethod.Patch, $"{_userManagementUrl}/{userId}"))
+        using (HttpRequestMessage updateRequest = new(HttpMethod.Put, $"{_userManagementUrl}/{userId}"))
         using (HttpClient client = _httpClientFactory.CreateClient())
         {
             client.DefaultRequestHeaders.Authorization =
                 new AuthenticationHeaderValue("Bearer", managementToken);
 
-            string requestBody = "{\"app_metadata\": {  }}";
+            string requestBody = "{\"attributes\": {  }}";
             updateRequest.Content = new StringContent(requestBody, Encoding.UTF8, "application/json");
 
             HttpResponseMessage updateResponse = await client.SendAsync(updateRequest, cancellationToken);

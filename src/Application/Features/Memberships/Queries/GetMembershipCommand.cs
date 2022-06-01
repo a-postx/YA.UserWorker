@@ -28,21 +28,21 @@ public class GetMembershipCommand : IRequest<ICommandResult<Membership>>
 
         public async Task<ICommandResult<Membership>> Handle(GetMembershipCommand command, CancellationToken cancellationToken)
         {
-            Guid inviteId = command.Id;
+            Guid membershipId = command.Id; 
 
-            if (inviteId == Guid.Empty)
+            if (membershipId == Guid.Empty)
             {
                 return new CommandResult<Membership>(CommandStatus.BadRequest, null);
             }
 
-            Membership invite = await _dbContext.GetMembershipWithUserAsync(e => e.MembershipID == inviteId, cancellationToken);
+            Membership membership = await _dbContext.GetMembershipWithUserAsync(e => e.MembershipID == membershipId, cancellationToken);
 
-            if (invite == null)
+            if (membership == null)
             {
                 return new CommandResult<Membership>(CommandStatus.NotFound, null);
             }
 
-            return new CommandResult<Membership>(CommandStatus.Ok, invite);
+            return new CommandResult<Membership>(CommandStatus.Ok, membership);
         }
     }
 }
