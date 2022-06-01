@@ -35,8 +35,6 @@ public class KeyCloakAuthProviderManager : IAuthProviderManager
         }
 
         Uri authorityUri = new Uri(autorityUrl);
-        //string[] arr = new string[authorityUri.Segments.Length + 1];
-
         IEnumerable<string> arr = new List<string>();
 
         foreach (string str in authorityUri.Segments)
@@ -79,7 +77,7 @@ public class KeyCloakAuthProviderManager : IAuthProviderManager
         string clientId = _secrets.KeycloakManagementApiClientId;
         string clientSecret = _secrets.KeycloakManagementApiClientSecret;
 
-        Auth0ApiManagementTokenResponse tokenObject = null;
+        KeyCloakApiManagementTokenResponse tokenObject = null;
 
         using (HttpRequestMessage tokenRequest = new(HttpMethod.Post, _oauthOptions.TokenUrl))
         using (HttpClient client = _httpClientFactory.CreateClient())
@@ -96,7 +94,7 @@ public class KeyCloakAuthProviderManager : IAuthProviderManager
 
             string tokenContent = await tokenResponse.Content.ReadAsStringAsync(cancellationToken);
             tokenObject = JsonSerializer
-                .Deserialize<Auth0ApiManagementTokenResponse>(tokenContent, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                .Deserialize<KeyCloakApiManagementTokenResponse>(tokenContent, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
         }
 
         if (!string.IsNullOrEmpty(tokenObject.Access_token))
@@ -176,12 +174,9 @@ public class KeyCloakAuthProviderManager : IAuthProviderManager
                     {
                         string tenantId = user.Attributes.Tid?.FirstOrDefault();
 
-                        if (tenantId != null)
+                        if (Guid.TryParse(tenantId, out Guid tid))
                         {
-                            if (Guid.TryParse(tenantId, out Guid tid))
-                            {
-                                result = tid;
-                            }
+                            result = tid;
                         }
                     }
                     else
