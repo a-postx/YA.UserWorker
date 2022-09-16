@@ -7,8 +7,8 @@ using System.Text.Json;
 using AutoMapper;
 using Delobytes.AspNetCore.Application;
 using MediatR;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.Net.Http.Headers;
 using YA.Common.Constants;
@@ -30,7 +30,7 @@ namespace YA.UserWorker.Application.ActionHandlers.Users;
 public class RegisterNewUserAh : IRegisterNewUserAh
 {
     public RegisterNewUserAh(ILogger<RegisterNewUserAh> logger,
-        IActionContextAccessor actionCtx,
+        IHttpContextAccessor httpCtx,
         IRuntimeContextAccessor runtimeContext,
         IAuthProviderManager authProviderManager,
         IMediator mediator,
@@ -38,7 +38,7 @@ public class RegisterNewUserAh : IRegisterNewUserAh
         IHttpClientFactory httpClientFactory)
     {
         _log = logger ?? throw new ArgumentNullException(nameof(logger));
-        _actionCtx = actionCtx ?? throw new ArgumentNullException(nameof(actionCtx));
+        _httpCtx = httpCtx ?? throw new ArgumentNullException(nameof(httpCtx));
         _runtimeCtx = runtimeContext ?? throw new ArgumentNullException(nameof(runtimeContext));
         _authProviderManager = authProviderManager ?? throw new ArgumentNullException(nameof(authProviderManager));
         _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
@@ -47,7 +47,7 @@ public class RegisterNewUserAh : IRegisterNewUserAh
     }
 
     private readonly ILogger<RegisterNewUserAh> _log;
-    private readonly IActionContextAccessor _actionCtx;
+    private readonly IHttpContextAccessor _httpCtx;
     private readonly IRuntimeContextAccessor _runtimeCtx;
     private readonly IAuthProviderManager _authProviderManager;
     private readonly IMediator _mediator;
@@ -104,7 +104,7 @@ public class RegisterNewUserAh : IRegisterNewUserAh
             }
         }
 
-        ClaimsPrincipal userCtx = _actionCtx.ActionContext.HttpContext.User;
+        ClaimsPrincipal userCtx = _httpCtx.HttpContext.User;
         string userEmail = userCtx.Claims.FirstOrDefault(claim => claim.Type == YaClaimNames.email)?.Value;
 
         ICommandResult<User> userResult = await _mediator
@@ -221,7 +221,7 @@ public class RegisterNewUserAh : IRegisterNewUserAh
         await _authProviderManager
             .SetTenantAsync(userId, tenantId, accessType, cancellationToken);
 
-        _actionCtx.ActionContext.HttpContext
+        _httpCtx.HttpContext
             .Response.Headers.Add(HeaderNames.LastModified, userResult.Data.LastModifiedDateTime.ToString("R", CultureInfo.InvariantCulture));
 
         UserVm userVm = _mapper.Map<UserVm>(userResult.Data);

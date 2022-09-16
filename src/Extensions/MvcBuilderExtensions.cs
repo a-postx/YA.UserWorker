@@ -205,19 +205,11 @@ internal static class MvcBuilderExtensions
     }
 
     /// <summary>
-    /// Добавляет кастомизированные настройки валидации моделей и поведения АПИ.
+    /// Добавляет кастомизированные настройки поведения АПИ.
     /// </summary>
-    public static IMvcBuilder AddCustomModelValidation(this IMvcBuilder builder)
+    public static IMvcBuilder AddCustomApiBehavior(this IMvcBuilder builder)
     {
         return builder
-            .AddFluentValidation(fv =>
-            {
-                fv.RegisterValidatorsFromAssemblyContaining<Startup>();
-                fv.DisableDataAnnotationsValidation = true;
-                fv.ImplicitlyValidateChildProperties = true;
-                fv.LocalizationEnabled = true;
-                fv.ValidatorOptions.LanguageManager.Culture = new CultureInfo("ru");
-            })
             .ConfigureApiBehaviorOptions(options =>
             {
                 options.SuppressMapClientErrors = true;

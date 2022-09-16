@@ -1,10 +1,13 @@
 using System.IO.Compression;
 using System.Reflection;
 using CorrelationId.DependencyInjection;
+using FluentValidation;
+using FluentValidation.AspNetCore;
 using GreenPipes;
 using MassTransit;
 using MassTransit.Audit;
 using MassTransit.PrometheusIntegration;
+using MicroElements.Swashbuckle.FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Versioning;
@@ -268,6 +271,74 @@ internal static class CustomServiceCollectionExtensions
         services
             .AddTransient<IConfigureOptions<SwaggerGenOptions>, ConfigureSwaggerOptions>()
             .AddSwaggerGen();
+
+        return services;
+    }
+
+    /// <summary>
+    /// Добавляет автоматическую валидацию моделей.
+    /// </summary>
+    public static IServiceCollection AddCustomModelValidation(this IServiceCollection services)
+    {
+        services
+            .AddFluentValidationAutoValidation(fv =>
+            {
+                fv.DisableDataAnnotationsValidation = true;
+            })
+            .AddFluentValidationClientsideAdapters()
+            .AddValidatorsFromAssemblyContaining<Startup>()
+            .AddFluentValidationRulesToSwagger();
+
+        return services;
+    }
+
+    /// <summary>
+    /// Добавляет авторизацию на базе политик доступа и удостоверений.
+    /// </summary>
+    public static IServiceCollection AddCustomAuthorization(this IServiceCollection services)
+    {
+        services
+            .AddAuthorizationCore(options =>
+            {
+                options.AddPolicy("MustBeAdministrator", policy =>
+                {
+                    policy.RequireClaim(YaClaimNames.role, "Administrator");
+                });
+                options.AddPolicy(YaPolicyNames.Owner, policy =>
+                {
+                    policy.RequireAssertion(context =>
+                        context.User.HasClaim(c => c.Type == YaClaimNames.tenantaccesstype && c.Value == "Owner"));
+                });
+                options.AddPolicy(YaPolicyNames.Admin, policy =>
+                {
+                    policy.RequireAssertion(context =>
+                        context.User.HasClaim(c =>
+                            (c.Type == YaClaimNames.tenantaccesstype && c.Value == "Owner")
+                            || (c.Type == YaClaimNames.tenantaccesstype && c.Value == "Admin")));
+                });
+                options.AddPolicy(YaPolicyNames.Writer, policy =>
+                {
+                    policy.RequireAssertion(context =>
+                        context.User.HasClaim(c =>
+                            (c.Type == YaClaimNames.tenantaccesstype && c.Value == "Owner")
+                            || (c.Type == YaClaimNames.tenantaccesstype && c.Value == "Admin")
+                            || (c.Type == YaClaimNames.tenantaccesstype && c.Value == "ReadWrite")));
+                });
+                options.AddPolicy(YaPolicyNames.Reader, policy =>
+                {
+                    policy.RequireAssertion(context =>
+                        context.User.HasClaim(c =>
+                            (c.Type == YaClaimNames.tenantaccesstype && c.Value == "Owner")
+                            || (c.Type == YaClaimNames.tenantaccesstype && c.Value == "Admin")
+                            || (c.Type == YaClaimNames.tenantaccesstype && c.Value == "ReadWrite")
+                            || (c.Type == YaClaimNames.tenantaccesstype && c.Value == "ReadOnly")));
+                });
+                options.AddPolicy(YaPolicyNames.NonAnonymous, policy =>
+                {
+                    policy.RequireAssertion(context =>
+                        context.User.Identity.IsAuthenticated);
+                });
+            });
 
         return services;
     }

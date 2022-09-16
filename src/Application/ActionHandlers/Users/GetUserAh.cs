@@ -4,7 +4,6 @@ using Delobytes.AspNetCore.Application;
 using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 using YA.UserWorker.Application.Features.Users.Queries;
@@ -17,20 +16,20 @@ namespace YA.UserWorker.Application.ActionHandlers.Users;
 public class GetUserAh : IGetUserAh
 {
     public GetUserAh(ILogger<GetUserAh> logger,
-        IActionContextAccessor actionCtx,
+        IHttpContextAccessor httpCtx,
         IRuntimeContextAccessor runtimeContext,
         IMediator mediator,
         IMapper mapper)
     {
         _log = logger ?? throw new ArgumentNullException(nameof(logger));
-        _actionCtx = actionCtx ?? throw new ArgumentNullException(nameof(actionCtx));
+        _httpCtx = httpCtx ?? throw new ArgumentNullException(nameof(httpCtx));
         _runtimeCtx = runtimeContext ?? throw new ArgumentNullException(nameof(runtimeContext));
         _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
         _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
     }
 
     private readonly ILogger<GetUserAh> _log;
-    private readonly IActionContextAccessor _actionCtx;
+    private readonly IHttpContextAccessor _httpCtx;
     private readonly IRuntimeContextAccessor _runtimeCtx;
     private readonly IMediator _mediator;
     private readonly IMapper _mapper;
@@ -50,7 +49,7 @@ public class GetUserAh : IGetUserAh
             case CommandStatus.NotFound:
                 return new NotFoundResult();
             case CommandStatus.Ok:
-                if (_actionCtx.ActionContext.HttpContext
+                if (_httpCtx.HttpContext
                     .Request.Headers.TryGetValue(HeaderNames.IfModifiedSince, out StringValues stringValues))
                 {
                     if (DateTimeOffset.TryParse(stringValues, out DateTimeOffset modifiedSince) && (modifiedSince >= result.Data.LastModifiedDateTime))
@@ -59,7 +58,7 @@ public class GetUserAh : IGetUserAh
                     }
                 }
 
-                _actionCtx.ActionContext.HttpContext
+                _httpCtx.HttpContext
                     .Response.Headers.Add(HeaderNames.LastModified, result.Data.LastModifiedDateTime.ToString("R", CultureInfo.InvariantCulture));
 
                 UserVm userViewModel = _mapper.Map<UserVm>(result.Data);

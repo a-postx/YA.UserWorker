@@ -1,7 +1,7 @@
 using Delobytes.AspNetCore.Application;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Infrastructure;
+using Microsoft.AspNetCore.Http;
 using YA.UserWorker.Application.Features.Memberships.Commands;
 using YA.UserWorker.Application.Features.Memberships.Queries;
 using YA.UserWorker.Application.Interfaces;
@@ -12,18 +12,18 @@ namespace YA.UserWorker.Application.ActionHandlers.Memberships;
 public class DeleteMembershipAh : IDeleteMembershipAh
 {
     public DeleteMembershipAh(ILogger<DeleteMembershipAh> logger,
-        IActionContextAccessor actionCtx,
+        IHttpContextAccessor httpCtx,
         IMediator mediator,
         IAuthProviderManager authProviderManager)
     {
         _log = logger ?? throw new ArgumentNullException(nameof(logger));
-        _actionCtx = actionCtx ?? throw new ArgumentNullException(nameof(actionCtx));
+        _httpCtx = httpCtx ?? throw new ArgumentNullException(nameof(httpCtx));
         _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
         _authManager = authProviderManager ?? throw new ArgumentNullException(nameof(authProviderManager));
     }
 
     private readonly ILogger<DeleteMembershipAh> _log;
-    private readonly IActionContextAccessor _actionCtx;
+    private readonly IHttpContextAccessor _httpCtx;
     private readonly IMediator _mediator;
     private readonly IAuthProviderManager _authManager;
 

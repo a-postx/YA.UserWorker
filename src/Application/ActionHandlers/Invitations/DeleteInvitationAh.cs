@@ -1,7 +1,7 @@
 using Delobytes.AspNetCore.Application;
 using MediatR;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Infrastructure;
 using YA.UserWorker.Application.Features.TenantInvitations.Commands;
 using YA.UserWorker.Application.Interfaces;
 
@@ -10,18 +10,18 @@ namespace YA.UserWorker.Application.ActionHandlers.Invitations;
 public class DeleteInvitationAh : IDeleteInvitationAh
 {
     public DeleteInvitationAh(ILogger<DeleteInvitationAh> logger,
-        IActionContextAccessor actionCtx,
+        IHttpContextAccessor httpCtx,
         IMediator mediator,
         IRuntimeContextAccessor runtimeCtx)
     {
         _log = logger ?? throw new ArgumentNullException(nameof(logger));
-        _actionCtx = actionCtx ?? throw new ArgumentNullException(nameof(actionCtx));
+        _httpCtx = httpCtx ?? throw new ArgumentNullException(nameof(httpCtx));
         _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
         _runtimeCtx = runtimeCtx ?? throw new ArgumentNullException(nameof(runtimeCtx));
     }
 
     private readonly ILogger<DeleteInvitationAh> _log;
-    private readonly IActionContextAccessor _actionCtx;
+    private readonly IHttpContextAccessor _httpCtx;
     private readonly IMediator _mediator;
     private readonly IRuntimeContextAccessor _runtimeCtx;
 

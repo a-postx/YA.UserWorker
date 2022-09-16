@@ -2,8 +2,8 @@ using System.Globalization;
 using AutoMapper;
 using Delobytes.AspNetCore.Application;
 using MediatR;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Net.Http.Headers;
 using YA.UserWorker.Application.Features.TenantInvitations.Commands;
 using YA.UserWorker.Application.Models.SaveModels;
@@ -16,18 +16,18 @@ namespace YA.UserWorker.Application.ActionHandlers.Invitations;
 public class PostInvitationAh : IPostInvitationAh
 {
     public PostInvitationAh(ILogger<PostInvitationAh> logger,
-        IActionContextAccessor actionCtx,
+        IHttpContextAccessor httpCtx,
         IMediator mediator,
         IMapper mapper)
     {
         _log = logger ?? throw new ArgumentNullException(nameof(logger));
-        _actionCtx = actionCtx ?? throw new ArgumentNullException(nameof(actionCtx));
+        _httpCtx = httpCtx ?? throw new ArgumentNullException(nameof(httpCtx));
         _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
         _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
     }
 
     private readonly ILogger<PostInvitationAh> _log;
-    private readonly IActionContextAccessor _actionCtx;
+    private readonly IHttpContextAccessor _httpCtx;
     private readonly IMediator _mediator;
     private readonly IMapper _mapper;
 
@@ -42,7 +42,7 @@ public class PostInvitationAh : IPostInvitationAh
             default:
                 throw new ArgumentOutOfRangeException(nameof(result.Status), result.Status, null);
             case CommandStatus.Ok:
-                _actionCtx.ActionContext.HttpContext
+                _httpCtx.HttpContext
                     .Response.Headers.Add(HeaderNames.LastModified, result.Data.LastModifiedDateTime.ToString("R", CultureInfo.InvariantCulture));
 
                 InvitationVm invitationVm = _mapper.Map<InvitationVm>(result.Data);

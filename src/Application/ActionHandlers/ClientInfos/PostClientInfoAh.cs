@@ -2,8 +2,8 @@ using AutoMapper;
 using Delobytes.AspNetCore.Application;
 using Delobytes.AspNetCore.Logging;
 using MediatR;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.Primitives;
 using YA.Common.Constants;
 using YA.UserWorker.Application.Features.ClientInfos.Commands;
@@ -16,18 +16,18 @@ namespace YA.UserWorker.Application.ActionHandlers.ClientInfos;
 public class PostClientInfoAh : IPostClientInfoAh
 {
     public PostClientInfoAh(ILogger<PostClientInfoAh> logger,
-        IActionContextAccessor actionCtx,
+        IHttpContextAccessor httpCtx,
         IMediator mediator,
         IMapper mapper)
     {
         _log = logger ?? throw new ArgumentNullException(nameof(logger));
-        _actionCtx = actionCtx ?? throw new ArgumentNullException(nameof(actionCtx));
+        _httpCtx = httpCtx ?? throw new ArgumentNullException(nameof(httpCtx));
         _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
         _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
     }
 
     private readonly ILogger<PostClientInfoAh> _log;
-    private readonly IActionContextAccessor _actionCtx;
+    private readonly IHttpContextAccessor _httpCtx;
     private readonly IMediator _mediator;
     private readonly IMapper _mapper;
 
@@ -42,7 +42,7 @@ public class PostClientInfoAh : IPostClientInfoAh
 
         string clientIp = "unknown";
 
-        if (_actionCtx.ActionContext.HttpContext.Request.Headers.TryGetValue("X-Original-For", out StringValues forwardedValue))
+        if (_httpCtx.HttpContext.Request.Headers.TryGetValue("X-Original-For", out StringValues forwardedValue))
         {
             string clientIpsList = forwardedValue.ToString();
             string clientIpElement = clientIpsList.Split(',').Select(s => s.Trim()).FirstOrDefault();
@@ -59,7 +59,7 @@ public class PostClientInfoAh : IPostClientInfoAh
         }
         else
         {
-            string ip = _actionCtx.ActionContext.HttpContext.Connection.RemoteIpAddress?.ToString();
+            string ip = _httpCtx.HttpContext.Connection.RemoteIpAddress?.ToString();
 
             if (!string.IsNullOrEmpty(ip))
             {
@@ -69,7 +69,7 @@ public class PostClientInfoAh : IPostClientInfoAh
 
         string username = "unknown";
 
-        string usernameClaim = _actionCtx.ActionContext.HttpContext.User.Claims.Where(c => c.Type == YaClaimNames.name).FirstOrDefault()?.Value;
+        string usernameClaim = _httpCtx.HttpContext.User.Claims.Where(c => c.Type == YaClaimNames.name).FirstOrDefault()?.Value;
 
         if (!string.IsNullOrEmpty(usernameClaim))
         {

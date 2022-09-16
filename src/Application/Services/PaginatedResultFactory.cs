@@ -13,9 +13,9 @@ namespace YA.UserWorker.Application.Services;
 /// </summary>
 public class PaginatedResultFactory : IPaginatedResultFactory
 {
-    public PaginatedResultFactory(IHttpContextAccessor actionCtx, LinkGenerator linkGenerator)
+    public PaginatedResultFactory(IHttpContextAccessor httpCtx, LinkGenerator linkGenerator)
     {
-        _httpCtx = actionCtx ?? throw new ArgumentNullException(nameof(actionCtx));
+        _httpCtx = httpCtx ?? throw new ArgumentNullException(nameof(httpCtx));
         _linkGenerator = linkGenerator ?? throw new ArgumentNullException(nameof(linkGenerator));
     }
 

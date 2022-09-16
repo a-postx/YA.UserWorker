@@ -2,8 +2,8 @@ using System.Globalization;
 using AutoMapper;
 using Delobytes.AspNetCore.Application;
 using MediatR;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Net.Http.Headers;
 using YA.UserWorker.Application.Features.Memberships.Commands;
 using YA.UserWorker.Application.Features.TenantInvitations.Commands;
@@ -19,20 +19,20 @@ namespace YA.UserWorker.Application.ActionHandlers.Memberships;
 public class PostMembershipAh : IPostMembershipAh
 {
     public PostMembershipAh(ILogger<PostMembershipAh> logger,
-        IActionContextAccessor actionCtx,
+        IHttpContextAccessor httpCtx,
         IMediator mediator,
         IMapper mapper,
         IRuntimeContextAccessor runtimeCtx)
     {
         _log = logger ?? throw new ArgumentNullException(nameof(logger));
-        _actionCtx = actionCtx ?? throw new ArgumentNullException(nameof(actionCtx));
+        _httpCtx = httpCtx ?? throw new ArgumentNullException(nameof(httpCtx));
         _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
         _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         _runtimeCtx = runtimeCtx ?? throw new ArgumentNullException(nameof(runtimeCtx));
     }
 
     private readonly ILogger<PostMembershipAh> _log;
-    private readonly IActionContextAccessor _actionCtx;
+    private readonly IHttpContextAccessor _httpCtx;
     private readonly IMediator _mediator;
     private readonly IMapper _mapper;
     private readonly IRuntimeContextAccessor _runtimeCtx;
@@ -125,8 +125,8 @@ public class PostMembershipAh : IPostMembershipAh
                 break;
         }
 
-        _actionCtx.ActionContext.HttpContext
-                    .Response.Headers.Add(HeaderNames.LastModified, membershipResult.Data.LastModifiedDateTime.ToString("R", CultureInfo.InvariantCulture));
+        _httpCtx.HttpContext
+            .Response.Headers.Add(HeaderNames.LastModified, membershipResult.Data.LastModifiedDateTime.ToString("R", CultureInfo.InvariantCulture));
 
         MembershipVm membershipVm = _mapper.Map<MembershipVm>(membershipResult.Data);
 

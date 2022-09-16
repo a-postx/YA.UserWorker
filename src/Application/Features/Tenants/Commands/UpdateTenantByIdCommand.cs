@@ -1,13 +1,13 @@
 using AutoMapper;
 using Delobytes.AspNetCore.Application;
 using Delobytes.AspNetCore.Application.Commands;
+using FluentValidation;
 using FluentValidation.Results;
 using MediatR;
 using Microsoft.AspNetCore.JsonPatch;
 using YA.UserWorker.Application.Interfaces;
 using YA.UserWorker.Application.Models.Dto;
 using YA.UserWorker.Application.Models.SaveModels;
-using YA.UserWorker.Application.Validators;
 using YA.UserWorker.Core.Entities;
 
 namespace YA.UserWorker.Application.Features.Tenants.Commands;
@@ -28,17 +28,20 @@ public class UpdateTenantByIdCommand : IRequest<ICommandResult<Tenant>>
         public UpdateTenantByIdHandler(ILogger<UpdateTenantByIdHandler> logger,
             IMapper mapper,
             IUserWorkerDbContext dbContext,
+            IValidator<TenantSm> validator,
             IMessageBus messageBus)
         {
             _log = logger ?? throw new ArgumentNullException(nameof(logger));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
             _dbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
+            _validator = validator ?? throw new ArgumentNullException(nameof(validator));
             _messageBus = messageBus ?? throw new ArgumentNullException(nameof(messageBus));
         }
 
         private readonly ILogger<UpdateTenantByIdHandler> _log;
         private readonly IMapper _mapper;
         private readonly IUserWorkerDbContext _dbContext;
+        private readonly IValidator<TenantSm> _validator;
         private readonly IMessageBus _messageBus;
 
         public async Task<ICommandResult<Tenant>> Handle(UpdateTenantByIdCommand command, CancellationToken cancellationToken)
@@ -62,8 +65,7 @@ public class UpdateTenantByIdCommand : IRequest<ICommandResult<Tenant>>
 
             patch.ApplyTo(tenantSm);
 
-            TenantSmValidator validator = new TenantSmValidator();
-            ValidationResult validationResult = validator.Validate(tenantSm);
+            ValidationResult validationResult = _validator.Validate(tenantSm);
 
             if (!validationResult.IsValid)
             {

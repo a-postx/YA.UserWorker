@@ -1,11 +1,11 @@
 using AutoMapper;
 using Delobytes.AspNetCore.Application;
 using Delobytes.AspNetCore.Application.Commands;
+using FluentValidation;
 using FluentValidation.Results;
 using MediatR;
 using Microsoft.AspNetCore.JsonPatch;
 using YA.UserWorker.Application.Models.SaveModels;
-using YA.UserWorker.Application.Validators;
 using YA.UserWorker.Core.Entities;
 
 namespace YA.UserWorker.Application.Features.Users.Commands;
@@ -27,15 +27,18 @@ public class UpdateUserCommand : IRequest<ICommandResult<User>>
     {
         public UpdateUserHandler(ILogger<UpdateUserHandler> logger,
             IMapper mapper,
+            IValidator<UserSm> validator,
             IUserWorkerDbContext dbContext)
         {
             _log = logger ?? throw new ArgumentNullException(nameof(logger));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
+            _validator = validator ?? throw new ArgumentNullException(nameof(validator));
             _dbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
         }
 
         private readonly ILogger<UpdateUserHandler> _log;
         private readonly IMapper _mapper;
+        private readonly IValidator<UserSm> _validator;
         private readonly IUserWorkerDbContext _dbContext;
 
         public async Task<ICommandResult<User>> Handle(UpdateUserCommand command, CancellationToken cancellationToken)
@@ -60,7 +63,7 @@ public class UpdateUserCommand : IRequest<ICommandResult<User>>
 
             patch.ApplyTo(userSm);
 
-            ValidationResult validationResult = new UserSmValidator().Validate(userSm);
+            ValidationResult validationResult = _validator.Validate(userSm);
 
             if (!validationResult.IsValid)
             {

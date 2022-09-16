@@ -1,7 +1,7 @@
 using Delobytes.AspNetCore.Application;
 using MediatR;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Infrastructure;
 using YA.UserWorker.Application.Features.Tenants.Commands;
 using YA.UserWorker.Application.Features.Users.Queries;
 using YA.UserWorker.Application.Interfaces;
@@ -12,20 +12,20 @@ namespace YA.UserWorker.Application.ActionHandlers.Tenants;
 public class DeleteTenantAh : IDeleteTenantAh
 {
     public DeleteTenantAh(ILogger<DeleteTenantAh> logger,
-        IActionContextAccessor actionCtx,
+        IHttpContextAccessor httpCtx,
         IRuntimeContextAccessor runtimeContext,
         IAuthProviderManager authProviderManager,
         IMediator mediator)
     {
         _log = logger ?? throw new ArgumentNullException(nameof(logger));
-        _actionCtx = actionCtx ?? throw new ArgumentNullException(nameof(actionCtx));
+        _httpCtx = httpCtx ?? throw new ArgumentNullException(nameof(httpCtx));
         _runtimeCtx = runtimeContext ?? throw new ArgumentNullException(nameof(runtimeContext));
         _authProviderManager = authProviderManager ?? throw new ArgumentNullException(nameof(authProviderManager));
         _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
     }
 
     private readonly ILogger<DeleteTenantAh> _log;
-    private readonly IActionContextAccessor _actionCtx;
+    private readonly IHttpContextAccessor _httpCtx;
     private readonly IRuntimeContextAccessor _runtimeCtx;
     private readonly IAuthProviderManager _authProviderManager;
     private readonly IMediator _mediator;

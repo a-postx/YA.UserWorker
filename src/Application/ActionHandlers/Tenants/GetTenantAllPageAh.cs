@@ -2,8 +2,8 @@ using Delobytes.AspNetCore;
 using Delobytes.AspNetCore.Application;
 using Delobytes.Mapper;
 using MediatR;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Infrastructure;
 using YA.Common.Constants;
 using YA.UserWorker.Application.Features.Tenants.Queries;
 using YA.UserWorker.Application.Interfaces;
@@ -18,20 +18,20 @@ namespace YA.UserWorker.Application.ActionHandlers.Tenants;
 public class GetTenantAllPageAh : IGetTenantAllPageAh
 {
     public GetTenantAllPageAh(ILogger<GetTenantAllPageAh> logger,
-        IActionContextAccessor actionCtx,
+        IHttpContextAccessor httpCtx,
         IMediator mediator,
         IPaginatedResultFactory paginationResultFactory,
         IMapper<Tenant, TenantVm> tenantVmMapper)
     {
         _log = logger ?? throw new ArgumentNullException(nameof(logger));
-        _actionCtx = actionCtx ?? throw new ArgumentNullException(nameof(actionCtx));
+        _httpCtx = httpCtx ?? throw new ArgumentNullException(nameof(httpCtx));
         _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
         _paginatedResultFactory = paginationResultFactory ?? throw new ArgumentNullException(nameof(paginationResultFactory));
         _tenantVmMapper = tenantVmMapper ?? throw new ArgumentNullException(nameof(tenantVmMapper));
     }
 
     private readonly ILogger<GetTenantAllPageAh> _log;
-    private readonly IActionContextAccessor _actionCtx;
+    private readonly IHttpContextAccessor _httpCtx;
     private readonly IMediator _mediator;
     private readonly IPaginatedResultFactory _paginatedResultFactory;
     private readonly IMapper<Tenant, TenantVm> _tenantVmMapper;
@@ -64,7 +64,7 @@ public class GetTenantAllPageAh : IGetTenantAllPageAh
                     .GetCursorPaginatedResult(pageOptions, resultBm.HasNextPage, resultBm.HasPreviousPage,
                     resultBm.TotalCount, startCursor, endCursor, RouteNames.GetTenantPage, items);
 
-                _actionCtx.ActionContext.HttpContext
+                _httpCtx.HttpContext
                     .Response.Headers.Add(YaHeaderKeys.Link, paginatedResultVm.PageInfo.ToLinkHttpHeaderValue());
 
                 return new OkObjectResult(paginatedResultVm);

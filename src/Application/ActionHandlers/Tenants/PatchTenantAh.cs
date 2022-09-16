@@ -2,9 +2,9 @@ using Delobytes.AspNetCore.Application;
 using Delobytes.AspNetCore.Application.Actions;
 using Delobytes.Mapper;
 using MediatR;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Infrastructure;
 using YA.UserWorker.Application.Features.Tenants.Commands;
 using YA.UserWorker.Application.Interfaces;
 using YA.UserWorker.Application.Models.SaveModels;
@@ -16,20 +16,20 @@ namespace YA.UserWorker.Application.ActionHandlers.Tenants;
 public class PatchTenantAh : IPatchTenantAh
 {
     public PatchTenantAh(ILogger<PatchTenantAh> logger,
-        IActionContextAccessor actionCtx,
+        IHttpContextAccessor httpCtx,
         IRuntimeContextAccessor runtimeContext,
         IMediator mediator,
         IMapper<Tenant, TenantVm> tenantVmMapper)
     {
         _log = logger ?? throw new ArgumentNullException(nameof(logger));
-        _actionCtx = actionCtx ?? throw new ArgumentNullException(nameof(actionCtx));
+        _httpCtx = httpCtx ?? throw new ArgumentNullException(nameof(httpCtx));
         _runtimeCtx = runtimeContext ?? throw new ArgumentNullException(nameof(runtimeContext));
         _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
         _tenantVmMapper = tenantVmMapper ?? throw new ArgumentNullException(nameof(tenantVmMapper));
     }
 
     private readonly ILogger<PatchTenantAh> _log;
-    private readonly IActionContextAccessor _actionCtx;
+    private readonly IHttpContextAccessor _httpCtx;
     private readonly IRuntimeContextAccessor _runtimeCtx;
     private readonly IMediator _mediator;
     private readonly IMapper<Tenant, TenantVm> _tenantVmMapper;

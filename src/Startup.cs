@@ -8,7 +8,6 @@ using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpOverrides;
-using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -72,9 +71,6 @@ public class Startup
             .AddCustomSwagger()
             .AddFluentValidationRulesToSwagger()
             .AddHttpContextAccessor()
-
-            .AddSingleton<IActionContextAccessor, ActionContextAccessor>()
-
             .AddCustomApiVersioning();
 
         //services.AddAuth0Authentication("YaScheme", true, options =>
@@ -144,7 +140,9 @@ public class Startup
                 .AddCustomJsonOptions(_webHostEnvironment)
                 ////.AddXmlDataContractSerializerFormatters()
                 .AddCustomMvcOptions(_config)
-                .AddCustomModelValidation();
+                .AddCustomApiBehavior();
+
+        services.AddCustomModelValidation();
 
         //есть зависимость от настроек MVC и IDistributedCache
         services.AddIdempotencyControl(options =>
@@ -154,48 +152,7 @@ public class Startup
             options.IdempotencyHeader = idempotencyOptions.IdempotencyHeader;
         });
 
-        services
-            .AddAuthorizationCore(options =>
-            {
-                options.AddPolicy("MustBeAdministrator", policy =>
-                {
-                    policy.RequireClaim(YaClaimNames.role, "Administrator");
-                });
-                options.AddPolicy(YaPolicyNames.Owner, policy =>
-                {
-                    policy.RequireAssertion(context =>
-                        context.User.HasClaim(c => c.Type == YaClaimNames.tenantaccesstype && c.Value == "Owner"));
-                });
-                options.AddPolicy(YaPolicyNames.Admin, policy =>
-                {
-                    policy.RequireAssertion(context =>
-                        context.User.HasClaim(c =>
-                            (c.Type == YaClaimNames.tenantaccesstype && c.Value == "Owner")
-                            || (c.Type == YaClaimNames.tenantaccesstype && c.Value == "Admin")));
-                });
-                options.AddPolicy(YaPolicyNames.Writer, policy =>
-                {
-                    policy.RequireAssertion(context =>
-                        context.User.HasClaim(c =>
-                            (c.Type == YaClaimNames.tenantaccesstype && c.Value == "Owner")
-                            || (c.Type == YaClaimNames.tenantaccesstype && c.Value == "Admin")
-                            || (c.Type == YaClaimNames.tenantaccesstype && c.Value == "ReadWrite")));
-                });
-                options.AddPolicy(YaPolicyNames.Reader, policy =>
-                {
-                    policy.RequireAssertion(context =>
-                        context.User.HasClaim(c =>
-                            (c.Type == YaClaimNames.tenantaccesstype && c.Value == "Owner")
-                            || (c.Type == YaClaimNames.tenantaccesstype && c.Value == "Admin")
-                            || (c.Type == YaClaimNames.tenantaccesstype && c.Value == "ReadWrite")
-                            || (c.Type == YaClaimNames.tenantaccesstype && c.Value == "ReadOnly")));
-                });
-                options.AddPolicy(YaPolicyNames.NonAnonymous, policy =>
-                {
-                    policy.RequireAssertion(context =>
-                        context.User.Identity.IsAuthenticated);
-                });
-            });
+        services.AddCustomAuthorization();
 
         services.AddHttpClient();
         services.AddAutoMapper(typeof(Startup));

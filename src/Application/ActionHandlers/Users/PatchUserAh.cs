@@ -2,9 +2,9 @@ using AutoMapper;
 using Delobytes.AspNetCore.Application;
 using Delobytes.AspNetCore.Application.Actions;
 using MediatR;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Infrastructure;
 using YA.UserWorker.Application.Features.Users.Commands;
 using YA.UserWorker.Application.Interfaces;
 using YA.UserWorker.Application.Models.SaveModels;
@@ -16,20 +16,20 @@ namespace YA.UserWorker.Application.ActionHandlers.Users;
 public class PatchUserAh : IPatchUserAh
 {
     public PatchUserAh(ILogger<PatchUserAh> logger,
-        IActionContextAccessor actionCtx,
+        IHttpContextAccessor httpCtx,
         IRuntimeContextAccessor runtimeContext,
         IMediator mediator,
         IMapper mapper)
     {
         _log = logger ?? throw new ArgumentNullException(nameof(logger));
-        _actionCtx = actionCtx ?? throw new ArgumentNullException(nameof(actionCtx));
+        _httpCtx = httpCtx ?? throw new ArgumentNullException(nameof(httpCtx));
         _runtimeCtx = runtimeContext ?? throw new ArgumentNullException(nameof(runtimeContext));
         _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
         _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
     }
 
     private readonly ILogger<PatchUserAh> _log;
-    private readonly IActionContextAccessor _actionCtx;
+    private readonly IHttpContextAccessor _httpCtx;
     private readonly IRuntimeContextAccessor _runtimeCtx;
     private readonly IMediator _mediator;
     private readonly IMapper _mapper;

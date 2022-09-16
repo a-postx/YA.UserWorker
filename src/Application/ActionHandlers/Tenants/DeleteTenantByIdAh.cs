@@ -1,7 +1,7 @@
 using Delobytes.AspNetCore.Application;
 using MediatR;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Infrastructure;
 using YA.UserWorker.Application.Features.Tenants.Commands;
 
 namespace YA.UserWorker.Application.ActionHandlers.Tenants;
@@ -9,16 +9,16 @@ namespace YA.UserWorker.Application.ActionHandlers.Tenants;
 public class DeleteTenantByIdAh : IDeleteTenantByIdAh
 {
     public DeleteTenantByIdAh(ILogger<DeleteTenantByIdAh> logger,
-        IActionContextAccessor actionCtx,
+        IHttpContextAccessor httpCtx,
         IMediator mediator)
     {
         _log = logger ?? throw new ArgumentNullException(nameof(logger));
-        _actionCtx = actionCtx ?? throw new ArgumentNullException(nameof(actionCtx));
+        _httpCtx = httpCtx ?? throw new ArgumentNullException(nameof(httpCtx));
         _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
     }
 
     private readonly ILogger<DeleteTenantByIdAh> _log;
-    private readonly IActionContextAccessor _actionCtx;
+    private readonly IHttpContextAccessor _httpCtx;
     private readonly IMediator _mediator;
 
     public async Task<IActionResult> ExecuteAsync(Guid yaTenantId, CancellationToken cancellationToken)

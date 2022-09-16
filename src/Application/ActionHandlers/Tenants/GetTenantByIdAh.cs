@@ -4,7 +4,6 @@ using Delobytes.Mapper;
 using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 using YA.UserWorker.Application.Features.Tenants.Queries;
@@ -16,18 +15,18 @@ namespace YA.UserWorker.Application.ActionHandlers.Tenants;
 public class GetTenantByIdAh : IGetTenantByIdAh
 {
     public GetTenantByIdAh(ILogger<GetTenantByIdAh> logger,
-        IActionContextAccessor actionCtx,
+        IHttpContextAccessor httpCtx,
         IMediator mediator,
         IMapper<Tenant, TenantVm> tenantVmMapper)
     {
         _log = logger ?? throw new ArgumentNullException(nameof(logger));
-        _actionCtx = actionCtx ?? throw new ArgumentNullException(nameof(actionCtx));
+        _httpCtx = httpCtx ?? throw new ArgumentNullException(nameof(httpCtx));
         _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
         _tenantVmMapper = tenantVmMapper ?? throw new ArgumentNullException(nameof(tenantVmMapper));
     }
 
     private readonly ILogger<GetTenantByIdAh> _log;
-    private readonly IActionContextAccessor _actionCtx;
+    private readonly IHttpContextAccessor _httpCtx;
     private readonly IMediator _mediator;
     private readonly IMapper<Tenant, TenantVm> _tenantVmMapper;
 
@@ -46,7 +45,7 @@ public class GetTenantByIdAh : IGetTenantByIdAh
             case CommandStatus.BadRequest:
                 return new BadRequestResult();
             case CommandStatus.Ok:
-                if (_actionCtx.ActionContext.HttpContext
+                if (_httpCtx.HttpContext
                     .Request.Headers.TryGetValue(HeaderNames.IfModifiedSince, out StringValues stringValues))
                 {
                     if (DateTimeOffset.TryParse(stringValues, out DateTimeOffset modifiedSince) && (modifiedSince >= result.Data.LastModifiedDateTime))
@@ -55,7 +54,7 @@ public class GetTenantByIdAh : IGetTenantByIdAh
                     }
                 }
 
-                _actionCtx.ActionContext.HttpContext
+                _httpCtx.HttpContext
                     .Response.Headers.Add(HeaderNames.LastModified, result.Data.LastModifiedDateTime.ToString("R", CultureInfo.InvariantCulture));
 
                 TenantVm tenantViewModel = _tenantVmMapper.Map(result.Data);
