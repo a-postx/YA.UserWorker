@@ -7,6 +7,9 @@ public enum YaTenantInvitationStatus
     Sent = 2
 }
 
+/// <summary>
+/// Приглашение в арендатора.
+/// </summary>
 public class YaInvitation : IRowVersionedEntity, IUserAuditedEntity, IAuditedEntityBase
 {
     public Guid TenantId { get; set; }

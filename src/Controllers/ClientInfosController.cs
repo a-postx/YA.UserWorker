@@ -38,7 +38,7 @@ public class ClientInfosController : ControllerBase
     }
 
     /// <summary>
-    /// Создать событие публикации информации о клиенте.
+    /// Опубликовать информацию о клиенте.
     /// </summary>
     /// <param name="handler">Обработчик.</param>
     /// <param name="clientInfoSm">Информация о клиенте.</param>

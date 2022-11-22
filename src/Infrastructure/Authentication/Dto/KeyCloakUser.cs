@@ -1,7 +1,7 @@
 namespace YA.UserWorker.Infrastructure.Authentication.Dto;
 
 /// <summary>
-/// Keycloak v17
+/// Пользователь (версия 17)
 /// </summary>
 public class KeyCloakUser
 {

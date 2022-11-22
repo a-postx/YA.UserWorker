@@ -5,7 +5,7 @@ using MbEvents;
 namespace YA.UserWorker.Infrastructure.Messaging.Filters;
 
 /// <summary>
-/// Provides tenant context from message bus message.
+/// Добавляет контекст корелляции и арендатора из сообщения брокера.
 /// </summary>
 internal static class MbMessageContextProvider
 {

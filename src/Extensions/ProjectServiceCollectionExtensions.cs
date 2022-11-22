@@ -76,7 +76,6 @@ public static class ProjectServiceCollectionExtensions
     {
         return services
             .AddScoped<IUserWorkerDbContext, UserWorkerDbContext>();
-            //.AddScoped<IRootDbContext, RootDbContext>();
     }
 
     /// <summary>

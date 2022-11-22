@@ -11,9 +11,9 @@ namespace YA.UserWorker.Controllers;
 public class HomeController : ControllerBase
 {
     /// <summary>
-    /// Get root page.
+    /// Корневая страница.
     /// </summary>
-    /// <returns>200 OK response.
+    /// <returns>Ответ 200 OK.
     /// </returns>
     [HttpGet("")]
     [SwaggerResponse(StatusCodes.Status200OK, "Пустой ответ 200.")]

@@ -44,13 +44,6 @@
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
     },
-    "Azure Dev Spaces": {
-      "commandName": "AzureDevSpaces",
-      "launchBrowser": true,
-      "resourceGroup": "Group2",
-      "aksName": "34a6b82c-8916-41f3",
-      "subscriptionId": "3de1180c-a6a8-4372-8ab6-2e2e3d7514c0"
-    },
     "Docker": {
       "commandName": "Docker",
       "launchBrowser": true,

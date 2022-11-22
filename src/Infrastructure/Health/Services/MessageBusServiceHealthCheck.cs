@@ -5,7 +5,7 @@ using YA.UserWorker.Infrastructure.Messaging.Test;
 namespace YA.UserWorker.Infrastructure.Health.Services;
 
 /// <summary>
-/// Regular check for availability of the message bus services.
+/// Регулярная проверка доступности брокера.
 /// </summary>
 public class MessageBusServiceHealthCheck : IHealthCheck
 {

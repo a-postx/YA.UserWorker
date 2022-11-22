@@ -4,7 +4,7 @@ using Microsoft.Extensions.Diagnostics.HealthChecks;
 namespace YA.UserWorker.Infrastructure.Health.System;
 
 /// <summary>
-/// Checks uptime value of the application.
+/// Проверяет аптайм приложения.
 /// </summary>
 public class UptimeHealthCheck : IHealthCheck
 {

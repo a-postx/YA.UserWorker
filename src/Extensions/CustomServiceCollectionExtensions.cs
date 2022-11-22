@@ -44,6 +44,9 @@ namespace YA.UserWorker.Extensions;
 /// </summary>
 internal static class CustomServiceCollectionExtensions
 {
+    /// <summary>
+    /// Добавляет использование идентификатора корреляции.
+    /// </summary>
     public static IServiceCollection AddCorrelationIdFluent(this IServiceCollection services, GeneralOptions generalOptions)
     {
         services.AddDefaultCorrelationId(options =>
@@ -63,24 +66,19 @@ internal static class CustomServiceCollectionExtensions
     }
 
     /// <summary>
-    /// Configures caching for the application. Registers the <see cref="IDistributedCache"/> and
-    /// <see cref="IMemoryCache"/> types with the services collection or IoC container. The
-    /// <see cref="IDistributedCache"/> is intended to be used in cloud hosted scenarios where there is a shared
-    /// cache, which is shared between multiple instances of the application. Use the <see cref="IMemoryCache"/>
-    /// otherwise.
+    /// Добавляет кеширование в приложение - регистрирует <see cref="IDistributedCache"/> и
+    /// <see cref="IMemoryCache"/> с соответствующими сервисами в контейнере.
     /// </summary>
     public static IServiceCollection AddCustomCaching(this IServiceCollection services, AppSecrets secrets)
     {
-        services
-            // Adds IMemoryCache which is a simple in-memory cache.
-            .AddMemoryCache();
+        services.AddMemoryCache();
 
         //https://stackexchange.github.io/StackExchange.Redis/Configuration.html
         //https://gist.github.com/JonCole/925630df72be1351b21440625ff2671f#file-redis-bestpractices-stackexchange-redis-md
         ConfigurationOptions config = new ConfigurationOptions()
         {
             ClientName = $"{Program.AppName}-{Node.Id}",
-            AbortOnConnectFail = false, //false on Azure connection string
+            AbortOnConnectFail = false, //false в строке подключения азуровского редиса
             Password = secrets.DistributedCachePassword,
             KeepAlive = 60,
             DefaultDatabase = 0,
@@ -89,7 +87,7 @@ internal static class CustomServiceCollectionExtensions
             ConnectTimeout = 15000,
             ConnectRetry = 3,
             Ssl = false
-            //SslProtocols = System.Security.Authentication.SslProtocols.Tls12
+            ////SslProtocols = System.Security.Authentication.SslProtocols.Tls12
         };
 
         config.EndPoints.Add(secrets.DistributedCacheHost, secrets.DistributedCachePort);
@@ -126,8 +124,8 @@ internal static class CustomServiceCollectionExtensions
     }
 
     /// <summary>
-    /// Configures the settings by binding the contents of the appsettings.json file to the specified Plain Old CLR
-    /// Objects (POCO) and adding <see cref="IOptions{T}"/> objects to the services collection.
+    /// Задаёт настройки приложения (привязываются значения из файла appsettings.json и из секретов)
+    /// и добавляет объекты <see cref="IOptions{T}"/> в коллекцию сервисов.
     /// </summary>
     public static IServiceCollection AddCustomOptions(this IServiceCollection services, IConfiguration configuration)
     {
@@ -219,6 +217,9 @@ internal static class CustomServiceCollectionExtensions
             });
     }
 
+    /// <summary>
+    /// Добавляет проверки здоровья приложения.
+    /// </summary>
     public static IServiceCollection AddCustomHealthChecks(this IServiceCollection services, AppSecrets secrets)
     {
         // https://github.com/Xabaril/AspNetCore.Diagnostics.HealthChecks
@@ -226,17 +227,17 @@ internal static class CustomServiceCollectionExtensions
             // проверка дублирует встроенную проверку масстранзита
             ////.AddSingleton<MessageBusServiceHealthCheck>()
             .AddHealthChecks()
-                //general system status
+                //общий статус системы
                 .AddGenericHealthCheck<UptimeHealthCheck>("uptime")
                 .AddMemoryHealthCheck(HealthCheckNames.Memory)
-                //system components regular checks
+                //регулярные проверки внешних компонентов
                 .AddSqlServer(secrets.UserWorker.ConnectionString, "SELECT 1;", HealthCheckNames.Database, HealthStatus.Unhealthy, new string[] { "ready", "metric" })
                 .AddRedis($"{secrets.DistributedCacheHost}:{secrets.DistributedCachePort},password={secrets.DistributedCachePassword}",
                     HealthCheckNames.DistributedCache, HealthStatus.Degraded, new[] { "ready", "metric" }, new TimeSpan(0, 0, 30));
                 // проверка дублирует встроенную проверку масстранзита
                 ////.AddGenericHealthCheck<MessageBusServiceHealthCheck>(HealthCheckNames.MessageBus, HealthStatus.Degraded, new[] { "ready", "metric" })
-                // Ping is not available on Azure Web Apps
-                //.AddNetworkHealthCheck("network");
+                // ICMP недоступен на Azure Web Apps
+                ////.AddNetworkHealthCheck("network");
 
         services.Configure<HealthCheckPublisherOptions>(options =>
         {
@@ -252,6 +253,9 @@ internal static class CustomServiceCollectionExtensions
         return services;
     }
 
+    /// <summary>
+    /// Добавить версионирование АПИ.
+    /// </summary>
     public static IServiceCollection AddCustomApiVersioning(this IServiceCollection services)
     {
         return services.AddApiVersioning(options =>

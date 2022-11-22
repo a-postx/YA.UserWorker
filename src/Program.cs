@@ -38,6 +38,7 @@ using System.Net;
 using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
 using System.Net.Http;
+using System.Globalization;
 
 [assembly: CLSCompliant(false)]
 namespace YA.UserWorker;
@@ -257,14 +258,13 @@ public static class Program
     }
 
     /// <summary>
-    /// Creates a logger used during application initialization.
-    /// <see href="https://nblumhardt.com/2020/10/bootstrap-logger/"/>.
+    /// Создаёт логер для работы во время инициализации приложения.
     /// </summary>
-    /// <returns>A logger that can load a new configuration.</returns>
+    /// <returns>Логер, который может загрузить новую конфигурацию.</returns>
     private static ReloadableLogger CreateBootstrapLogger()
     {
         return new LoggerConfiguration()
-            .WriteTo.Console()
+            .WriteTo.Console(formatProvider: CultureInfo.CurrentCulture)
             .CreateBootstrapLogger();
     }
 

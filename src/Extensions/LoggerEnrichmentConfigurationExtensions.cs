@@ -4,13 +4,10 @@ using YA.UserWorker.Infrastructure.Logging.Enrichers;
 
 namespace YA.UserWorker.Extensions;
 
-/// <summary>
-/// Provides various extension methods for configuring Serilog.
-/// </summary>
 public static class LoggerEnrichmentConfigurationExtensions
 {
     /// <summary>
-    /// Enriches the Serilog logging data with custom message bus event context information.
+    /// Обогащает логи Серилога данными из сообщений шины.
     /// </summary>
     /// <param name="configuration"></param>
     /// <returns></returns>

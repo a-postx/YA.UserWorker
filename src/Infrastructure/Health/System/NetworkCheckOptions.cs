@@ -1,7 +1,7 @@
 namespace YA.UserWorker.Infrastructure.Health.System;
 
 /// <summary>
-/// Network options for health checker.
+/// Сетевые настройки проверки здоровья.
 /// </summary>
 public class NetworkCheckOptions
 {

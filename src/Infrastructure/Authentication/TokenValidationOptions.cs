@@ -1,5 +1,8 @@
 namespace YA.UserWorker.Infrastructure.Authentication;
 
+/// <summary>
+/// Настройки валидации токена.
+/// </summary>
 public class TokenValidationOptions
 {
     /// <summary>

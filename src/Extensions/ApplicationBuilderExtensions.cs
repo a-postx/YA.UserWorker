@@ -1,7 +1,6 @@
 using System.Reflection;
 using Delobytes.AspNetCore;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
@@ -16,16 +15,6 @@ namespace YA.UserWorker.Extensions;
 
 internal static class ApplicationBuilderExtensions
 {
-    public static IApplicationBuilder UseDeveloperErrorPages(this IApplicationBuilder application, IWebHostEnvironment webHostEnvironment)
-    {
-        return application
-            .UseIf(
-                webHostEnvironment.EnvironmentName == "Development",
-                x => x
-                    .UseDeveloperExceptionPage()
-                    .UseMigrationsEndPoint());
-    }
-
     /// <summary>
     /// Uses the static files middleware to serve static files. Also adds the Cache-Control and Pragma HTTP
     /// headers. The cache duration is controlled from configuration.

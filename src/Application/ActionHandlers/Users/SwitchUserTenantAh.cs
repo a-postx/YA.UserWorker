@@ -56,30 +56,26 @@ public class SwitchUserTenantAh : ISwitchUserTenantAh
 
         User user = result.Data;
 
-        if (user.Tenants.Where(e => e.TenantID == targetTenantId).Any())
-        {
-            Membership membership = user.Memberships.Where(e => e.TenantID == targetTenantId).FirstOrDefault();
-
-            if (membership is not null)
-            {
-                await _authProviderManager
-                    .SetTenantAsync(userId, targetTenantId, membership.AccessType, cancellationToken);
-
-                _log.LogInformation("User {UserId} has updated with tenant {TenantId}", userId, targetTenantId);
-
-                _httpCtx.HttpContext
-                    .Response.Headers.Add(HeaderNames.LastModified, user.LastModifiedDateTime.ToString("R", CultureInfo.InvariantCulture));
-
-                return new OkResult();
-            }
-            else
-            {
-                return new BadRequestResult();
-            }
-        }
-        else
+        if (!user.Tenants.Where(e => e.TenantID == targetTenantId).Any())
         {
             return new BadRequestResult();
         }
+
+        Membership membership = user.Memberships.Where(e => e.TenantID == targetTenantId).FirstOrDefault();
+
+        if (membership is null)
+        {
+            return new BadRequestResult();
+        }
+
+        await _authProviderManager
+                .SetTenantAsync(userId, targetTenantId, membership.AccessType, cancellationToken);
+
+        _log.LogInformation("User {UserId} has been updated with tenant {TenantId}", userId, targetTenantId);
+
+        _httpCtx.HttpContext
+            .Response.Headers.Add(HeaderNames.LastModified, user.LastModifiedDateTime.ToString("R", CultureInfo.InvariantCulture));
+
+        return new OkResult();
     }
 }

@@ -1,7 +1,7 @@
 namespace YA.UserWorker.Application.Models.ViewModels;
 
 /// <summary>
-/// Тарифный план, обзорная модель.
+/// Тарифный план, визуальная модель.
 /// </summary>
 public class PricingTierVm
 {

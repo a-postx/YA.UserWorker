@@ -11,8 +11,9 @@ public enum YaMembershipAccessType
 }
 
 /// <summary>
-/// Членство в арендаторе. Сущность не реализует ITenantEntity поскольку используется при регистрации пользователя.
+/// Членство в арендаторе.
 /// </summary>
+// cущность не реализует ITenantEntity поскольку используется при регистрации нового пользователя.
 public class Membership : IUserAuditedEntity, IAuditedEntityBase, IRowVersionedEntity, ISoftDeleteEntity
 {
     public Guid MembershipID { get; set; }

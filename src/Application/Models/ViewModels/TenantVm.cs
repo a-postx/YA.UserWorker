@@ -1,42 +1,42 @@
 namespace YA.UserWorker.Application.Models.ViewModels;
 
 /// <summary>
-/// Tenant view model.
+/// Арендатор, визуальная модель.
 /// </summary>
 public class TenantVm
 {
     /// <summary>
-    /// Tenant unique identifier.
+    /// Уникальный идентификатор.
     /// </summary>
     public Guid TenantId { get; set; }
         
     /// <summary>
-    /// Tenant name.
+    /// Имя арендатора.
     /// </summary>
     public string Name { get; set; }
 
     /// <summary>
-    /// URL used to retrieve the resource conforming to REST'ful JSON http://restfuljson.org/.
+    /// Адрес сущности согласно спецификации http://restfuljson.org/.
     /// </summary>
     public Uri Url { get; set; }
 
     /// <summary>
-    /// Current pricing tier identifier.
+    /// Идентификатор тарифного плана.
     /// </summary>
     public Guid PricingTierId { get; set; }
 
     /// <summary>
-    /// Current pricing tier.
+    /// Текущий тарифный план.
     /// </summary>
     public PricingTierVm PricingTier { get; set; }
 
     /// <summary>
-    /// Date of pricing tier activation.
+    /// Дата активации тарифного плана.
     /// </summary>
     public DateTime PricingTierActivatedDateTime { get; set; }
 
     /// <summary>
-    /// Date the pricing tier is valid for.
+    /// Дата истечения тарифного плана.
     /// </summary>
     public DateTime PricingTierActivatedUntilDateTime { get; set; }
 

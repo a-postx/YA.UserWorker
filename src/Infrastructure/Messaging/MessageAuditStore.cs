@@ -6,13 +6,12 @@ using MassTransit.Audit;
 using Microsoft.Extensions.Options;
 using YA.Common.Constants;
 using YA.UserWorker.Application.Enums;
-using YA.UserWorker.Extensions;
 using YA.UserWorker.Options;
 
 namespace YA.UserWorker.Infrastructure.Messaging;
 
 /// <summary>
-/// Хранилище данных аудита сообщений шины данных, использующее простое логирование
+/// Хранилище данных аудита сообщений брокера, использующее простое логирование
 /// </summary>
 public class MessageAuditStore : IMessageAuditStore
 {

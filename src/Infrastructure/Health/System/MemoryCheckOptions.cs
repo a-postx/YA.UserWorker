@@ -1,7 +1,7 @@
 namespace YA.UserWorker.Infrastructure.Health.System;
 
 /// <summary>
-/// Memory options for health checker.
+/// Настройки памяти для проверки здоровья.
 /// </summary>
 public class MemoryCheckOptions
 {

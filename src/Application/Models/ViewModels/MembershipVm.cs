@@ -20,7 +20,7 @@ public class MembershipVm
     /// </summary>
     public Guid TenantId { get; set; }
     /// <summary>
-    /// Тип доступа пользователя к арендатору.
+    /// Уровень доступа пользователя к арендатору.
     /// </summary>
     public MembershipAccessType AccessType { get; set; }
     /// <summary>

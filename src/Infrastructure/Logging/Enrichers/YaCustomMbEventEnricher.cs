@@ -8,7 +8,7 @@ using YA.UserWorker.Infrastructure.Messaging.Filters;
 namespace YA.UserWorker.Infrastructure.Logging.Enrichers;
 
 /// <summary>
-/// Enriches Serilog data with custom context data from bus message.
+/// Обогащает сообщение серилога данными из контекста сообщения брокера.
 /// </summary>
 public class YaCustomMbEventEnricher : ILogEventEnricher
 {

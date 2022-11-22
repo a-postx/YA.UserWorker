@@ -6,7 +6,7 @@ using YA.Common;
 namespace YA.UserWorker.Infrastructure.Health.System;
 
 /// <summary>
-/// Checks Internet connection of the application.
+/// Проверяет состояние доступа к Интернету.
 /// </summary>
 public class NetworkHealthCheck : IHealthCheck
 {

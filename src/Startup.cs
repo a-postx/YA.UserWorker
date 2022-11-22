@@ -66,10 +66,9 @@ public class Startup
             .AddCustomCors()
             .AddCustomRouting()
             .AddResponseCaching()
-            ////.AddCustomResponseCompression(_config)
+            ////.AddCustomResponseCompression(_config) //перемещено на шлюз
             .AddCustomHealthChecks(secrets)
             .AddCustomSwagger()
-            .AddFluentValidationRulesToSwagger()
             .AddHttpContextAccessor()
             .AddCustomApiVersioning();
 

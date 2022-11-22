@@ -5,7 +5,7 @@ using Microsoft.Extensions.Options;
 namespace YA.UserWorker.Infrastructure.Health.System;
 
 /// <summary>
-/// Checks memory-related values of the application.
+/// Проверяет состояние компонентов из подсистемы памяти.
 /// </summary>
 public class MemoryHealthCheck : IHealthCheck
 {

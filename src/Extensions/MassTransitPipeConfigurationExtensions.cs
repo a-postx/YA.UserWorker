@@ -6,7 +6,7 @@ namespace YA.UserWorker.Extensions;
 public static class MassTransitPipeConfiguratorExtensions
 {
     /// <summary>
-    /// Injects filter to intercept custom message context from MassTransit message.
+    /// Вставляет фильтр для перехвата кастомного контекста из сообщения МассТранзита.
     /// </summary>
     /// <typeparam name="T"></typeparam>
     /// <param name="configurator"></param>

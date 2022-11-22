@@ -1,7 +1,7 @@
 namespace YA.UserWorker.Options;
 
 // оценка целесообразности: нужно ли брать дефолтные настройки из файла,
-// a к ним прикрутить настройки из Амазона (с приоритетом)
+// a к ним прикрутить настройки из облака (с приоритетом)
 public class GeneralOptions
 {
     public string CorrelationIdHeader { get; set; }

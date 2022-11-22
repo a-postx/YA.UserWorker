@@ -1,5 +1,9 @@
 namespace YA.UserWorker.Core.Entities;
 
+
+/// <summary>
+/// Тарифный план.
+/// </summary>
 public class PricingTier : IRowVersionedEntity, IUserAuditedEntity, IAuditedEntityBase
 {
     public Guid PricingTierID { get; set; }

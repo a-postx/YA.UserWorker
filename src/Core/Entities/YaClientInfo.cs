@@ -1,5 +1,8 @@
 namespace YA.UserWorker.Core.Entities;
 
+/// <summary>
+/// Информация о клиенте.
+/// </summary>
 public class YaClientInfo : IRowVersionedEntity, IAuditedEntityBase
 {
     public Guid YaClientInfoID { get; set; }

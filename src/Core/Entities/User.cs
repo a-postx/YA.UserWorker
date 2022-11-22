@@ -1,5 +1,8 @@
 namespace YA.UserWorker.Core.Entities;
 
+/// <summary>
+/// Пользователь приложения.
+/// </summary>
 // моделирование многоарендаторных сущностей по опыту работы с Азурой
 // и по примеру https://blog.checklyhq.com/building-a-multi-tenant-saas-data-model/
 public class User : IAuditedEntityBase, IRowVersionedEntity, ISoftDeleteEntity

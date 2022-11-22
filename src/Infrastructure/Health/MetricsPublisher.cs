@@ -1,7 +1,6 @@
 using System.Globalization;
 using Delobytes.AspNetCore.Logging;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
-using YA.UserWorker.Extensions;
 
 namespace YA.UserWorker.Infrastructure.Health;
 
